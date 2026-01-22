@@ -1,0 +1,58 @@
+<odoo>
+    <record id="view_taghini_flock_form" model="ir.ui.view">
+        <field name="name">taghini.flock.form</field>
+        <field name="model">taghini.flock</field>
+        <field name="arch" type="xml">
+            <form string="Flock">
+                <header>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="product_id"/> 
+                            <field name="pen_id"/>
+                            <field name="breed"/>
+                            <field name="start_date"/>
+                        </group>
+                        <group>
+                            <field name="initial_birds"/>
+                            <field name="current_birds"/>
+                            <field name="mortality_rate" widget="percentage"/>
+                            <field name="current_age"/>
+                        </group>
+                    </group>
+                    
+                    <notebook>
+                        <page string="Daily Logs">
+                            <field name="log_ids">
+                                <list editable="bottom">
+                                    <field name="date"/>
+                                    <field name="age_day"/>
+                                    <field name="mortality" sum="Total Dead"/>
+                                    <field name="feed_product_id"/>
+                                    <field name="feed_consumed_bags" sum="Total Bags"/>
+                                    <field name="feed_consumed_kg" sum="Total Kg"/>
+                                    <field name="water_consumed"/>
+                                    <field name="body_weight"/>
+                                    <field name="remarks"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_taghini_flock" model="ir.actions.act_window">
+        <field name="name">Flocks / Batches</field>
+        <field name="res_model">taghini.flock</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_taghini_root" name="Taghini Farm" web_icon="taghini_farm,static/description/icon.png"/>
+    <menuitem id="menu_taghini_flock" name="Flocks" parent="menu_taghini_root" action="action_taghini_flock"/>
+</odoo>

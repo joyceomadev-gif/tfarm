@@ -1,0 +1,8 @@
+# Ignore Odoo/Python generated files
+__pycache__/
+*.pyc
+*.log
+.env
+.venv/
+.vscode/
+# Do not ignore custom_addons!
