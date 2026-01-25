@@ -6,6 +6,7 @@
     'depends': ['base', 'stock', 'product'],
     'data': [
         'security/ir.model.access.csv',
+        'security/taghini_security.xml',
         'data/ir_sequence_data.xml',
         'views/flock_views.xml',
         'views/daily_log_views.xml',

@@ -9,7 +9,7 @@ class FarmDailyLog(models.Model):
     flock_id = fields.Many2one('taghini.flock', string='Flock/Batch', required=True, ondelete='cascade')
     pen_id = fields.Many2one('stock.location', related='flock_id.pen_id', store=True, string="Location", readonly=True)
     standard_id = fields.Many2one('taghini.farm.standard', related='flock_id.standard_id', store=True)
-    
+    company_id = fields.Many2one('res.company', string='Farm/Branch', related='flock_id.company_id', store=True, readonly=True)
     date = fields.Date(string='Date', default=fields.Date.context_today, required=True)
     age_day = fields.Integer(string='Age', compute='_compute_age_day', store=True)
     state = fields.Selection([('draft', 'Draft'), ('done', 'Posted')], default='draft', string='Status')
@@ -25,7 +25,7 @@ class FarmDailyLog(models.Model):
     cumm_mortality_percent = fields.Float(string='Cumm. Mort %', compute='_compute_cumulative_stats', store=True, digits=(16, 2))
 
     # --- 2. FEED SECTION ---
-    feed_product_id = fields.Many2one('product.product', string='Feed Type')
+    feed_product_id = fields.Many2one('product.product',compute='_compute_expectations', string='Feed Type')
     feed_consumed_bags = fields.Integer(string='Bags')
     feed_consumed_g = fields.Float(string='Consumed (g)', compute='_compute_feed_g', store=True)
     move_id = fields.Many2one('stock.move', string='Feed Usage', readonly=True)
@@ -89,6 +89,7 @@ class FarmDailyLog(models.Model):
         for record in self:
             exp_feed = 0.0
             exp_weight = 0.0
+            exp_product = False
             
             if record.standard_id:
                 # Find matching rule
@@ -102,10 +103,11 @@ class FarmDailyLog(models.Model):
                     birds = record.birds_count or record.flock_id.initial_birds
                     exp_feed = birds * rule.expected_feed_g
                     exp_weight = rule.expected_weight_g
+                    exp_product = rule.product_id
 
             record.expected_feed_g = exp_feed
             record.variance_feed_g = record.feed_consumed_g - exp_feed
-            
+            record.feed_product_id = exp_product
             record.expected_avg_weight = exp_weight
             record.variance_weight = record.actual_avg_weight - exp_weight if record.actual_avg_weight else 0.0
 

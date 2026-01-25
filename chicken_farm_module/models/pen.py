@@ -6,15 +6,32 @@ class FarmPen(models.Model):
     _inherit = ['mail.thread', 'mail.activity.mixin']
 
     name = fields.Char(string='Pen Name', required=True, help="e.g. Pen 01")
+    company_id = fields.Many2one('res.company', string='Farm / Branch', required=True, 
+                                 default=lambda self: self.env.company)
+
+    # 2. PEN LOCATION (Where birds grow)
+    # We use check_company=True to handle the filtering automatically
+    location_id = fields.Many2one(
+        'stock.location', 
+        string='Stock Location', 
+        domain="[('usage', '=', 'internal')]", 
+        check_company=True,  # <--- THIS FIXES THE EMPTY LIST
+        required=True
+    )
     
-    # Link to physical Inventory Location
-    location_id = fields.Many2one('stock.location', string='Stock Location', 
-                                  domain=[('usage', '=', 'internal')], required=True,
-                                  help="The physical location in the warehouse where birds are counted.")
+    # 3. ABATTOIR LOCATION (Where birds go)
+    # Changed domain to allow 'internal' locations
+    abattoir_location_id = fields.Many2one(
+        'stock.location', 
+        string='Abattoir Location',
+        domain="[('usage', '=', 'internal')]", # <--- Now allows Internal locations
+        check_company=True, # <--- THIS FIXES THE EMPTY LIST
+        help="The destination location when harvesting."
+    )
     
     # Staff Assignments
-    manager_id = fields.Many2one('res.users', string='Farm Manager', required=True, tracking=True)
-    vet_id = fields.Many2one('res.users', string='Veterinary Doctor', required=True, tracking=True)
+    manager_id = fields.Many2one('res.users', string='Farm Manager', required=True, tracking=True, domain="[('company_ids', 'in', company_id)]")
+    vet_id = fields.Many2one('res.users', string='Veterinary Doctor', required=True, tracking=True, domain="[('company_ids', 'in', company_id)]")
     
     # Smart Button Logic
     flock_ids = fields.One2many('taghini.flock', 'pen_model_id', string='Flocks')

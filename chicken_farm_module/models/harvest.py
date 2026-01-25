@@ -9,7 +9,7 @@ class FarmHarvest(models.Model):
 
     name = fields.Char(string='Harvest Reference', required=True, copy=False, readonly=True, default='New')
     date = fields.Date(string='Harvest Date', default=fields.Date.context_today, required=True)
-    
+    company_id = fields.Many2one('res.company', string='Farm/Branch', related='flock_id.company_id', store=True, readonly=True)
     # Link to Farm
     flock_id = fields.Many2one('taghini.flock', string='Source Batch', required=True, domain=[('state', '=', 'active')])
     pen_id = fields.Many2one('taghini.pen', related='flock_id.pen_model_id', string='Source Pen', store=True)
@@ -50,6 +50,8 @@ class FarmHarvest(models.Model):
         ('processing', 'Processing'),
         ('done', 'Completed')
     ], string='Status', default='draft', tracking=True)
+
+    move_id = fields.Many2one('stock.move', string='Stock Move', readonly=True)
 
     # --- COMPUTATIONS ---
     @api.depends('birds_received', 'total_live_weight')
@@ -92,9 +94,75 @@ class FarmHarvest(models.Model):
         return super(FarmHarvest, self).create(vals_list)
 
     def action_confirm_harvest(self):
-        """ Locks the harvest and Closes the Flock """
+        """ 
+        1. Creates Internal Transfer.
+        2. UPDATES existing Daily Log OR Creates new one.
+        3. Updates Flock Status.
+        """
         self.ensure_one()
+        
+        # ... (Keep your existing Validation Checks here) ...
+        if not self.flock_id.product_id:
+            raise UserError(_("The Flock does not have a Product defined."))
+
+        # 1. CREATE STOCK MOVE (Keep existing logic)
+        move_vals = {
+            'product_id': self.flock_id.product_id.id,
+            'product_uom_qty': self.birds_received,
+            'product_uom': self.flock_id.product_id.uom_id.id,
+            'location_id': self.pen_id.location_id.id,
+            'location_dest_id': self.pen_id.abattoir_location_id.id,
+            'date': self.date,
+            'company_id': self.company_id.id,
+            'origin': self.name,
+        }
+        move = self.env['stock.move'].create(move_vals)
+        move._action_confirm()
+        move._action_assign()
+        move.quantity = self.birds_received
+        move._action_done()
+        self.move_id = move.id
+
+        # 2. UPDATE OR CREATE DAILY LOG (The Fix)
+        # Search for an existing log for this Flock + Date
+        existing_log = self.env['taghini.daily.log'].search([
+            ('flock_id', '=', self.flock_id.id),
+            ('date', '=', self.date)
+        ], limit=1)
+
+        if existing_log:
+            # UPDATE existing record
+            existing_log.write({
+                'harvested_qty': existing_log.harvested_qty + self.birds_received,
+                'harvested_weight': existing_log.harvested_weight + self.total_live_weight,
+                'state': 'done', # Ensure it's posted
+                # Optional: Append to remarks so we know a harvest happened
+                'remarks': f"{existing_log.remarks or ''}\nHarvest: {self.name} ({self.birds_received} birds)"
+            })
+        else:
+            # CREATE new record
+            self.env['taghini.daily.log'].create({
+                'flock_id': self.flock_id.id,
+                'date': self.date,
+                'harvested_qty': self.birds_received,
+                'harvested_weight': self.total_live_weight,
+                'state': 'done',
+                'remarks': f"Harvest Reference: {self.name}"
+            })
+
+        # 3. UPDATE FLOCK STATUS (Keep existing logic)
         self.state = 'done'
-        # Optional: Auto-close the Flock
-        if self.flock_id:
-            self.flock_id.write({'state': 'closed'})
+        self.flock_id._compute_current_birds() 
+        if self.flock_id.current_birds <= 0:
+             self.flock_id.write({'state': 'closed'})
+
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _('Harvest Confirmed'),
+                'message': f'{self.birds_received} birds transferred to Abattoir.',
+                'type': 'success',
+                'sticky': False,
+            }
+        }

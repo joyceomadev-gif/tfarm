@@ -10,8 +10,8 @@ class FarmFlock(models.Model):
     start_date = fields.Date(string='Stocking Date', required=True, default=fields.Date.context_today)
     
     # Configuration
-    pen_model_id = fields.Many2one('taghini.pen', string='Pen (Unit)', required=True)
-    
+    pen_model_id = fields.Many2one('taghini.pen', string='Pen (Unit)', required=True, domain="['|', ('company_id', '=', False), ('company_id', '=', company_id)]")
+    company_id = fields.Many2one('res.company', string='Farm/Branch', related='pen_model_id.company_id', store=True, readonly=True)
     # KEEP EXISTING: Physical Location (Auto-filled)
     pen_id = fields.Many2one('stock.location', string='Location', related='pen_model_id.location_id', store=True, readonly=True)
     breed = fields.Char(string='Breed', default='Ross 308')
@@ -30,6 +30,9 @@ class FarmFlock(models.Model):
     # Relation to Logs
     log_ids = fields.One2many('taghini.daily.log', 'flock_id', string='Daily Logs')
     standard_id = fields.Many2one('taghini.farm.standard', string='Growth Profile', required=True, help="Defines feed types and expected consumption")
+
+    harvest_ids = fields.One2many('taghini.harvest', 'flock_id', string='Harvest Records')
+    harvest_count = fields.Integer(compute='_compute_harvest_count', string='Harvest Count')
 
     state = fields.Selection([
         ('draft', 'Draft'),         # Planned, no birds yet
@@ -54,11 +57,15 @@ class FarmFlock(models.Model):
             record.total_mortality = dead
             record.mortality_rate = (record.total_mortality / record.initial_birds) if record.initial_birds else 0.0
 
-    @api.depends('initial_birds', 'total_mortality')
+    @api.depends('initial_birds', 'log_ids.mortality', 'log_ids.harvested_qty')
     def _compute_current_birds(self):
         for record in self:
-            # We will add "Harvested" later
-            record.current_birds = record.initial_birds - record.total_mortality
+            # Sum all mortality and harvest from daily logs
+            total_dead = sum(record.log_ids.mapped('mortality'))
+            total_harvested = sum(record.log_ids.mapped('harvested_qty'))
+            
+            # Calculate remaining
+            record.current_birds = record.initial_birds - total_dead - total_harvested
             
     def action_escalate_issue(self):
         """ Notify Vet and Manager about issues """
@@ -91,6 +98,48 @@ class FarmFlock(models.Model):
                 
             }
         }
+
+    def action_add_daily_log(self):
+        """ Opens the Daily Log Form in a Modal (Pop-up) """
+        self.ensure_one()
+        return {
+            'name': _('Add Daily Log'),
+            'type': 'ir.actions.act_window',
+            'res_model': 'taghini.daily.log',
+            'view_mode': 'form',
+            # Force the Master Form View we just created
+            'view_id': self.env.ref('chicken_farm_module.view_taghini_log_form').id,
+            'target': 'new', # This opens it as a Pop-up/Modal
+            'context': {
+                'default_flock_id': self.id,
+                'default_pen_id': self.pen_id.id,
+                'default_date': fields.Date.context_today(self),
+                # Optional: Pre-fill Feed Product if Standard is set
+                'default_feed_product_id': self.product_id.id if self.product_id else False, 
+            }
+        }
+
+    @api.depends('harvest_ids')
+    def _compute_harvest_count(self):
+        for record in self:
+            record.harvest_count = len(record.harvest_ids)
+
+    def action_view_harvests(self):
+        """ Smart Button Action """
+        self.ensure_one()
+        return {
+            'name': _('Harvest Records'),
+            'type': 'ir.actions.act_window',
+            'res_model': 'taghini.harvest',
+            'view_mode': 'list,form',
+            'domain': [('flock_id', '=', self.id)],
+            'context': {
+                'default_flock_id': self.id,
+                'default_pen_id': self.pen_model_id.id if self.pen_model_id else False,
+            }
+        }
+
+        
     # 2. ACTION BUTTONS
     def action_start_batch(self):
         """ Move from Draft to Active. Lock critical fields. """
