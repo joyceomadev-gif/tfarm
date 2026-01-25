@@ -1,0 +1,72 @@
+<odoo>
+    <record id="view_taghini_harvest_form" model="ir.ui.view">
+        <field name="name">taghini.harvest.form</field>
+        <field name="model">taghini.harvest</field>
+        <field name="arch" type="xml">
+            <form string="Abattoir Harvest">
+                <header>
+                    <button name="action_confirm_harvest" string="Confirm &amp; Close Batch" type="object" class="btn-primary" invisible="state != 'draft'"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group string="Source">
+                            <field name="flock_id" readonly="state != 'draft'"/>
+                            <field name="pen_id"/>
+                            <field name="date"/>
+                        </group>
+                        <group string="Abattoir Intake">
+                            <field name="birds_received"/>
+                            <field name="total_live_weight"/>
+                            <field name="avg_harvest_weight_g" decoration-bf="1"/>
+                        </group>
+                    </group>
+
+                    <group string="Quality Control">
+                        <group>
+                            <field name="feather_condition" widget="radio"/>
+                            <field name="visual_quality" widget="radio"/>
+                        </group>
+                        <group string="Performance Analysis">
+                            <field name="total_feed_consumed_kg"/>
+                            <field name="total_meds_count"/>
+                            <div class="o_td_label">
+                                <label for="fcr" string="Feed Conversion Ratio (FCR)"/>
+                            </div>
+                            <field name="fcr" widget="progressbar" options="{'max_value': 2.0}"/>
+                        </group>
+                    </group>
+                    <field name="notes" placeholder="Notes on rejection, specific cuts required, etc..."/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_taghini_harvest_tree" model="ir.ui.view">
+        <field name="name">taghini.harvest.tree</field>
+        <field name="model">taghini.harvest</field>
+        <field name="arch" type="xml">
+            <list string="Harvests">
+                <field name="name"/>
+                <field name="date"/>
+                <field name="flock_id"/>
+                <field name="birds_received" sum="Total Birds"/>
+                <field name="total_live_weight" sum="Total Kg"/>
+                <field name="fcr" widget="badge" decoration-success="fcr &lt; 1.6" decoration-warning="fcr &gt; 1.6"/>
+                <field name="visual_quality"/>
+                <field name="state" widget="badge" decoration-success="state == 'done'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_taghini_harvest" model="ir.actions.act_window">
+        <field name="name">Abattoir / Harvest</field>
+        <field name="res_model">taghini.harvest</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_taghini_harvest" name="Abattoir Harvest" parent="menu_taghini_root" action="action_taghini_harvest" sequence="30"/>
+</odoo>

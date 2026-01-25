@@ -5,6 +5,14 @@
         <field name="arch" type="xml">
             <form string="Flock">
                 <header>
+                    <button name="action_start_batch" string="Start Batch" type="object" class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_close_batch" string="Close Batch" type="object" class="btn-secondary" invisible="state != 'active'"/>
+                    <button name="action_cancel_batch" string="Cancel" type="object" invisible="state in ('closed', 'cancelled')"/>
+                    <button name="action_set_draft" string="Reset to Draft" type="object" invisible="state != 'cancelled'"/>
+                    
+                    <button name="action_escalate_issue" string="Escalate Issue" type="object" class="btn-danger" icon="fa-bell" invisible="state != 'active'"/>
+                    
+                    <field name="state" widget="statusbar" statusbar_visible="draft,active,closed"/>
                 </header>
                 <sheet>
                     <div class="oe_title">
@@ -12,10 +20,12 @@
                     </div>
                     <group>
                         <group>
-                            <field name="product_id"/> 
+                            <field name="product_id"/>
+                            <field name="pen_model_id"/> 
                             <field name="pen_id"/>
                             <field name="breed"/>
                             <field name="start_date"/>
+                            <field name="standard_id"/>
                         </group>
                         <group>
                             <field name="initial_birds"/>
@@ -26,18 +36,86 @@
                     </group>
                     
                     <notebook>
-                        <page string="Daily Logs">
+                        <page string="Daily Operations (Mortality)">
+                            <field name="log_ids">
+                                <list string="Mortality &amp; Feed" editable="bottom" decoration-muted="state == 'done'">
+                                    <field name="date" readonly="state == 'done'"/>
+                                    <field name="birds_count" string="Birds Start"/>
+                                    <field name="age_day" string="Birds Age"/>  
+                                    
+                                    <field name="mortality" sum="Total Dead"/>
+                                    <field name="daily_mortality_percent" widget="percentage" optional="show"/>
+                                    <field name="cumm_mortality" optional="hide"/>
+                                    <field name="cumm_mortality_percent" widget="percentage" decoration-danger="cumm_mortality_percent > 5"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Daily Operations (Feed)">
+                            <field name="log_ids">
+                                <list string="Mortality &amp; Feed" editable="bottom" decoration-muted="state == 'done'">
+                                    <field name="date" readonly="state == 'done'"/>
+                                    <field name="birds_count" string="Birds Start"/>
+                                    <field name="age_day" string="Birds Age"/>  
+                                    
+                                    <field name="feed_product_id"/>
+                                    <field name="expected_feed_g" optional="show"/>
+                                    <field name="feed_consumed_bags"/>
+                                    <field name="feed_consumed_g" sum="Total g"/>
+                                    <field name="variance_feed_g" optional="show" 
+                                        decoration-danger="variance_feed_g &lt; -1000" 
+                                        decoration-success="variance_feed_g &gt; -1000"/>
+                                    <field name="feed_per_bird_g" optional="show"/>
+                                    
+                                    <field name="cumm_expected_feed_g" optional="hide"/>
+                                    <field name="cumm_actual_feed_g" optional="hide"/>
+                                    
+                                    
+                                    <field name="water_consumed"/>
+                                    <field name="state"/>
+                                    <button name="action_post_log" type="object" icon="fa-check" title="Post Stock" invisible="state == 'done'"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Biometrics (Weight/Light)">
+                            <field name="log_ids">
+                                <list string="Weight &amp; Light" editable="bottom">
+                                    <field name="date" readonly="1"/>
+                                    <field name="birds_count"/>
+                                    <field name="age_day" string="Birds Age"/> 
+                                    
+                                    <field name="actual_avg_weight"/>
+                                    <field name="expected_avg_weight" optional="show"/>
+                                    
+                                    <field name="variance_weight" optional="show" 
+                                        decoration-danger="variance_weight &lt; -50" 
+                                        decoration-success="variance_weight &gt; -50"/>
+                                    
+                                    <field name="light_hours"/>
+                                    <field name="light_period"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <page string="Vet &amp; Remarks">
                             <field name="log_ids">
                                 <list editable="bottom">
-                                    <field name="date"/>
+                                    <field name="date" readonly="1"/>
                                     <field name="age_day"/>
-                                    <field name="mortality" sum="Total Dead"/>
-                                    <field name="feed_product_id"/>
-                                    <field name="feed_consumed_bags" sum="Total Bags"/>
-                                    <field name="feed_consumed_kg" sum="Total Kg"/>
-                                    <field name="water_consumed"/>
-                                    <field name="body_weight"/>
+                                    <field name="medication_name"/>
+                                    <field name="vaccine_name"/>
                                     <field name="remarks"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <page string="Harvesting">
+                            <field name="log_ids">
+                                <list editable="bottom">
+                                    <field name="date" readonly="1"/>
+                                    <field name="age_day"/>
+                                    <field name="birds_count"/>
+                                    <field name="harvested_qty" sum="Total Harvested"/>
+                                    <field name="harvested_weight" sum="Total Wgt"/>
                                 </list>
                             </field>
                         </page>
@@ -54,5 +132,5 @@
     </record>
 
     <menuitem id="menu_taghini_root" name="Taghini Farm"/>
-    <menuitem id="menu_taghini_flock" name="Flocks" parent="menu_taghini_root" action="action_taghini_flock"/>
+    <menuitem id="menu_taghini_flock" name="Flocks" parent="menu_taghini_root" action="action_taghini_flock" sequence="2"/>
 </odoo>

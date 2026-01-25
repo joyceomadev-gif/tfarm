@@ -1,0 +1,58 @@
+<odoo>
+    <record id="view_taghini_pen_form" model="ir.ui.view">
+        <field name="name">taghini.pen.form</field>
+        <field name="model">taghini.pen</field>
+        <field name="arch" type="xml">
+            <form string="Pen / Housing">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_flocks" type="object" class="oe_stat_button" icon="fa-cubes">
+                            <field name="flock_count" widget="statinfo" string="Batches"/>
+                        </button>
+                    </div>
+
+                    <div class="oe_title">
+                        <label for="name" class="oe_edit_only"/>
+                        <h1><field name="name" placeholder="e.g. Pen 01"/></h1>
+                    </div>
+                    
+                    <group>
+                        <group string="Location Details">
+                            <field name="location_id"/>
+                        </group>
+                        <group string="Staff Assignment">
+                            <field name="manager_id" widget="many2one_avatar_user"/>
+                            <field name="vet_id" widget="many2one_avatar_user"/>
+                        </group>
+                    </group>
+
+                    <div class="mt-4">
+                        <button name="action_create_batch" type="object" string="Start New Batch in this Pen" class="btn-primary"/>
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_taghini_pen_tree" model="ir.ui.view">
+        <field name="name">taghini.pen.tree</field>
+        <field name="model">taghini.pen</field>
+        <field name="arch" type="xml">
+            <list string="Pens">
+                <field name="name"/>
+                <field name="location_id"/>
+                <field name="manager_id" widget="many2one_avatar_user"/>
+                <field name="vet_id" widget="many2one_avatar_user"/>
+                <field name="flock_count"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_taghini_pen" model="ir.actions.act_window">
+        <field name="name">Pens &amp; Houses</field>
+        <field name="res_model">taghini.pen</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_taghini_pen" name="Pens / Houses" parent="menu_taghini_root" action="action_taghini_pen" sequence="1"/>
+</odoo>

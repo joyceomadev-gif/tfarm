@@ -6,8 +6,12 @@
     'depends': ['base', 'stock', 'product'],
     'data': [
         'security/ir.model.access.csv',
+        'data/ir_sequence_data.xml',
         'views/flock_views.xml',
         'views/daily_log_views.xml',
+        'views/standard_views.xml',
+        'views/pen_views.xml',
+        'views/harvest_views.xml',
     ],
     'installable': True,
     'application': True,

@@ -1,23 +1,152 @@
 <odoo>
-    <record id="view_taghini_log_tree" model="ir.ui.view">
-        <field name="name">taghini.log.tree</field>
+    <record id="view_log_tree_mortality" model="ir.ui.view">
+        <field name="name">taghini.log.tree.mortality</field>
         <field name="model">taghini.daily.log</field>
         <field name="arch" type="xml">
-            <list string="Daily Logs" editable="bottom">
-                <field name="date"/>
-                <field name="flock_id" readonly="1"/>
-                <field name="age_day"/>
-                <field name="mortality"/>
-                <field name="feed_product_id"/> <field name="feed_consumed_bags"/>
-                <field name="feed_consumed_kg"/>
+            <list string="Mortality &amp; Feed" editable="bottom" decoration-muted="state == 'done'">
+                <field name="flock_id" readonly="1" optional="show"/>
+                <field name="date" readonly="state == 'done'"/>
+                <field name="birds_count" string="Birds Start"/> 
+                <field name="age_day" string="Birds Age"/> 
+                                    
+                <field name="mortality" sum="Total Dead"/>
+                <field name="daily_mortality_percent" widget="percentage" optional="show"/>
+                <field name="cumm_mortality" optional="hide"/>
+                <field name="cumm_mortality_percent" widget="percentage" decoration-danger="cumm_mortality_percent > 5"/>
+            </list>
+        </field>
+    </record>
+    <record id="view_log_tree_feed" model="ir.ui.view">
+        <field name="name">taghini.log.tree.feed</field>
+        <field name="model">taghini.daily.log</field>
+        <field name="arch" type="xml">
+            <list string="Mortality &amp; Feed" editable="bottom" decoration-muted="state == 'done'">
+                <field name="flock_id" readonly="1" optional="show"/>
+                <field name="date" readonly="state == 'done'"/>
+                <field name="flock_id" readonly="1" optional="show"/>
+                <field name="birds_count" string="Birds Start"/> 
+                <field name="age_day" string="Birds Age"/> 
+                                    
+                <field name="feed_product_id"/>
+                <field name="expected_feed_g" optional="show"/>
+                <field name="feed_consumed_bags"/>
+                <field name="feed_consumed_g" sum="Total g"/>
+                <field name="variance_feed_g" optional="show" 
+                    decoration-danger="variance_feed_g &lt; -1000" 
+                    decoration-success="variance_feed_g &gt; -1000"/>
+                <field name="feed_per_bird_g" optional="show"/>
+                                    
+                <field name="cumm_expected_feed_g" optional="hide"/>
+                <field name="cumm_actual_feed_g" optional="hide"/>
+                                    
+                                    
+                <field name="water_consumed"/>
+                <field name="state"/>
+                <button name="action_post_log" type="object" icon="fa-check" title="Post Stock" invisible="state == 'done'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_log_tree_weight" model="ir.ui.view">
+        <field name="name">taghini.log.tree.weight</field>
+        <field name="model">taghini.daily.log</field>
+        <field name="arch" type="xml">
+            <list string="Weight &amp; Light" editable="bottom">
+                <field name="flock_id" readonly="1" optional="show"/>
+                <field name="date" readonly="1"/>
+                <field name="birds_count"/>
+                <field name="age_day" string="Birds Age"/> 
+                                    
+                <field name="actual_avg_weight"/>
+                <field name="expected_avg_weight" optional="show"/>
+                                    
+                <field name="variance_weight" optional="show" 
+                        decoration-danger="variance_weight &lt; -50" 
+                        decoration-success="variance_weight &gt; -50"/>
+                                    
+                <field name="light_hours"/>
+                <field name="light_period"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_log_tree_meds" model="ir.ui.view">
+        <field name="name">taghini.log.tree.meds</field>
+        <field name="model">taghini.daily.log</field>
+        <field name="arch" type="xml">
+            <list string="Medications" editable="bottom">
+                <field name="flock_id" readonly="1" optional="show"/>
+                <field name="date" readonly="1"/>
+                
+                <field name="birds_count"/>
+                <field name="age_day" string="Birds Age"/>  
+                <field name="medication_name"/>
+                <field name="vaccine_name"/>
                 <field name="remarks"/>
             </list>
         </field>
     </record>
-    <record id="action_taghini_daily_log" model="ir.actions.act_window">
-        <field name="name">Daily Logs</field>
+
+    <record id="view_log_tree_harvest" model="ir.ui.view">
+        <field name="name">taghini.log.tree.harvest</field>
+        <field name="model">taghini.daily.log</field>
+        <field name="arch" type="xml">
+            <list string="Harvest" editable="bottom">
+                <field name="date" readonly="1"/>
+                <field name="flock_id" readonly="1" optional="show"/>
+                <field name="birds_count"/> 
+                <field name="harvested_qty" sum="Total Harvested"/>
+                <field name="harvested_weight" sum="Total Wgt"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_taghini_log_ops_mort" model="ir.actions.act_window">
+        <field name="name">Daily Operations (Mortality)</field>
         <field name="res_model">taghini.daily.log</field>
         <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_log_tree_mortality"/>
+        <field name="context">{'search_default_group_location': 1, 'search_default_group_batch': 1}</field>
     </record>
-    <menuitem id="menu_taghini_daily_log" name="Daily logs" parent="menu_taghini_root" action="action_taghini_daily_log"/>
+
+    <record id="action_taghini_log_ops_feed" model="ir.actions.act_window">
+        <field name="name">Daily Operations (Feed)</field>
+        <field name="res_model">taghini.daily.log</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_log_tree_feed"/>
+        <field name="context">{'search_default_group_location': 1, 'search_default_group_batch': 1}</field>
+    </record>
+
+    <record id="action_taghini_log_bio" model="ir.actions.act_window">
+        <field name="name">Biometrics (Weight)</field>
+        <field name="res_model">taghini.daily.log</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_log_tree_weight"/>
+        <field name="context">{'search_default_group_location': 1, 'search_default_group_batch': 1}</field>
+    </record>
+
+    <record id="action_taghini_log_meds" model="ir.actions.act_window">
+        <field name="name">Vet &amp; Health</field>
+        <field name="res_model">taghini.daily.log</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_log_tree_meds"/>
+        <field name="context">{'search_default_group_location': 1, 'search_default_group_batch': 1}</field>
+    </record>
+
+    <record id="action_taghini_log_harvest" model="ir.actions.act_window">
+        <field name="name">Harvesting Logs</field>
+        <field name="res_model">taghini.daily.log</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_log_tree_harvest"/>
+        <field name="context">{'search_default_group_location': 1, 'search_default_group_batch': 1}</field>
+    </record>
+
+    <menuitem id="menu_taghini_logs_root" name="Daily Logs" parent="menu_taghini_root" sequence="3"/>
+
+    <menuitem id="menu_log_ops_mort" name="Operations (Mortality)" parent="menu_taghini_logs_root" action="action_taghini_log_ops_mort" sequence="1"/>
+    <menuitem id="menu_log_ops_feed" name="Operations (Feed)" parent="menu_taghini_logs_root" action="action_taghini_log_ops_feed" sequence="2"/>
+    <menuitem id="menu_log_bio" name="Biometrics (Weight)" parent="menu_taghini_logs_root" action="action_taghini_log_bio" sequence="3"/>
+    <menuitem id="menu_log_meds" name="Vet &amp; Health" parent="menu_taghini_logs_root" action="action_taghini_log_meds" sequence="4"/>
+    <menuitem id="menu_log_harvest" name="Harvesting" parent="menu_taghini_logs_root" action="action_taghini_log_harvest" sequence="5"/>
+
 </odoo>

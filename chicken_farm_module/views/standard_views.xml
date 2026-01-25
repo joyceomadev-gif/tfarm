@@ -1,0 +1,40 @@
+<odoo>
+    <record id="view_taghini_standard_form" model="ir.ui.view">
+        <field name="name">taghini.standard.form</field>
+        <field name="model">taghini.farm.standard</field>
+        <field name="arch" type="xml">
+            <form string="Farm Standard">
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <field name="breed"/>
+                    </group>
+                    <notebook>
+                        <page string="Rules by Age">
+                            <field name="line_ids">
+                                <list editable="bottom">
+                                    <field name="age_min"/>
+                                    <field name="age_max"/>
+                                    <field name="product_id"/>
+                                    <field name="expected_feed_g"/>
+                                    <field name="expected_weight_g"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_taghini_standard" model="ir.actions.act_window">
+        <field name="name">Growth Standards</field>
+        <field name="res_model">taghini.farm.standard</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_taghini_config" name="Configuration" parent="menu_taghini_root" sequence="100"/>
+    <menuitem id="menu_taghini_standard" name="Growth Standards" parent="menu_taghini_config" action="action_taghini_standard"/>
+</odoo>

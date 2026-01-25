@@ -1,3 +1,7 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_taghini_flock,taghini.flock,model_taghini_flock,base.group_user,1,1,1,1
 access_taghini_log,taghini.daily.log,model_taghini_daily_log,base.group_user,1,1,1,1
+access_taghini_std,taghini.farm.standard,model_taghini_farm_standard,base.group_user,1,1,1,1
+access_taghini_std_line,taghini.farm.standard.line,model_taghini_farm_standard_line,base.group_user,1,1,1,1
+access_taghini_pen,taghini.pen,model_taghini_pen,base.group_user,1,1,1,1
+access_taghini_harvest,taghini.harvest,model_taghini_harvest,base.group_user,1,1,1,1
