@@ -95,7 +95,7 @@ class FarmHarvest(models.Model):
 
     def action_confirm_harvest(self):
         """ 
-        1. Creates Internal Transfer.
+        1. Creates Internal Transfer (Forced to Done).
         2. UPDATES existing Daily Log OR Creates new one.
         3. Updates Flock Status.
         """
@@ -105,7 +105,7 @@ class FarmHarvest(models.Model):
         if not self.flock_id.product_id:
             raise UserError(_("The Flock does not have a Product defined."))
 
-        # 1. CREATE STOCK MOVE (Keep existing logic)
+        # 1. CREATE STOCK MOVE
         move_vals = {
             'product_id': self.flock_id.product_id.id,
             'product_uom_qty': self.birds_received,
@@ -115,15 +115,36 @@ class FarmHarvest(models.Model):
             'date': self.date,
             'company_id': self.company_id.id,
             'origin': self.name,
+            'state': 'draft',
         }
+        
         move = self.env['stock.move'].create(move_vals)
         move._action_confirm()
         move._action_assign()
-        move.quantity = self.birds_received
+        
+        # --- FORCE DONE LOGIC ---
+        # 1. Set Done Quantity on existing lines
+        for line in move.move_line_ids:
+            line.quantity = line.quantity_product_uom
+
+        # 2. Force creation if stock is missing (Negative Inventory)
+        if not move.move_line_ids:
+            self.env['stock.move.line'].create({
+                'move_id': move.id,
+                'product_id': move.product_id.id,
+                'product_uom_id': move.product_uom.id,
+                'location_id': move.location_id.id,
+                'location_dest_id': move.location_dest_id.id,
+                'quantity': self.birds_received,
+            })
+        
+        # 3. Mark as Picked and Finalize
+        move.picked = True
         move._action_done()
+        
         self.move_id = move.id
 
-        # 2. UPDATE OR CREATE DAILY LOG (The Fix)
+        # 2. UPDATE OR CREATE DAILY LOG (Keep existing logic)
         # Search for an existing log for this Flock + Date
         existing_log = self.env['taghini.daily.log'].search([
             ('flock_id', '=', self.flock_id.id),
@@ -154,7 +175,7 @@ class FarmHarvest(models.Model):
         self.state = 'done'
         self.flock_id._compute_current_birds() 
         if self.flock_id.current_birds <= 0:
-             self.flock_id.write({'state': 'closed'})
+            self.flock_id.write({'state': 'closed'})
 
         return {
             'type': 'ir.actions.client',

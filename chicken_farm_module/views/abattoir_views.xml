@@ -1,0 +1,176 @@
+<odoo>
+    <record id="view_taghini_abattoir_form" model="ir.ui.view">
+        <field name="name">taghini.abattoir.form</field>
+        <field name="model">taghini.abattoir.batch</field> <field name="arch" type="xml">
+            <form string="Abattoir Production">
+                <header>
+                    <button name="action_start_reception" string="Start Reception" type="object" 
+                            class="btn-primary" invisible="state != 'draft'"/>
+                    
+                    <button name="action_confirm_verification" string="Confirm Verification" type="object" 
+                            class="btn-primary" invisible="state != 'reception'"/>
+                    
+                    <button name="action_confirm_slaughtering" string="Finish Slaughtering" type="object" 
+                            class="btn-primary" invisible="state != 'slaughtering'"/>
+
+                    <button name="action_post_inventory" string="Post to Stock" type="object" 
+                            class="btn-success" invisible="state != 'production'"/>
+                    
+                    <field name="state" widget="statusbar" statusbar_visible="draft,reception,slaughtering,production,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    
+                    <group>
+                        <group>
+                            <field name="date"/>
+                            <field name="harvest_id" options="{'no_create': True}" readonly="state != 'draft'"/>
+                            <field name="manager_id" widget="many2one_avatar_user"/>
+                        </group> 
+                        <group>
+                            <field name="input_birds" options="{'no_create': True}" readonly="True"/>
+                            <field name="input_weight_kg" options="{'no_create': True}" readonly="True"/>
+                            <field name="storage_location_id" readonly="state == 'done'"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        
+                        <page string="1. Verification (Reception)" invisible="state == 'draft'">
+                            <group>
+                                <group string="Reception Data"  readonly="state not in ['draft', 'reception']">
+                                    <field name="birds_arrived" class="oe_inline" style="font-size: 1.3em; font-weight: bold;" readonly="state not in ['draft', 'reception']"/>
+                                    <field name="weight_arrived" readonly="state not in ['draft', 'reception']"/>
+                                    <field name="average_weight_arrived" readonly="state not in ['draft', 'reception']"/>
+                                    <field name="condition_of_birds" readonly="state not in ['draft', 'reception']"/>
+                                </group>
+                                <group string="Quality Control Stats" readonly="state not in ['draft', 'reception']">
+                                    <field name="mortality_arrived" readonly="state not in ['draft', 'reception']"/>
+                                    <field name="mortality_percentage" readonly="state not in ['draft', 'reception']" widget="percentage" decoration-danger="mortality_percentage > 5"/>
+                                    
+                                    <field name="defected_birds"/>
+                                    <field name="defected_percentage" readonly="state not in ['draft', 'reception']" widget="percentage"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <page string="2. Slaughtering Info" invisible="state in ['draft', 'reception']">
+                            <group>
+                                <group string="Hanging Process" readonly="state != 'slaughtering'">
+                                    <field name="hanging_start_time" readonly="state != 'slaughtering'"/>
+                                    <field name="hanging_end_time" readonly="state != 'slaughtering'"/>
+                                    <field name="total_hanging_duration" readonly="state != 'slaughtering'" decoration-bf="1" style="color: #d9534f; font-weight: bold;"/>
+                                </group>
+                                <group string="Timings" readonly="state != 'slaughtering'"> 
+                                    <field name="chiller_exit_time" readonly="state != 'slaughtering'"/>
+                                    <field name="blast_locking_time" readonly="state != 'slaughtering'"/>
+                                </group>
+                            </group>
+                            
+                            <group string="Slaughter Parameters" readonly="state != 'slaughtering'"> 
+                                <group>
+                                    <field name="bleeding_time" readonly="state != 'slaughtering'"/>
+                                    <field name="evisceration_time" readonly="state != 'slaughtering'"/>
+                                </group>
+                                
+                                <group>
+                                    <label for="scalding_time" string="Scalding (Time / Temp)"/>
+                                    <div class="o_row">
+                                        <field name="scalding_time" style="width: 45% !important; min-width: 80px;" readonly="state != 'slaughtering'"/>
+                                        <span class="oe_grey" style="font-weight:bold; padding: 0 5px;"> / </span>
+                                        <field name="scalding_temp" style="width: 45% !important; min-width: 80px;" readonly="state != 'slaughtering'"/> 
+                                        <span class="oe_grey">°C</span>
+                                    </div>
+
+                                    <label for="stunning_time" string="Stunning (Time / Volt)"/>
+                                    <div class="o_row">
+                                        <field name="stunning_time" style="width: 45% !important; min-width: 80px;" readonly="state != 'slaughtering'"/>
+                                        <span class="oe_grey" style="font-weight:bold; padding: 0 5px;"> / </span>
+                                        <field name="stunning_voltage" style="width: 45% !important; min-width: 80px;" readonly="state != 'slaughtering'"/> 
+                                        <span class="oe_grey">V</span>
+                                    </div>
+                                </group>
+                            </group>
+                        </page>
+
+                        <page string="3. Production Output (Cuts)" invisible="state in ['draft', 'reception', 'slaughtering']">
+                            <group string="Yield Analysis" readonly="state == 'done'">
+                                <group>
+                                    <field name="weight_arrived" string="Live Weight In" readonly="state == 'done'"/>
+                                    <field name="processing_loss_kg" decoration-danger="1" readonly="state == 'done'"/>
+                                </group>
+                                <group>
+                                    <label for="yield_percentage"/>
+                                    <div class="o_row">
+                                        <field name="yield_percentage" widget="progressbar"/>
+                                    </div>
+                                </group>
+                            </group>
+
+                            <field name="line_ids" readonly="state == 'done'">
+                                <list editable="bottom">
+                                    <field name="product_id"/>
+                                    <field name="quantity" sum="Total Pcs"/>
+                                    <field name="weight_kg" sum="Total Kg"/>
+                                    <field name="avg_weight"/>
+                                </list>
+                            </field>
+                            
+                            <group string="Time &amp; QC Scores" readonly="state == 'done'">
+                                <group>
+                                    <field name="start_time" widget="float_time" readonly="state == 'done'"/>
+                                    <field name="end_time" widget="float_time" readonly="state == 'done'"/>
+                                    <field name="production_hours" widget="float_time" readonly="state == 'done'"/>
+                                </group>
+                                <group>
+                                    <field name="attendants_present_percent" widget="percentage" readonly="state == 'done'"/>
+                                    <field name="defects_count" readonly="state == 'done'"/>
+                                    <field name="dirty_section_score" readonly="state == 'done'"/>
+                                    <field name="cold_room_score" readonly="state == 'done'"/>
+                                </group>
+                            </group>
+                        </page>
+
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_taghini_abattoir_tree" model="ir.ui.view">
+        <field name="name">taghini.abattoir.tree</field>
+        <field name="model">taghini.abattoir.batch</field>
+        <field name="arch" type="xml">
+            <list string="Daily Production">
+                <field name="name"/>
+                <field name="date"/>
+                <field name="harvest_id"/>
+                <field name="weight_arrived" string="Weight In" sum="Total In"/>
+                <field name="total_output_weight_kg" sum="Total Out"/>
+                <field name="yield_percentage" widget="progressbar"/>
+                <field name="state" widget="badge" 
+                       decoration-info="state == 'reception'" 
+                       decoration-warning="state == 'slaughtering'" 
+                       decoration-success="state == 'done'"/>
+            </list>
+        </field>
+    </record>
+
+        <record id="action_taghini_abattoir" model="ir.actions.act_window">
+
+        <field name="name">Daily Production (Abattoir)</field>
+
+        <field name="res_model">taghini.abattoir.batch</field>
+
+        <field name="view_mode">list,form</field>
+
+    </record>
+
+
+
+    <menuitem id="menu_taghini_abattoir_root" name="Abattoir" parent="menu_taghini_root" sequence="40"/>
+
+    <menuitem id="menu_taghini_abattoir_batch" name="Daily Production" parent="menu_taghini_abattoir_root" action="action_taghini_abattoir" sequence="1"/>
+</odoo>

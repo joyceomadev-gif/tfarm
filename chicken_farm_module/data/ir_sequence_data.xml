@@ -7,5 +7,12 @@
             <field name="padding">4</field>
             <field name="company_id" eval="False"/>
         </record>
+        <record id="seq_taghini_abattoir" model="ir.sequence">
+            <field name="name">Abattoir Production</field>
+            <field name="code">taghini.abattoir</field>
+            <field name="prefix">PROD/%(year)s/</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
     </data>
 </odoo>

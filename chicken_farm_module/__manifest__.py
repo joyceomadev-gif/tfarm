@@ -13,6 +13,8 @@
         'views/standard_views.xml',
         'views/pen_views.xml',
         'views/harvest_views.xml',
+        'views/abattoir_views.xml',
+        'views/product_views.xml',
     ],
     'installable': True,
     'application': True,
