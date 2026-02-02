@@ -112,6 +112,7 @@
                             <field name="line_ids" readonly="state == 'done'">
                                 <list editable="bottom">
                                     <field name="product_id"/>
+                                    <field name="no_bags" sum="Total Bags"/>
                                     <field name="quantity" sum="Total Pcs"/>
                                     <field name="weight_kg" sum="Total Kg"/>
                                     <field name="avg_weight"/>

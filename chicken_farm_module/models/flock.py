@@ -6,9 +6,17 @@ class FarmFlock(models.Model):
     _description = 'Broiler Flock (Batch)'
     _inherit = ['mail.thread', 'mail.activity.mixin']
 
-    name = fields.Char(string='Batch Name', required=True, default='New')
+    name = fields.Char(string='Pen Series', required=True, default='New')
     start_date = fields.Date(string='Stocking Date', required=True, default=fields.Date.context_today)
     
+    # --- NEW FIELDS ---
+    # Link to the Mother Batch
+    batch_id = fields.Many2one('taghini.chicken.batch', string='Source Batch', required=True, 
+                               domain="[('remaining_quantity', '>', 0)]")
+    
+    # This replaces the manual input of 'initial_birds'
+    quantity_placed = fields.Integer(string='Quantity Placed', required=True)
+
     # Configuration
     pen_model_id = fields.Many2one('taghini.pen', string='Pen (Unit)', required=True, domain="['|', ('company_id', '=', False), ('company_id', '=', company_id)]")
     company_id = fields.Many2one('res.company', string='Farm/Branch', related='pen_model_id.company_id', store=True, readonly=True)
@@ -19,7 +27,7 @@ class FarmFlock(models.Model):
     # NEW FIELD: Which product is this?
     product_id = fields.Many2one('product.product', string='Bird Variant', required=True)
     # Inventory Data
-    initial_birds = fields.Integer(string='Initial Stock', required=True, help="Number of birds at day 0")
+    initial_birds = fields.Integer(related='quantity_placed', store=True, string='Initial Stock')
     current_birds = fields.Integer(string='Current Birds', compute='_compute_current_birds', store=True)
     
     # Performance Metrics (Computed from Logs)
@@ -159,3 +167,30 @@ class FarmFlock(models.Model):
     def action_set_draft(self):
         """ Reset for corrections. """
         self.write({'state': 'draft'})
+
+    # --- CONSTRAINT 1: ONE ACTIVE SERIES PER PEN ---
+    @api.constrains('pen_model_id', 'state')
+    def _check_pen_availability(self):
+        for record in self:
+            if record.state == 'active':
+                domain = [
+                    ('id', '!=', record.id),
+                    ('pen_model_id', '=', record.pen_model_id.id),
+                    ('state', '=', 'active')
+                ]
+                if self.search_count(domain) > 0:
+                    raise models.ValidationError(_(
+                        "This Pen is already occupied by an Active Series! "
+                        "You must close the current series before starting a new one."
+                    ))
+
+    # --- CONSTRAINT 2: DO NOT EXCEED BATCH QUANTITY ---
+    @api.constrains('batch_id', 'quantity_placed')
+    def _check_batch_quantity(self):
+        for record in self:
+            # We allow a small buffer or check strictly. Here is strict:
+            if record.batch_id.remaining_quantity < 0:
+                 raise models.ValidationError(_(
+                    f"You cannot place {record.quantity_placed} birds. "
+                    f"The Source Batch only has {record.batch_id.remaining_quantity + record.quantity_placed} remaining."
+                ))

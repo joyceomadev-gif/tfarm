@@ -361,7 +361,7 @@ class AbattoirLine(models.Model):
         readonly=True
     )
     # Note: You might want a custom field on product.template for this instead
-
+    no_bags = fields.Integer(string='Number of bags')
     quantity = fields.Integer(string='Pieces / Birds')
     weight_kg = fields.Float(string='Total Weight (Kg)')
     avg_weight = fields.Float(string='Avg Unit Wgt', compute='_compute_avg')

@@ -3,7 +3,7 @@
     'version': '1.0',
     'category': 'Manufacturing/Agriculture',
     'summary': 'Manage Broiler Flocks, Mortality, and Daily Logs',
-    'depends': ['base', 'stock', 'product'],
+    'depends': ['base', 'stock', 'product', 'mail', 'board'],
     'data': [
         'security/ir.model.access.csv',
         'security/taghini_security.xml',
@@ -15,6 +15,8 @@
         'views/harvest_views.xml',
         'views/abattoir_views.xml',
         'views/product_views.xml',
+        'views/batch_views.xml',
+        'views/dashboard.xml',
     ],
     'installable': True,
     'application': True,

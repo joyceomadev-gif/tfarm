@@ -35,18 +35,18 @@ class FarmPen(models.Model):
     
     # Smart Button Logic
     flock_ids = fields.One2many('taghini.flock', 'pen_model_id', string='Flocks')
-    flock_count = fields.Integer(compute='_compute_flock_count')
+    series_count = fields.Integer(compute='_compute_series_count')
 
     @api.depends('flock_ids')
-    def _compute_flock_count(self):
+    def _compute_series_count(self):
         for record in self:
-            record.flock_count = len(record.flock_ids)
+            record.series_count = len(record.flock_ids)
 
     def action_view_flocks(self):
         """ Smart Button to open related Flocks """
         self.ensure_one()
         return {
-            'name': _('Flocks in %s') % self.name,
+            'name': _('Series in %s') % self.name,
             'type': 'ir.actions.act_window',
             'res_model': 'taghini.flock',
             'view_mode': 'list,form',

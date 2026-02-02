@@ -7,7 +7,7 @@
                 <sheet>
                     <div class="oe_button_box" name="button_box">
                         <button name="action_view_flocks" type="object" class="oe_stat_button" icon="fa-cubes">
-                            <field name="flock_count" widget="statinfo" string="Batches"/>
+                            <field name="series_count" widget="statinfo" string="Batches"/>
                         </button>
                     </div>
 
@@ -45,7 +45,7 @@
                 <field name="location_id"/>
                 <field name="manager_id" widget="many2one_avatar_user"/>
                 <field name="vet_id" widget="many2one_avatar_user"/>
-                <field name="flock_count"/>
+                <field name="series_count"/>
             </list>
         </field>
     </record>

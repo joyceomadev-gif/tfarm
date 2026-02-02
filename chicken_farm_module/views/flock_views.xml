@@ -3,11 +3,11 @@
         <field name="name">taghini.flock.form</field>
         <field name="model">taghini.flock</field>
         <field name="arch" type="xml">
-            <form string="Flock">
+            <form string="Pen Series">
                 <header>
                     <button name="action_add_daily_log" string="Add Daily Log" type="object" class="btn-primary" icon="fa-plus-square" invisible="state != 'active'"/>
-                    <button name="action_start_batch" string="Start Batch" type="object" class="btn-primary" invisible="state != 'draft'"/>
-                    <button name="action_close_batch" string="Close Batch" type="object" class="btn-secondary" invisible="state != 'active'"/>
+                    <button name="action_start_batch" string="Start Series" type="object" class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_close_batch" string="Close Sseries" type="object" class="btn-secondary" invisible="state != 'active'"/>
                     <button name="action_cancel_batch" string="Cancel" type="object" invisible="state in ('closed', 'cancelled')"/>
                     <button name="action_set_draft" string="Reset to Draft" type="object" invisible="state != 'cancelled'"/>
                     
@@ -26,6 +26,7 @@
                     </div>
                     <group>
                         <group>
+                            <field name="batch_id" options="{'no_create': True}" readonly="state != 'draft'"/>
                             <field name="product_id"/>
                             <field name="pen_model_id"/> 
                             <field name="pen_id"/>
@@ -34,7 +35,8 @@
                             <field name="standard_id"/>
                         </group>
                         <group>
-                            <field name="initial_birds"/>
+                            <field name="quantity_placed" readonly="state != 'draft'"/>
+                            <field name="initial_birds" invisible="1"/>
                             <field name="current_birds"/>
                             <field name="mortality_rate" widget="percentage"/>
                             <field name="current_age"/>

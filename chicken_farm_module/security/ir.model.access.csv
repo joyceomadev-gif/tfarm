@@ -7,3 +7,4 @@ access_taghini_pen,taghini.pen,model_taghini_pen,base.group_user,1,1,1,1
 access_taghini_harvest,taghini.harvest,model_taghini_harvest,base.group_user,1,1,1,1
 access_taghini_abattoir,taghini.abattoir,model_taghini_abattoir_batch,base.group_user,1,1,1,1
 access_taghini_abattoir_line,taghini.abattoir.line,model_taghini_abattoir_line,base.group_user,1,1,1,1
+access_taghini_chicken_batch,taghini.chicken.batch,model_taghini_chicken_batch,base.group_user,1,1,1,1
