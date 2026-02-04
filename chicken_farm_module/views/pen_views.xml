@@ -20,7 +20,7 @@
                         <group string="Configuration">
                             <field name="company_id" groups="base.group_multi_company"/>
                             <field name="location_id"/>
-                            <field name="abattoir_location_id"/>
+                            
                         </group>
                         <group string="Staff Assignment">
                             <field name="manager_id" widget="many2one_avatar_user"/>

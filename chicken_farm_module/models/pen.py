@@ -1,5 +1,5 @@
 from odoo import models, fields, api, _
-
+from odoo.exceptions import UserError
 class FarmPen(models.Model):
     _name = 'taghini.pen'
     _description = 'Farm Pen / House'
@@ -17,16 +17,6 @@ class FarmPen(models.Model):
         domain="[('usage', '=', 'internal')]", 
         check_company=True,  # <--- THIS FIXES THE EMPTY LIST
         required=True
-    )
-    
-    # 3. ABATTOIR LOCATION (Where birds go)
-    # Changed domain to allow 'internal' locations
-    abattoir_location_id = fields.Many2one(
-        'stock.location', 
-        string='Abattoir Location',
-        domain="[('usage', '=', 'internal')]", # <--- Now allows Internal locations
-        check_company=True, # <--- THIS FIXES THE EMPTY LIST
-        help="The destination location when harvesting."
     )
     
     # Staff Assignments
@@ -56,6 +46,20 @@ class FarmPen(models.Model):
 
     def action_create_batch(self):
         """ Shortcut button to create a new Batch in this Pen """
+        # --- SECURITY CHECK START ---
+        # Search for any batch in this pen that is currently 'active'
+        active_batch = self.env['taghini.flock'].search([
+            ('pen_model_id', '=', self.id),
+            ('state', '=', 'active')
+        ], limit=1)
+
+        if active_batch:
+            raise UserError(_(
+                "This Pen is already occupied!\n"
+                "There is an active batch '%s' in this pen. "
+                "You must close the current batch (Harvest/Finish) before starting a new one."
+            ) % active_batch.name)
+        # --- SECURITY CHECK END ---
         self.ensure_one()
         return {
             'name': _('New Batch'),

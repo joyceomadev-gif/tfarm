@@ -18,11 +18,26 @@ class AbattoirBatch(models.Model):
 
     # --- INPUT (From Harvest) ---
     harvest_id = fields.Many2one('taghini.harvest', string='Source Harvest', domain=[('state', '=', 'done')])
+    pen_id = fields.Many2one('taghini.pen', string='Pen',related='harvest_id.pen_id' )
+    batch_id = fields.Many2one('taghini.chicken.batch', string='Batch number',related='harvest_id.flock_id.batch_id' )
     input_birds = fields.Integer(string='Birds Sent', related='harvest_id.birds_received', store=True)
     input_weight_kg = fields.Float(string='Weight (Kg)', related='harvest_id.total_live_weight', store=True)
 
     # --- OUTPUT LINES ---
     line_ids = fields.One2many('taghini.abattoir.line', 'batch_id', string='Production Output')
+
+    # Note: These point to the same model and use the same inverse field ('batch_id')
+    series_line_ids = fields.One2many('taghini.abattoir.line', 'batch_id', 
+                                      domain=[('category_type', '=', 'series')], string='Chicken Series')
+    
+    parts_line_ids = fields.One2many('taghini.abattoir.line', 'batch_id', 
+                                     domain=[('category_type', '=', 'parts')], string='Chicken Parts')
+    
+    cuts_line_ids = fields.One2many('taghini.abattoir.line', 'batch_id', 
+                                    domain=[('category_type', '=', 'cuts')], string='Chicken Cuts')
+    
+    residuals_line_ids = fields.One2many('taghini.abattoir.line', 'batch_id', 
+                                         domain=[('category_type', '=', 'residuals')], string='Residuals')
     
     # --- SUMMARY METRICS ---
     total_output_qty = fields.Integer(string='Total Birds Processed', compute='_compute_totals', store=True)
@@ -43,16 +58,16 @@ class AbattoirBatch(models.Model):
     dirty_section_score = fields.Integer(string='Dirty Section Score (%)')
     cold_room_score = fields.Integer(string='Cold Room Score (%)')
 
-    storage_location_id = fields.Many2one(
-        'stock.location', 
-        string='Target Freezer/Store', 
-        domain="[('usage', '=', 'internal'), ('company_id', '=', company_id)]",
-        required=True,
-        default=lambda self: self.env['stock.location'].search([
-            ('company_id', '=', self.env.company.id), 
-            ('usage', '=', 'internal')
-        ], limit=1)
-    )
+    # storage_location_id = fields.Many2one(
+    #     'stock.location', 
+    #     string='Target Freezer/Store', 
+    #     domain="[('usage', '=', 'internal'), ('company_id', '=', company_id)]",
+    #     required=True,
+    #     default=lambda self: self.env['stock.location'].search([
+    #         ('company_id', '=', self.env.company.id), 
+    #         ('usage', '=', 'internal')
+    #     ], limit=1)
+    # )
 
     state = fields.Selection([
         ('draft', 'Draft'),
@@ -218,11 +233,11 @@ class AbattoirBatch(models.Model):
             raise UserError(_("You cannot post an empty batch. Please add production lines."))
         
         # 1. Define Locations
-        source_location = self.harvest_id.pen_id.abattoir_location_id.id
+        source_location = self.harvest_id.flock_id.standard_id.abattoir_location_id
         if not source_location:
             raise UserError(_("The Source Pen does not have an Abattoir Location defined."))
 
-        dest_location = self.storage_location_id.id
+        dest_location = self.harvest_id.flock_id.standard_id.storage_location_id
         
         # Search for Virtual Production Location
         production_loc_record = self.env['stock.location'].search([
@@ -233,62 +248,98 @@ class AbattoirBatch(models.Model):
         if not production_loc_record:
             raise UserError(_("Could not find a Virtual Production location. Please contact your administrator."))
             
-        production_location = production_loc_record.id
+        production_location = production_loc_record
         stock_move_obj = self.env['stock.move']
+        
+        def create_and_force_move(product, qty, uom, loc_from, loc_to, company_id, origin):
+            """ Helper to handle the creation and forcing of a move """
+            move = stock_move_obj.sudo().create({
+                'product_id': product.id,
+                'product_uom_qty': qty,
+                'product_uom': uom.id,
+                'location_id': loc_from.id,
+                'location_dest_id': loc_to.id,
+                'date': fields.Datetime.now(),
+                'company_id': company_id.id,
+                'origin': origin,
+                'state': 'draft',
+            })
+            move._action_confirm()
+            move._action_assign()
+            
+            for line in move.move_line_ids:
+                line.quantity = line.quantity_product_uom
+            
+            if not move.move_line_ids:
+                self.env['stock.move.line'].sudo().create({
+                    'move_id': move.id,
+                    'product_id': move.product_id.id,
+                    'product_uom_id': move.product_uom.id,
+                    'location_id': move.location_id.id,
+                    'location_dest_id': move.location_dest_id.id,
+                    'quantity': qty,
+                })
+            
+            move.picked = True
+            move._action_done()
+            return move
+
+        # Identify Transit Location if needed
+        transit_loc = self.env.ref('stock.location_inter_company', raise_if_not_found=False)
+        if not transit_loc:
+            transit_loc = self.env['stock.location'].sudo().search([
+                ('usage', '=', 'transit'),
+                ('company_id', '=', False)
+            ], limit=1)
+        # ==========================================================
+        # END OF CHANGED BLOCK
+        # ==========================================================
         
         # ---------------------------------------------------
         # 1. CONSUME LIVE BIRDS (Input)
         # ---------------------------------------------------
-        consume_move = stock_move_obj.create({
-            'product_id': self.harvest_id.flock_id.product_id.id, 
-            'product_uom_qty': self.input_birds, 
-            'product_uom': self.harvest_id.flock_id.product_id.uom_id.id,
-            'location_id': source_location,       # From Abattoir Loc
-            'location_dest_id': production_location, # To Virtual Production
-            'date': fields.Datetime.now(),
-            'company_id': self.company_id.id,
-            'origin': self.name,
-            'state': 'draft',
-        })
-        
-        consume_move._action_confirm()
-        consume_move._action_assign()
-        
-        # --- FORCE DONE LOGIC (Consume) ---
-        # 1. Set Done Quantity on existing lines
-        for line in consume_move.move_line_ids:
-            line.quantity = line.quantity_product_uom
+        # ==========================================================
+        # START OF CHANGED BLOCK: INTER-COMPANY CONSUMPTION
+        # ==========================================================
+        src_company = source_location.company_id or self.company_id
+        prod_company = self.company_id # Production happens in current company
 
-        # 2. Force creation if stock is missing (Negative Inventory)
-        if not consume_move.move_line_ids:
-            self.env['stock.move.line'].create({
-                'move_id': consume_move.id,
-                'product_id': consume_move.product_id.id,
-                'product_uom_id': consume_move.product_uom.id,
-                'location_id': consume_move.location_id.id,
-                'location_dest_id': consume_move.location_dest_id.id,
-                'quantity': self.input_birds,
-            })
-        
-        consume_move.picked = True
-        consume_move._action_done()
+        product = self.harvest_id.flock_id.product_id
+        uom = self.harvest_id.flock_id.product_id.uom_id
+        qty = self.input_birds
+
+        if src_company.id == prod_company.id:
+            # Same Company
+            create_and_force_move(product, qty, uom, source_location, production_location, prod_company, self.name)
+        else:
+            # Inter-Company
+            if not transit_loc: raise UserError(_("No Inter-Company Transit Location found."))
+            # Step 1: Source -> Transit
+            create_and_force_move(product, qty, uom, source_location, transit_loc, src_company, f"{self.name} (Consume Out)")
+            # Step 2: Transit -> Production
+            create_and_force_move(product, qty, uom, transit_loc, production_location, prod_company, f"{self.name} (Consume In)")
+        # ==========================================================
+        # END OF CHANGED BLOCK
+        # ==========================================================
 
         # ---------------------------------------------------
         # 2. PRODUCE MEAT PRODUCTS (Output)
         # ---------------------------------------------------
+        dest_company = dest_location.company_id or self.company_id
+
         for line in self.line_ids:
             qty_to_produce = 0.0
             
             # --- WEIGHT DETECTION ---
-            uom = line.product_id.uom_id
+            uom_line = line.product_id.uom_id
             is_weight = False
             
-            if hasattr(uom, 'category_id') and uom.category_id:
-                if uom.category_id.name.lower() in ['weight', 'poids', 'mass', 'gewicht']:
+            if hasattr(uom_line, 'category_id') and uom_line.category_id:
+                if uom_line.category_id.name.lower() in ['weight', 'poids', 'mass', 'gewicht']:
                     is_weight = True
             
-            if not is_weight and uom.name:
-                if any(w in uom.name.lower() for w in ['kg', 'gram', 'lb', 'oz']):
+            if not is_weight and uom_line.name:
+                if any(w in uom_line.name.lower() for w in ['kg', 'gram', 'lb', 'oz']):
                     is_weight = True
 
             if is_weight:
@@ -296,39 +347,19 @@ class AbattoirBatch(models.Model):
             else:
                 qty_to_produce = line.quantity
 
-            produce_move = stock_move_obj.create({
-                'product_id': line.product_id.id,
-                'product_uom_qty': qty_to_produce,
-                'product_uom': line.product_id.uom_id.id,
-                'location_id': production_location,   # From Virtual Production
-                'location_dest_id': dest_location,    # To Freezer
-                'date': fields.Datetime.now(),
-                'company_id': self.company_id.id,
-                'origin': self.name,
-                'state': 'draft',
-            })
-            
-            produce_move._action_confirm()
-            produce_move._action_assign()
-            
-            # --- FORCE DONE LOGIC (Produce) ---
-            # 1. Set Done Quantity on existing lines
-            for move_line in produce_move.move_line_ids:
-                move_line.quantity = move_line.quantity_product_uom
-            
-            # 2. Force creation if stock is missing
-            if not produce_move.move_line_ids:
-                self.env['stock.move.line'].create({
-                    'move_id': produce_move.id,
-                    'product_id': produce_move.product_id.id,
-                    'product_uom_id': produce_move.product_uom.id,
-                    'location_id': produce_move.location_id.id,
-                    'location_dest_id': produce_move.location_dest_id.id,
-                    'quantity': qty_to_produce,
-                })
-
-            produce_move.picked = True
-            produce_move._action_done()
+            # ==========================================================
+            # START OF CHANGED BLOCK: INTER-COMPANY PRODUCTION
+            # ==========================================================
+            if prod_company.id == dest_company.id:
+                # Same Company
+                create_and_force_move(line.product_id, qty_to_produce, uom_line, production_location, dest_location, prod_company, self.name)
+            else:
+                # Inter-Company
+                if not transit_loc: raise UserError(_("No Inter-Company Transit Location found."))
+                # Step 1: Production -> Transit
+                create_and_force_move(line.product_id, qty_to_produce, uom_line, production_location, transit_loc, prod_company, f"{self.name} (Prod Out)")
+                # Step 2: Transit -> Destination
+                create_and_force_move(line.product_id, qty_to_produce, uom_line, transit_loc, dest_location, dest_company, f"{self.name} (Prod In)")
 
         # Lock the Batch
         self.state = 'done'
@@ -338,7 +369,7 @@ class AbattoirBatch(models.Model):
             'tag': 'display_notification',
             'params': {
                 'title': _('Stock Updated'),
-                'message': f'Inventory moved to {self.storage_location_id.name}. Live birds consumed.',
+                'message': f'Inventory moved to {self.harvest_id.flock_id.standard_id.storage_location_id.name}. Live birds consumed.',
                 'type': 'success',
                 'sticky': False,
             }

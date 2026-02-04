@@ -51,7 +51,18 @@ class FarmDailyLog(models.Model):
 
     # --- 4. OTHER & HARVEST ---
     water_consumed = fields.Float(string='Water (L)')
-    medication_name = fields.Char(string='Medication')
+    medication_product_id = fields.Many2one(
+        'product.product', 
+        string='Medication', 
+    )
+    medication_qty = fields.Float(string='Dose Quantity')
+    medication_uom_id = fields.Many2one(
+        'uom.uom', 
+        string="Unit", 
+        related='medication_product_id.uom_id', 
+        readonly=True
+    )
+    medication_move_id = fields.Many2one('stock.move', string='Medication Usage', readonly=True)
     vaccine_name = fields.Char(string='Vaccine')
     remarks = fields.Text(string='Remarks')
     harvested_qty = fields.Integer(string='Harvested Qty')
@@ -75,8 +86,15 @@ class FarmDailyLog(models.Model):
                 ('age_min', '<=', current_age),
                 ('age_max', '>=', current_age)
             ], limit=1)
-            if rule and not self.feed_product_id:
-                self.feed_product_id = rule.product_id
+            if rule:
+                # 1. Auto-fill Feed
+                if not self.feed_product_id:
+                    self.feed_product_id = rule.product_id
+                
+                # 2. Auto-fill Medication (New)
+                # We update this every time the date changes to match the protocol
+                self.medication_product_id = rule.medication_id
+                self.medication_qty = rule.medication_qty
 
     @api.depends('feed_consumed_bags')
     def _compute_feed_g(self):
@@ -182,18 +200,19 @@ class FarmDailyLog(models.Model):
                 })
                 scrap.action_validate()
                 record.scrap_id = scrap.id
+            
+            warehouse = self.env['stock.warehouse'].search([('company_id', '=', self.env.company.id)], limit=1)
+            production_location = self.env['stock.location'].search([
+                ('usage', '=', 'production'),
+                ('company_id', '=', self.env.company.id)
+            ], limit=1)
+            
+            if not warehouse or not production_location:
+                raise UserError(_("Could not find a Warehouse or Virtual Production Location for this company."))
+            # --- CORRECTION ENDS HERE ---
 
             # 2. Feed Logic
             if record.feed_consumed_g > 0 and record.feed_product_id and not record.move_id:
-                
-
-
-                warehouse = self.env['stock.warehouse'].search([('company_id', '=', self.env.company.id)], limit=1)
-                production_location = self.env['stock.location'].search([
-                    ('usage', '=', 'production'),
-                    ('company_id', '=', self.env.company.id)
-                ], limit=1)
-
 
                 move = self.env['stock.move'].create({
                     'product_id': record.feed_product_id.id,
@@ -226,7 +245,36 @@ class FarmDailyLog(models.Model):
                 move.picked = True
                 move._action_done()
                 record.move_id = move.id
-            
+            if record.medication_qty > 0 and record.medication_product_id and not record.medication_move_id:
+                med_move = self.env['stock.move'].create({
+                    'product_id': record.medication_product_id.id,
+                    'product_uom_qty': record.medication_qty,
+                    # We use the UoM from the medication field we added
+                    'product_uom': record.medication_uom_id.id or record.medication_product_id.uom_id.id,
+                    'location_id': warehouse.lot_stock_id.id, # Consumes from Main Stock
+                    'location_dest_id': production_location.id,
+                    'origin': f"Meds {record.flock_id.name} - Day {record.age_day}",
+                    'state': 'draft',
+                })
+                med_move._action_confirm()
+                med_move._action_assign()
+                
+                for line in med_move.move_line_ids:
+                    line.quantity = line.quantity_product_uom
+                
+                if not med_move.move_line_ids:
+                    self.env['stock.move.line'].create({
+                        'move_id': med_move.id,
+                        'product_id': med_move.product_id.id,
+                        'product_uom_id': med_move.product_uom.id,
+                        'location_id': med_move.location_id.id,
+                        'location_dest_id': med_move.location_dest_id.id,
+                        'quantity': record.medication_qty,
+                    })
+                
+                med_move.picked = True
+                med_move._action_done()
+                record.medication_move_id = med_move.id
             # Lock the record
             record.state = 'done'
     def unlink(self):

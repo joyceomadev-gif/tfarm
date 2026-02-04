@@ -1,5 +1,6 @@
 from odoo import models, fields, api, _
 from datetime import date
+from odoo.exceptions import UserError
 
 class FarmFlock(models.Model):
     _name = 'taghini.flock'

@@ -27,12 +27,14 @@
                         <group>
                             <field name="date"/>
                             <field name="harvest_id" options="{'no_create': True}" readonly="state != 'draft'"/>
+                            <field name="pen_id" options="{'no_create': True}" readonly="True"/>
+                            <field name="batch_id" options="{'no_create': True}" readonly="True"/>
                             <field name="manager_id" widget="many2one_avatar_user"/>
                         </group> 
                         <group>
                             <field name="input_birds" options="{'no_create': True}" readonly="True"/>
                             <field name="input_weight_kg" options="{'no_create': True}" readonly="True"/>
-                            <field name="storage_location_id" readonly="state == 'done'"/>
+                            
                         </group>
                     </group>
 
@@ -109,15 +111,55 @@
                                 </group>
                             </group>
 
-                            <field name="line_ids" readonly="state == 'done'">
-                                <list editable="bottom">
-                                    <field name="product_id"/>
-                                    <field name="no_bags" sum="Total Bags"/>
-                                    <field name="quantity" sum="Total Pcs"/>
-                                    <field name="weight_kg" sum="Total Kg"/>
-                                    <field name="avg_weight"/>
-                                </list>
-                            </field>
+                            <notebook>
+                                <page string="Chicken Series">
+                                    <field name="series_line_ids" readonly="state == 'done'">
+                                        <list editable="bottom">
+                                            <field name="product_id" domain="[('abattoir_type', '=', 'series')]"/>
+                                            <field name="no_bags" sum="Total Bags"/>
+                                            <field name="quantity" sum="Total Pcs"/>
+                                            <field name="weight_kg" sum="Total Kg"/>
+                                            <field name="avg_weight"/>
+                                        </list>
+                                    </field>
+                                </page>
+
+                                <page string="Chicken Parts">
+                                    <field name="parts_line_ids" readonly="state == 'done'">
+                                        <list editable="bottom">
+                                            <field name="product_id" domain="[('abattoir_type', '=', 'parts')]"/>
+                                            <field name="no_bags" sum="Total Bags"/>
+                                            <field name="quantity" sum="Total Pcs"/>
+                                            <field name="weight_kg" sum="Total Kg"/>
+                                            <field name="avg_weight"/>
+                                        </list>
+                                    </field>
+                                </page>
+
+                                <page string="Chicken Cuts">
+                                    <field name="cuts_line_ids" readonly="state == 'done'">
+                                        <list editable="bottom">
+                                            <field name="product_id" domain="[('abattoir_type', '=', 'cuts')]"/>
+                                            <field name="no_bags" sum="Total Bags"/>
+                                            <field name="quantity" sum="Total Pcs"/>
+                                            <field name="weight_kg" sum="Total Kg"/>
+                                            <field name="avg_weight"/>
+                                        </list>
+                                    </field>
+                                </page>
+
+                                <page string="Residuals / Waste">
+                                    <field name="residuals_line_ids" readonly="state == 'done'">
+                                        <list editable="bottom">
+                                            <field name="product_id" domain="[('abattoir_type', '=', 'residuals')]"/>
+                                            <field name="no_bags" sum="Total Bags"/>
+                                            <field name="quantity" sum="Total Pcs"/>
+                                            <field name="weight_kg" sum="Total Kg"/>
+                                            <field name="avg_weight"/>
+                                        </list>
+                                    </field>
+                                </page>
+                            </notebook>
                             
                             <group string="Time &amp; QC Scores" readonly="state == 'done'">
                                 <group>

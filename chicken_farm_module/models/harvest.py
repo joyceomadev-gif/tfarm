@@ -105,44 +105,110 @@ class FarmHarvest(models.Model):
         if not self.flock_id.product_id:
             raise UserError(_("The Flock does not have a Product defined."))
 
-        # 1. CREATE STOCK MOVE
-        move_vals = {
-            'product_id': self.flock_id.product_id.id,
-            'product_uom_qty': self.birds_received,
-            'product_uom': self.flock_id.product_id.uom_id.id,
-            'location_id': self.pen_id.location_id.id,
-            'location_dest_id': self.pen_id.abattoir_location_id.id,
-            'date': self.date,
-            'company_id': self.company_id.id,
-            'origin': self.name,
-            'state': 'draft',
-        }
+        # 1. Identify Locations & Companies
+        source_loc = self.pen_id.location_id
+        # Note: Using the field from your specific snippet
+        dest_loc = self.flock_id.standard_id.abattoir_location_id 
         
-        move = self.env['stock.move'].create(move_vals)
-        move._action_confirm()
-        move._action_assign()
-        
-        # --- FORCE DONE LOGIC ---
-        # 1. Set Done Quantity on existing lines
-        for line in move.move_line_ids:
-            line.quantity = line.quantity_product_uom
+        if not dest_loc:
+             raise UserError(_("Destination Abattoir Location is missing."))
 
-        # 2. Force creation if stock is missing (Negative Inventory)
-        if not move.move_line_ids:
-            self.env['stock.move.line'].create({
-                'move_id': move.id,
-                'product_id': move.product_id.id,
-                'product_uom_id': move.product_uom.id,
-                'location_id': move.location_id.id,
-                'location_dest_id': move.location_dest_id.id,
-                'quantity': self.birds_received,
-            })
+        # Determine the company owning the location. 
+        # Fallback to the record's company if the location is generic (company_id=False)
+        src_company = source_loc.company_id or self.company_id
+        dest_company = dest_loc.company_id or self.company_id
+
+        # We need a list to hold moves to process
+        moves_to_process = []
+
+        if src_company.id == dest_company.id:
+            # --- SAME COMPANY (ORIGINAL LOGIC) ---
+            move_vals = {
+                'product_id': self.flock_id.product_id.id,
+                'product_uom_qty': self.birds_received,
+                'product_uom': self.flock_id.product_id.uom_id.id,
+                'location_id': source_loc.id,
+                'location_dest_id': dest_loc.id,
+                'date': self.date,
+                'company_id': src_company.id,  # Use Source Company
+                'origin': self.name,
+                'state': 'draft',
+            }
+            # Create as sudo to ensure permissions
+            moves_to_process.append(self.env['stock.move'].sudo().create(move_vals))
+
+        else:
+            # --- DIFFERENT COMPANIES (INTER-COMPANY TRANSIT) ---
+            # 1. Find a Transit Location (Shared)
+            # Try to find the standard Inter-company transit location
+            transit_loc = self.env.ref('stock.location_inter_company', raise_if_not_found=False)
+            if not transit_loc:
+                # Fallback: Find any transit location shared (no company_id)
+                transit_loc = self.env['stock.location'].sudo().search([
+                    ('usage', '=', 'transit'),
+                    ('company_id', '=', False)
+                ], limit=1)
+            
+            if not transit_loc:
+                raise UserError(_("No Inter-Company Transit Location found. Please configure one."))
+
+            # 2. Create Move 1: Source -> Transit (Owned by Source Company)
+            move_out_vals = {
+                'product_id': self.flock_id.product_id.id,
+                'product_uom_qty': self.birds_received,
+                'product_uom': self.flock_id.product_id.uom_id.id,
+                'location_id': source_loc.id,
+                'location_dest_id': transit_loc.id,
+                'date': self.date,
+                'company_id': src_company.id, # Critical: Belongs to Source Co
+                'origin': f"{self.name} (Out)",
+                'state': 'draft',
+            }
+            moves_to_process.append(self.env['stock.move'].sudo().create(move_out_vals))
+
+            # 3. Create Move 2: Transit -> Dest (Owned by Dest Company)
+            move_in_vals = {
+                'product_id': self.flock_id.product_id.id,
+                'product_uom_qty': self.birds_received,
+                'product_uom': self.flock_id.product_id.uom_id.id,
+                'location_id': transit_loc.id,
+                'location_dest_id': dest_loc.id,
+                'date': self.date,
+                'company_id': dest_company.id, # Critical: Belongs to Dest Co
+                'origin': f"{self.name} (In)",
+                'state': 'draft',
+            }
+            moves_to_process.append(self.env['stock.move'].sudo().create(move_in_vals))
+
+        # --- PROCESS ALL MOVES (FORCE DONE LOGIC) ---
+        # This block now handles both single moves and double moves
+        final_move = False
         
-        # 3. Mark as Picked and Finalize
-        move.picked = True
-        move._action_done()
-        
-        self.move_id = move.id
+        for move in moves_to_process:
+            move._action_confirm()
+            move._action_assign()
+            
+            # 1. Set Done Quantity on existing lines
+            for line in move.move_line_ids:
+                line.quantity = line.quantity_product_uom
+
+            # 2. Force creation if stock is missing (Negative Inventory)
+            if not move.move_line_ids:
+                self.env['stock.move.line'].sudo().create({
+                    'move_id': move.id,
+                    'product_id': move.product_id.id,
+                    'product_uom_id': move.product_uom.id,
+                    'location_id': move.location_id.id,
+                    'location_dest_id': move.location_dest_id.id,
+                    'quantity': self.birds_received,
+                })
+            
+            # 3. Mark as Picked and Finalize
+            move.picked = True
+            move._action_done()
+            final_move = move # Keep the last move as reference
+
+        self.move_id = final_move.id
 
         # 2. UPDATE OR CREATE DAILY LOG (Keep existing logic)
         # Search for an existing log for this Flock + Date

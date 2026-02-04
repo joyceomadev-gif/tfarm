@@ -109,7 +109,10 @@
                                 <list create="0">
                                     <field name="date" readonly="1"/>
                                     <field name="age_day"/>
-                                    <field name="medication_name"/>
+                                    <field name="medication_product_id"/>
+                                    <field name="medication_qty"/>
+                                    <field name="medication_uom_id" optional="show"/>
+                                    
                                     <field name="vaccine_name"/>
                                     <field name="remarks"/>
                                 </list>

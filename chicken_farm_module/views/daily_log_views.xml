@@ -74,23 +74,26 @@
 
                         <page string="Vet &amp; Health">
                             <group>
-                                <field name="medication_name"/>
-                                <field name="vaccine_name"/>
+                                <group string="Medication (Auto-Recommended)">
+                                    <field name="medication_product_id"/>
+                                    <label for="medication_qty" string="Dose Quantity"/>
+                                    <div class="o_row">
+                                        <field name="medication_qty"/>
+                                        <field name="medication_uom_id"/>
+                                    </div>
+                                </group>
+                                <group string="Other">
+                                    <field name="vaccine_name"/>
+                                </group>
                             </group>
                             <separator string="Remarks"/>
                             <field name="remarks" placeholder="Enter notes about bird behavior, weather, or health issues..."/>
                         </page>
 
-                        <page string="Harvesting">
-                            <group>
-                                <field name="harvested_qty"/>
-                                <field name="harvested_weight"/>
-                            </group>
-                        </page>
-
                         <page string="System Info" groups="base.group_no_one">
                             <group>
                                 <field name="move_id" readonly="1"/>
+                                <field name="medication_move_id" readonly="1"/>
                                 <field name="scrap_id" readonly="1"/>
                             </group>
                         </page>
@@ -107,7 +110,7 @@
         <field name="name">taghini.log.tree.mortality</field>
         <field name="model">taghini.daily.log</field>
         <field name="arch" type="xml">
-            <list string="Mortality &amp; Feed" editable="bottom" decoration-muted="state == 'done'">
+            <list string="Mortality &amp; Feed" create="0" editable="bottom" decoration-muted="state == 'done'">
                 <field name="flock_id" readonly="1" optional="show"/>
                 <field name="date" readonly="state == 'done'"/>
                 <field name="birds_count" string="Birds Start"/> 
@@ -124,7 +127,7 @@
         <field name="name">taghini.log.tree.feed</field>
         <field name="model">taghini.daily.log</field>
         <field name="arch" type="xml">
-            <list string="Mortality &amp; Feed" editable="bottom" decoration-muted="state == 'done'">
+            <list string="Mortality &amp; Feed"  create="0" editable="bottom" decoration-muted="state == 'done'">
                 <field name="flock_id" readonly="1" optional="show"/>
                 <field name="date" readonly="state == 'done'"/>
                 <field name="flock_id" readonly="1" optional="show"/>
@@ -155,7 +158,7 @@
         <field name="name">taghini.log.tree.weight</field>
         <field name="model">taghini.daily.log</field>
         <field name="arch" type="xml">
-            <list string="Weight &amp; Light" editable="bottom">
+            <list string="Weight &amp; Light" create="0" editable="bottom">
                 <field name="flock_id" readonly="1" optional="show"/>
                 <field name="date" readonly="1"/>
                 <field name="birds_count"/>
@@ -178,13 +181,16 @@
         <field name="name">taghini.log.tree.meds</field>
         <field name="model">taghini.daily.log</field>
         <field name="arch" type="xml">
-            <list string="Medications" editable="bottom">
+            <list string="Medications" create="0" editable="bottom">
                 <field name="flock_id" readonly="1" optional="show"/>
                 <field name="date" readonly="1"/>
                 
                 <field name="birds_count"/>
                 <field name="age_day" string="Birds Age"/>  
-                <field name="medication_name"/>
+                <field name="medication_product_id"/>
+                <field name="medication_qty"/>
+                <field name="medication_uom_id" optional="show"/>
+                
                 <field name="vaccine_name"/>
                 <field name="remarks"/>
             </list>
@@ -195,7 +201,7 @@
         <field name="name">taghini.log.tree.harvest</field>
         <field name="model">taghini.daily.log</field>
         <field name="arch" type="xml">
-            <list string="Harvest" editable="bottom">
+            <list string="Harvest" create="0" editable="bottom">
                 <field name="date" readonly="1"/>
                 <field name="flock_id" readonly="1" optional="show"/>
                 <field name="birds_count"/> 
