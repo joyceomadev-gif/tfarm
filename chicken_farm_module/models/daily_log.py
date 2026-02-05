@@ -62,6 +62,7 @@ class FarmDailyLog(models.Model):
         related='medication_product_id.uom_id', 
         readonly=True
     )
+    
     medication_move_id = fields.Many2one('stock.move', string='Medication Usage', readonly=True)
     vaccine_name = fields.Char(string='Vaccine')
     remarks = fields.Text(string='Remarks')
