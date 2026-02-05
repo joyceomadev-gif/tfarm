@@ -62,6 +62,7 @@
         </field>
     </record>
 
+
     <record id="action_taghini_harvest" model="ir.actions.act_window">
         <field name="name">Abattoir / Harvest</field>
         <field name="res_model">taghini.harvest</field>

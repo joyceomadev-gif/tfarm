@@ -230,6 +230,7 @@
     <record id="action_taghini_log_bio" model="ir.actions.act_window">
         <field name="name">Biometrics (Weight)</field>
         <field name="res_model">taghini.daily.log</field>
+        
         <field name="view_mode">list,form</field>
         <field name="view_id" ref="view_log_tree_weight"/>
         <field name="context">{'search_default_group_location': 1, 'search_default_group_batch': 1}</field>

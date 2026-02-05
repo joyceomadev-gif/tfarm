@@ -17,6 +17,7 @@
                         <page string="Rules by Age">
                             <field name="line_ids">
                                 <list editable="bottom">
+                                
                                     <field name="age_min"/>
                                     <field name="age_max"/>
                                     <field name="product_id"/>

@@ -135,6 +135,7 @@
                                         </list>
                                     </field>
                                 </page>
+                                
 
                                 <page string="Chicken Cuts">
                                     <field name="cuts_line_ids" readonly="state == 'done'">

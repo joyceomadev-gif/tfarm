@@ -34,5 +34,6 @@
         <field name="view_mode">list,form</field>
     </record>
 
+
     <menuitem id="menu_taghini_batch" name="Purchased Batches" parent="menu_taghini_root" action="action_chicken_batch" sequence="1"/>
 </odoo>
