@@ -7,5 +7,6 @@ class ProductTemplate(models.Model):
         ('series', 'Whole Series'),
         ('cuts', 'Chicken Cuts'),
         ('parts', 'Chicken parts'),
-        ('residuals', 'Residuals')
+        ('residuals', 'Residuals'),
+        ('other', 'Other'),
     ], string='Abattoir Category', default='other', help="Classification for Abattoir Reports")
