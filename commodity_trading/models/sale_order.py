@@ -38,21 +38,19 @@ class SaleOrder(models.Model):
     def action_create_commodity_invoice(self):
         self.ensure_one()
         
-        # Ensure there is a contract linked
         if not self.commodity_contract_id:
             raise exceptions.UserError("This Sales Order is not linked to a Commodity Contract.")
             
         contract = self.commodity_contract_id
         
-        # 1. Find all completed deliveries for THIS Sales Order
-        pickings = self.env['stock.picking'].search([
-            ('sale_id', '=', self.id),
-            ('state', '=', 'done'),
-            ('is_invoiced', '=', False)
+        # 1. Find all CONFIRMED but UN-INVOICED fixations for this contract
+        fixations = self.env['price.fixation'].search([
+            ('contract_id', '=', contract.id),
+            ('state', '=', 'confirmed') # Must be confirmed by trader to invoice
         ])
         
-        if not pickings:
-            raise exceptions.UserError("No un-invoiced, completed deliveries found for this Sale Order.")
+        if not fixations:
+            raise exceptions.UserError("No confirmed, un-invoiced price fixations found. Please create and confirm a Price Fixation on the contract first.")
             
         # 2. Prepare the Invoice header
         invoice_vals = {
@@ -60,40 +58,36 @@ class SaleOrder(models.Model):
             'partner_id': self.partner_id.id,
             'commodity_contract_id': contract.id,
             'currency_id': contract.sales_currency_id.id or self.env.company.currency_id.id,
-            'invoice_origin': self.name, # Link back to the SO visually
+            'invoice_origin': self.name, 
             'invoice_line_ids': []
         }
 
-        # 3. Loop through each delivery and create a SEPARATE invoice line
-        for picking in pickings:
-            if picking.payable_weight <= 0:
-                continue
-                
-            # Descriptive line matching your document requirements
-            line_name = f"Delivery: {picking.name} | Gross: {picking.gross_weight} MT | QC Discount: {picking.quality_discount_weight} MT"
+        # 3. Loop through each FIXATION and create a SEPARATE invoice line
+        for fix in fixations:
             
-            # Find the SO line to link it properly in Odoo's backend
+            # Create a clean description based on the Fixation type (e.g. "Provisional Fixation")
+            fix_type_label = dict(fix._fields['fixation_type'].selection).get(fix.fixation_type)
+            line_name = f"{contract.product_id.name} - {fix_type_label} Fixation ({fix.fixed_qty} MT)"
+            
             so_line = self.order_line.filtered(lambda l: l.product_id == contract.product_id)
             
             line_vals = (0, 0, {
                 'name': line_name,
                 'product_id': contract.product_id.id,
-                'quantity': picking.payable_weight, 
-                'price_unit': contract.estimated_contract_price, # Base price, user edits this based on fixation
+                'quantity': fix.fixed_qty,              # QTY comes from the Fixation
+                'price_unit': fix.final_fixed_price,    # PRICE comes from the Fixation
                 'product_uom_id': contract.product_id.uom_id.id,
                 'sale_line_ids': [(6, 0, so_line.ids)] if so_line else []
             })
             invoice_vals['invoice_line_ids'].append(line_vals)
-            
-        if not invoice_vals['invoice_line_ids']:
-            raise exceptions.UserError("Deliveries found, but total Payable Weight is 0.")
 
-        # 4. Create the actual Invoice
+        # 4. Create the Invoice
         invoice = self.env['account.move'].create(invoice_vals)
         
-        # 5. Mark these deliveries as invoiced
-        for picking in pickings:
-            picking.commodity_invoice_id = invoice.id
+        # 5. Mark these fixations as INVOICED and link them
+        for fix in fixations:
+            fix.state = 'invoiced'
+            fix.invoice_id = invoice.id
             
         # 6. Open the newly created invoice on the screen
         return {

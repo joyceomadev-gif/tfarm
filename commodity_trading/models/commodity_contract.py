@@ -29,6 +29,27 @@ class CommodityContract(models.Model):
     # Link to Price Fixations
     fixation_ids = fields.One2many('price.fixation', 'contract_id', string='Price Fixations')
 
+    total_payable_delivered = fields.Float(string='Total Delivered (Payable MT)', compute='_compute_contract_ledger', store=True)
+    total_fixed_qty = fields.Float(string='Total Fixed Qty (MT)', compute='_compute_contract_ledger', store=True)
+    unpriced_qty = fields.Float(string='Unpriced Delivered Qty (MT)', compute='_compute_contract_ledger', store=True)
+
+    @api.depends('fixation_ids.fixed_qty', 'fixation_ids.state',)
+    def _compute_contract_ledger(self):
+        for contract in self:
+            # 1. Get total payable weight from all linked, completed deliveries
+            deliveries = self.env['stock.picking'].search([
+                ('commodity_contract_id', '=', contract.id),
+                ('state', '=', 'done')
+            ])
+            contract.total_payable_delivered = sum(deliveries.mapped('payable_weight'))
+
+            # 2. Get total quantity that has been priced (fixed)
+            confirmed_fixations = contract.fixation_ids.filtered(lambda f: f.state in ['confirmed', 'invoiced'])
+            contract.total_fixed_qty = sum(confirmed_fixations.mapped('fixed_qty'))
+
+            # 3. Calculate Unpriced Quantity (Delivered but not yet fixed)
+            contract.unpriced_qty = contract.total_payable_delivered - contract.total_fixed_qty
+
     @api.depends('market_price', 'differential')
     def _compute_estimated_price(self):
         for record in self:
@@ -105,3 +126,12 @@ class CommodityContract(models.Model):
             'context': {'default_commodity_contract_id': self.id, 'default_partner_id': self.partner_id.id},
             'type': 'ir.actions.act_window',
         }
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            # If the name is still 'New', fetch the next sequence number
+            if vals.get('name', 'New') == 'New':
+                vals['name'] = self.env['ir.sequence'].next_by_code('commodity.contract') or 'New'
+                
+        return super(CommodityContract, self).create(vals_list)

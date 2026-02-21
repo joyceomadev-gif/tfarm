@@ -40,6 +40,8 @@ class PriceFixation(models.Model):
         currency_field='currency_id'
     )
 
+    invoice_id = fields.Many2one('account.move', string='Linked Invoice', readonly=True, copy=False)
+
     @api.depends('fixation_type', 'provisional_percentage', 'market_price_at_fixation', 'differential')
     def _compute_fixed_price(self):
         for record in self:
