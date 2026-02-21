@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_commodity_contract_form" model="ir.ui.view">
+        <field name="name">commodity.contract.form</field>
+        <field name="model">commodity.contract</field>
+        <field name="arch" type="xml">
+            <form string="Commodity Contract">
+                <header>
+                    <button name="action_create_consolidated_invoice" type="object" string="Create Consolidated Invoice" class="oe_highlight" data-hotkey="q"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_sales_orders" type="object" class="oe_stat_button" icon="fa-usd" string="Sales Orders"/>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Contract Details">
+                            <field name="partner_id"/>
+                            <field name="product_id"/>
+                            <field name="contract_qty"/>
+                            <field name="delivered_qty" readonly="1"/>
+                        </group>
+                        <group string="Pricing &amp; Currency">
+                            <field name="contract_currency_id"/>
+                            <field name="sales_currency_id"/>
+                            <field name="procurement_currency_id"/>
+                            <field name="market_price"/>
+                            <field name="differential"/>
+                            <field name="estimated_contract_price"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_commodity_contract_list" model="ir.ui.view">
+        <field name="name">commodity.contract.list</field>
+        <field name="model">commodity.contract</field>
+        <field name="arch" type="xml">
+            <list string="Commodity Contracts">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="product_id"/>
+                <field name="contract_qty"/>
+                <field name="estimated_contract_price"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_commodity_contract" model="ir.actions.act_window">
+        <field name="name">Commodity Contracts</field>
+        <field name="res_model">commodity.contract</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first Commodity Contract!
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_commodity_root" name="Commodity Trading" sequence="10"/>
+    <menuitem id="menu_commodity_contract" name="Contracts" parent="menu_commodity_root" action="action_commodity_contract" sequence="10"/>
+</odoo>

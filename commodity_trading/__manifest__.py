@@ -1,0 +1,17 @@
+{
+    'name': 'Commodity Trading & Risk Management',
+    'version': '1.0',
+    'summary': 'Manage commodity contracts, fixations, and quality discounts',
+    'author': 'Your Company',
+    'category': 'Sales/Sales',
+    'depends': ['base', 'sale_management', 'purchase', 'stock', 'account'],
+    'data': [
+        'security/ir.model.access.csv',
+        'views/commodity_contract_views.xml',
+        'views/price_fixation_views.xml',
+        'views/stock_picking_views.xml',
+        'views/sale_order_views.xml',
+    ],
+    'installable': True,
+    'application': True,
+}

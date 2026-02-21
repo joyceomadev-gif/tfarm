@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_picking_form_inherit_commodity_weighbridge" model="ir.ui.view">
+        <field name="name">stock.picking.form.inherit.commodity.weighbridge</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            
+            <xpath expr="//sheet" position="before">
+                <header>
+                    <button name="action_pass_qc" type="object" string="Pass QC" class="btn-success" invisible="qc_state != 'pending'"/>
+                    <button name="action_fail_qc" type="object" string="Fail QC" class="btn-danger" invisible="qc_state != 'pending'"/>
+                    
+                    <button name="action_approve_qc_discount" type="object" string="Approve Discount &amp; Pass" class="btn-warning" invisible="qc_state != 'fail'" groups="base.group_system"/>
+                    
+                    <field name="qc_state" widget="statusbar" statusbar_visible="pending,pass,fail,approved"/>
+                </header>
+            </xpath>
+
+            <xpath expr="//field[@name='origin']" position="after">
+                <field name="commodity_contract_id" />
+            </xpath>
+
+            <xpath expr="//notebook" position="inside">
+                
+                <page string="Weighbridge" name="weighbridge_discounts">
+                    <group>
+                        <group string="Weighbridge Readings">
+                            <field name="weighbridge_in"/>
+                            <field name="weighbridge_out"/>
+                            <field name="gross_weight" decoration-bf="1"/>
+                        </group>
+                        <group string="Physical Deductions (Inventory)">
+                            <field name="bag_count"/>
+                            <field name="bag_discount"/>
+                            <field name="moisture_discount"/>
+                            <field name="net_weight" decoration-bf="1" decoration-success="net_weight &gt; 0"/>
+                        </group>
+                    </group>
+                </page>
+
+                <page string="Quality Control (QC)" name="quality_control">
+                    <group>
+                        <group string="QC Parameters">
+                            <field name="qc_adm"/>
+                            <field name="qc_crm"/>
+                            <field name="qc_td"/>
+                            <field name="qc_slaty"/>
+                            <field name="qc_bc"/>
+                        </group>
+                        <group string="Financial Deductions (Payable)">
+                            <field name="quality_discount_weight" invisible="qc_state in ('pending', 'pass')" readonly="qc_state == 'approved'"/>
+                            
+                            <field name="payable_weight" decoration-bf="1" decoration-info="1" style="font-size: 16px;"/>
+                        </group>
+                    </group>
+                </page>
+
+            </xpath>
+            
+        </field>
+    </record>
+</odoo>
