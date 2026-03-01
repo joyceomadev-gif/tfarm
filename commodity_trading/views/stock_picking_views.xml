@@ -38,8 +38,8 @@
                         </group>
                     </group>
                 </page>
-
-                <page string="Quality Control (QC)" name="quality_control">
+                <field name="picking_type_code" invisible="1"/>
+                <page string="Quality Control (QC)" name="quality_control" invisible="picking_type_code != 'incoming'">
                     <group>
                         <group string="QC Parameters">
                             <field name="qc_adm"/>

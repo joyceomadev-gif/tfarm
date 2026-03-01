@@ -33,6 +33,11 @@ class CommodityContract(models.Model):
     total_fixed_qty = fields.Float(string='Total Fixed Qty (MT)', compute='_compute_contract_ledger', store=True)
     unpriced_qty = fields.Float(string='Unpriced Delivered Qty (MT)', compute='_compute_contract_ledger', store=True)
 
+    contract_type = fields.Selection([
+        ('sale', 'Customer Contract'),
+        ('purchase', 'Purchase Contract')
+    ], string='Contract Type', required=True, default='sale')
+
     @api.depends('fixation_ids.fixed_qty', 'fixation_ids.state',)
     def _compute_contract_ledger(self):
         for contract in self:

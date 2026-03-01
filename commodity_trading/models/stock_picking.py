@@ -48,7 +48,7 @@ class StockPicking(models.Model):
         store=True,
         readonly=False
     )
-
+    is_discount_invoiced = fields.Boolean(string='Discount Invoiced', copy=False, default=False)    
     @api.depends('sale_id.commodity_contract_id')
     def _compute_contract_from_sale(self):
         for picking in self:
@@ -73,6 +73,14 @@ class StockPicking(models.Model):
             # Payable Weight is the Final Financial Quantity
             picking.payable_weight = picking.net_weight - picking.quality_discount_weight
 
+    @api.depends('sale_id.commodity_contract_id', 'purchase_id.commodity_contract_id')
+    def _compute_contract_from_sale_or_purchase(self):
+        for picking in self:
+            if picking.sale_id and picking.sale_id.commodity_contract_id:
+                picking.commodity_contract_id = picking.sale_id.commodity_contract_id
+            elif picking.purchase_id and picking.purchase_id.commodity_contract_id:
+                picking.commodity_contract_id = picking.purchase_id.commodity_contract_id
+
     def action_approve_qc_discount(self):
         """ This button allows a manager to approve a failed QC with a discount """
         for picking in self:
@@ -88,3 +96,14 @@ class StockPicking(models.Model):
     def action_fail_qc(self):
         for picking in self:
             picking.qc_state = 'fail'
+    
+    def button_validate(self):
+        # Before validating the delivery/receipt, force the inventory lines to match the Net Weight
+        for picking in self:
+            if picking.commodity_contract_id and picking.net_weight > 0:
+                for move in picking.move_ids:
+                    # Update the physical stock move quantity to the Net Weight
+                    if move.product_id == picking.commodity_contract_id.product_id:
+                        move.quantity = picking.net_weight
+                        
+        return super(StockPicking, self).button_validate()
