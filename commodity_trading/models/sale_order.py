@@ -37,22 +37,17 @@ class SaleOrder(models.Model):
 
     def action_create_commodity_invoice(self):
         self.ensure_one()
-        
-        if not self.commodity_contract_id:
-            raise exceptions.UserError("This Sales Order is not linked to a Commodity Contract.")
-            
         contract = self.commodity_contract_id
         
-        # 1. Find all CONFIRMED but UN-INVOICED fixations for this contract
+        # 1. Fetch un-invoiced Confirmed Fixations
         fixations = self.env['price.fixation'].search([
             ('contract_id', '=', contract.id),
-            ('state', '=', 'confirmed') # Must be confirmed by trader to invoice
+            ('state', '=', 'confirmed')
         ])
         
         if not fixations:
-            raise exceptions.UserError("No confirmed, un-invoiced price fixations found. Please create and confirm a Price Fixation on the contract first.")
+            raise exceptions.UserError("No confirmed fixations found to invoice.")
             
-        # 2. Prepare the Invoice header
         invoice_vals = {
             'move_type': 'out_invoice', 
             'partner_id': self.partner_id.id,
@@ -62,34 +57,66 @@ class SaleOrder(models.Model):
             'invoice_line_ids': []
         }
 
-        # 3. Loop through each FIXATION and create a SEPARATE invoice line
+        so_line = self.order_line.filtered(lambda l: l.product_id == contract.product_id)
+
+        # NEW LOGIC: Identify any Provisional Fixations that are linked to Final ones in this batch
+        linked_provisional_ids = fixations.mapped('linked_provisional_id.id')
+
         for fix in fixations:
             
-            # Create a clean description based on the Fixation type (e.g. "Provisional Fixation")
-            fix_type_label = dict(fix._fields['fixation_type'].selection).get(fix.fixation_type)
-            line_name = f"{contract.product_id.name} - {fix_type_label} Fixation ({fix.fixed_qty} MT)"
+            # NEW LOGIC: Skip this loop if it's a Provisional Fixation that is already being handled by a True-Up!
+            if fix.id in linked_provisional_ids:
+                continue
             
-            so_line = self.order_line.filtered(lambda l: l.product_id == contract.product_id)
-            
-            line_vals = (0, 0, {
-                'name': line_name,
-                'product_id': contract.product_id.id,
-                'quantity': fix.fixed_qty,              # QTY comes from the Fixation
-                'price_unit': fix.final_fixed_price,    # PRICE comes from the Fixation
-                'product_uom_id': contract.product_id.uom_id.id,
-                'sale_line_ids': [(6, 0, so_line.ids)] if so_line else []
-            })
-            invoice_vals['invoice_line_ids'].append(line_vals)
+            # ========================================================
+            # SCENARIO A: TRUE-UP INVOICING (Linked to a Provisional)
+            # ========================================================
+            if fix.linked_provisional_id:
+                provisional_price = fix.linked_provisional_id.final_fixed_price
+                price_difference = fix.final_fixed_price - provisional_price
+                
+                # Line 1: The Provisional Base Price
+                invoice_vals['invoice_line_ids'].append((0, 0, {
+                    'name': f"{contract.product_id.name} - Provisional Base ({fix.linked_provisional_id.provisional_percentage}%)",
+                    'product_id': contract.product_id.id,
+                    'quantity': fix.fixed_qty,
+                    'price_unit': provisional_price,
+                    'product_uom_id': contract.product_id.uom_id.id,
+                    'sale_line_ids': [(6, 0, so_line.ids)] if so_line else []
+                }))
+                
+                # Line 2: The Difference / Market Fluctuation
+                invoice_vals['invoice_line_ids'].append((0, 0, {
+                    'name': f"{contract.product_id.name} - Final Market Difference (True-Up)",
+                    'product_id': contract.product_id.id,
+                    'quantity': fix.fixed_qty,
+                    'price_unit': price_difference,
+                    'product_uom_id': contract.product_id.uom_id.id,
+                    'sale_line_ids': [(6, 0, so_line.ids)] if so_line else []
+                }))
 
-        # 4. Create the Invoice
+            # ========================================================
+            # SCENARIO B: STANDARD INVOICING (Not linked)
+            # ========================================================
+            else:
+                fix_type_label = dict(fix._fields['fixation_type'].selection).get(fix.fixation_type)
+                invoice_vals['invoice_line_ids'].append((0, 0, {
+                    'name': f"{contract.product_id.name} - {fix_type_label} Fixation",
+                    'product_id': contract.product_id.id,
+                    'quantity': fix.fixed_qty,
+                    'price_unit': fix.final_fixed_price,
+                    'product_uom_id': contract.product_id.uom_id.id,
+                    'sale_line_ids': [(6, 0, so_line.ids)] if so_line else []
+                }))
+
+        # Create Invoice
         invoice = self.env['account.move'].create(invoice_vals)
         
-        # 5. Mark these fixations as INVOICED and link them
+        # Mark fixations as invoiced
         for fix in fixations:
             fix.state = 'invoiced'
             fix.invoice_id = invoice.id
             
-        # 6. Open the newly created invoice on the screen
         return {
             'type': 'ir.actions.act_window',
             'res_model': 'account.move',

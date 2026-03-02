@@ -42,6 +42,16 @@ class PriceFixation(models.Model):
 
     invoice_id = fields.Many2one('account.move', string='Linked Invoice', readonly=True, copy=False)
 
+    # ==========================================
+    # NEW: Link to a previous provisional fixation
+    # ==========================================
+    linked_provisional_id = fields.Many2one(
+        'price.fixation', 
+        string='Linked Provisional Fixation', 
+        domain="[('contract_id', '=', contract_id), ('fixation_type', '=', 'provisional')]",
+        help="Select the Provisional Fixation this Final/Part Fixation is replacing to calculate the difference."
+    )
+
     @api.depends('fixation_type', 'provisional_percentage', 'market_price_at_fixation', 'differential')
     def _compute_fixed_price(self):
         for record in self:
@@ -60,3 +70,11 @@ class PriceFixation(models.Model):
         for record in self:
             if record.fixed_qty <= 0:
                 raise exceptions.ValidationError("Fixed Quantity must be greater than zero.")
+    
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if vals.get('name', 'New') == 'New':
+                # Reusing the standard Odoo sequence logic, or you can create a custom one later
+                vals['name'] = self.env['ir.sequence'].next_by_code('sale.order') or 'New'
+        return super(PriceFixation, self).create(vals_list)

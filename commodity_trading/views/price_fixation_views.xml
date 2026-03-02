@@ -20,10 +20,11 @@
                         </group>
                         <group>
                             <field name="fixed_qty"/>
-                            <field name="provisional_percentage" invisible="fixation_type != 'provisional'"/>
+                            <field name="provisional_percentage"/>
                             <field name="market_price_at_fixation"/>
                             <field name="differential"/>
                             <field name="final_fixed_price"/>
+                            <field name="linked_provisional_id"/>
                             <field name="currency_id" invisible="1"/>
                         </group>
                     </group>
@@ -45,6 +46,10 @@
                                 <field name="date"/>
                                 <field name="fixation_type"/>
                                 <field name="fixed_qty"/>
+                                
+                                <field name="provisional_percentage" invisible="fixation_type != 'provisional'"/>
+                                <field name="linked_provisional_id" invisible="fixation_type == 'provisional'" optional="show"/>
+                                
                                 <field name="market_price_at_fixation"/>
                                 <field name="final_fixed_price" readonly="1"/>
                                 <field name="state"/>

@@ -7,13 +7,13 @@
         <field name="arch" type="xml">
             
             <xpath expr="//sheet" position="before">
-                <header>
+                <header invisible="picking_type_code != 'incoming'">
                     <button name="action_pass_qc" type="object" string="Pass QC" class="btn-success" invisible="qc_state != 'pending'"/>
                     <button name="action_fail_qc" type="object" string="Fail QC" class="btn-danger" invisible="qc_state != 'pending'"/>
                     
                     <button name="action_approve_qc_discount" type="object" string="Approve Discount &amp; Pass" class="btn-warning" invisible="qc_state != 'fail'" groups="base.group_system"/>
                     
-                    <field name="qc_state" widget="statusbar" statusbar_visible="pending,pass,fail,approved"/>
+                    <field name="qc_state" widget="statusbar" statusbar_visible="pending,pass,fail,approved" invisible="picking_type_code != 'incoming'"/>
                 </header>
             </xpath>
 
@@ -23,7 +23,7 @@
 
             <xpath expr="//notebook" position="inside">
                 
-                <page string="Weighbridge" name="weighbridge_discounts">
+                <page string="Weighbridge" name="weighbridge_discounts" invisible="picking_type_code != 'incoming'">
                     <group>
                         <group string="Weighbridge Readings">
                             <field name="weighbridge_in"/>
