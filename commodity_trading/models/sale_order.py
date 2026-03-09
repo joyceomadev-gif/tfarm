@@ -129,3 +129,25 @@ class SaleOrder(models.Model):
             'view_mode': 'form',
             'target': 'current',
         }
+    def action_print_consolidated_invoice(self):
+        self.ensure_one()
+        
+        if not self.commodity_contract_id:
+            raise exceptions.UserError("This order is not linked to a Commodity Contract.")
+            
+        # 1. Check if there are ANY fixations
+        if not self.commodity_contract_id.fixation_ids:
+            raise exceptions.UserError("There are no price fixations on this contract to print.")
+            
+        # 2. VERIFICATION: Ensure all confirmed fixations have been fully invoiced
+        pending_fixations = self.commodity_contract_id.fixation_ids.filtered(
+            lambda f: f.state in ['draft', 'confirmed']
+        )
+        if pending_fixations:
+            raise exceptions.UserError(
+                "Cannot generate the Consolidated PDF. "
+                "All Price Fixations must be finalized and Invoiced first."
+            )
+            
+        # 3. Trigger the PDF Report download
+        return self.env.ref('commodity_trading.action_report_consolidated_invoice').report_action(self)

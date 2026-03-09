@@ -9,6 +9,7 @@
         'security/security.xml',
         'data/sequence.xml',
         'security/ir.model.access.csv',
+        'report/commodity_invoice_report.xml',
         'views/commodity_contract_views.xml',
         'views/price_fixation_views.xml',
         'views/stock_picking_views.xml',
