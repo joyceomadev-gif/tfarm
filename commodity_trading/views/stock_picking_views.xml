@@ -5,16 +5,13 @@
         <field name="model">stock.picking</field>
         <field name="inherit_id" ref="stock.view_picking_form"/>
         <field name="arch" type="xml">
-            
-            <xpath expr="//sheet" position="before">
-                <header invisible="picking_type_code != 'incoming'">
-                    <button name="action_pass_qc" type="object" string="Pass QC" class="btn-success" invisible="qc_state != 'pending'"/>
-                    <button name="action_fail_qc" type="object" string="Fail QC" class="btn-danger" invisible="qc_state != 'pending'"/>
-                    
-                    <button name="action_approve_qc_discount" type="object" string="Approve Discount &amp; Pass" class="btn-warning" invisible="qc_state != 'fail'" groups="base.group_system"/>
-                    
-                    <field name="qc_state" widget="statusbar" statusbar_visible="pending,pass,fail,approved" invisible="picking_type_code != 'incoming'"/>
-                </header>
+
+            <xpath expr="//header" position="inside">
+                <button name="action_calculate_qc" type="object" string="Evaluate QC Results" class="btn-primary"
+                        invisible="picking_type_code != 'incoming' or qc_status != 'pending'"/>
+                
+                <button name="action_finalize_qc" type="object" string="Finalize QC Penalty" class="btn-warning"
+                        invisible="picking_type_code != 'incoming' or qc_status != 'fail' or is_qc_locked == True"/>
             </xpath>
 
             <xpath expr="//field[@name='origin']" position="after">
@@ -33,25 +30,55 @@
                         <group string="Physical Deductions (Inventory)">
                             <field name="bag_count"/>
                             <field name="bag_discount"/>
-                            <field name="moisture_discount"/>
+                            <field name="moisture_discount" widget="percentage"/>
                             <field name="net_weight" decoration-bf="1" decoration-success="net_weight &gt; 0"/>
                         </group>
                     </group>
                 </page>
                 <field name="picking_type_code" invisible="1"/>
                 <page string="Quality Control (QC)" name="quality_control" invisible="picking_type_code != 'incoming'">
+                    <field name="is_qc_locked" invisible="1"/>
+                    
                     <group>
-                        <group string="QC Parameters">
-                            <field name="qc_adm"/>
-                            <field name="qc_crm"/>
-                            <field name="qc_td"/>
-                            <field name="qc_slaty"/>
-                            <field name="qc_bc"/>
+                        <group>
+                            <field name="qc_status" widget="badge" 
+                                   decoration-success="qc_status == 'pass'" 
+                                   decoration-danger="qc_status == 'fail'" 
+                                   decoration-warning="qc_status == 'pending'"/>
                         </group>
-                        <group string="Financial Deductions (Payable)">
-                            <field name="quality_discount_weight" invisible="qc_state in ('pending', 'pass')" readonly="qc_state == 'approved'"/>
-                            
-                            <field name="payable_weight" decoration-bf="1" decoration-info="1" style="font-size: 16px;"/>
+                        <group>
+                            <field name="quality_discount_weight" widget="percentage"
+                                   invisible="qc_status != 'fail'" 
+                                   readonly="is_qc_locked == True"/>
+                            <field name="payable_weight" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <group string="Laboratory Test Results">
+                        <group string="ADM Group">
+                            <field name="qc_sieve" readonly="is_qc_locked == True"/>
+                            <field name="qc_fm" readonly="is_qc_locked == True"/>
+                            <field name="qc_flat" readonly="is_qc_locked == True"/>
+                            <field name="qc_adm_sum" decoration-danger="qc_adm_sum &gt; 3.5"/>
+                        </group>
+                        
+                        <group string="CRM Group">
+                            <field name="qc_bb" readonly="is_qc_locked == True"/>
+                            <field name="qc_fragment" readonly="is_qc_locked == True"/>
+                            <field name="qc_cluster" readonly="is_qc_locked == True"/>
+                            <field name="qc_crm_sum" decoration-danger="qc_crm_sum &gt; 3.5"/>
+                        </group>
+
+                        <group string="TD Group">
+                            <field name="qc_mould" readonly="is_qc_locked == True"/>
+                            <field name="qc_insect" readonly="is_qc_locked == True"/>
+                            <field name="qc_td_sum" decoration-danger="qc_td_sum &gt; 5.0"/>
+                        </group>
+
+                        <group string="Bean Bloc">
+                            <field name="qc_slaty" readonly="is_qc_locked == True"/>
+                            <field name="qc_moisture" readonly="is_qc_locked == True"/>
+                            <field name="qc_bean_count" readonly="is_qc_locked == True"/>
                         </group>
                     </group>
                 </page>

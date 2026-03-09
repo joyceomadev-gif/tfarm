@@ -59,41 +59,46 @@ class SaleOrder(models.Model):
 
         so_line = self.order_line.filtered(lambda l: l.product_id == contract.product_id)
 
-        # NEW LOGIC: Identify any Provisional Fixations that are linked to Final ones in this batch
+        # Identify any Provisional Fixations that are linked to Final ones in this batch
         linked_provisional_ids = fixations.mapped('linked_provisional_id.id')
 
         for fix in fixations:
             
-            # NEW LOGIC: Skip this loop if it's a Provisional Fixation that is already being handled by a True-Up!
+            # Skip this loop if it's a Provisional Fixation that is already being handled by a True-Up!
             if fix.id in linked_provisional_ids:
                 continue
             
             # ========================================================
-            # SCENARIO A: TRUE-UP INVOICING (Linked to a Provisional)
+            # SCENARIO A: TRUE-UP INVOICING (The Difference Method)
             # ========================================================
             if fix.linked_provisional_id:
-                provisional_price = fix.linked_provisional_id.final_fixed_price
-                price_difference = fix.final_fixed_price - provisional_price
+                # 1. Identify the quantities and prices
+                prov_qty = fix.linked_provisional_id.fixed_qty
+                prov_price = fix.linked_provisional_id.final_fixed_price
                 
-                # Line 1: The Provisional Base Price
+                # 2. Calculate the unpaid difference for the old quantity
+                price_difference = fix.final_fixed_price - prov_price
+                
+                # Line 1: The NEW quantity at the Final Price (e.g., 60 MT @ $5,000)
                 invoice_vals['invoice_line_ids'].append((0, 0, {
-                    'name': f"{contract.product_id.name} - Provisional Base ({fix.linked_provisional_id.provisional_percentage}%)",
+                    'name': f"{contract.product_id.name} - Final Price Fixation",
                     'product_id': contract.product_id.id,
                     'quantity': fix.fixed_qty,
-                    'price_unit': provisional_price,
+                    'price_unit': fix.final_fixed_price,
                     'product_uom_id': contract.product_id.uom_id.id,
                     'sale_line_ids': [(6, 0, so_line.ids)] if so_line else []
                 }))
                 
-                # Line 2: The Difference / Market Fluctuation
-                invoice_vals['invoice_line_ids'].append((0, 0, {
-                    'name': f"{contract.product_id.name} - Final Market Difference (True-Up)",
-                    'product_id': contract.product_id.id,
-                    'quantity': fix.fixed_qty,
-                    'price_unit': price_difference,
-                    'product_uom_id': contract.product_id.uom_id.id,
-                    'sale_line_ids': [(6, 0, so_line.ids)] if so_line else []
-                }))
+                # Line 2: The unpaid DIFFERENCE for the old Provisional quantity (e.g., 40 MT @ $1,500)
+                if price_difference != 0:
+                    invoice_vals['invoice_line_ids'].append((0, 0, {
+                        'name': f"{contract.product_id.name} - Difference not paid for Provisional (Ref: {fix.linked_provisional_id.name})",
+                        'product_id': contract.product_id.id,
+                        'quantity': prov_qty,
+                        'price_unit': price_difference, # This is just the positive difference
+                        'product_uom_id': contract.product_id.uom_id.id,
+                        'sale_line_ids': [(6, 0, so_line.ids)] if so_line else []
+                    }))
 
             # ========================================================
             # SCENARIO B: STANDARD INVOICING (Not linked)
@@ -124,29 +129,3 @@ class SaleOrder(models.Model):
             'view_mode': 'form',
             'target': 'current',
         }
-
-
-class SaleOrderLine(models.Model):
-    _inherit = 'sale.order.line'
-
-    @api.depends('move_ids.state', 'move_ids.picking_id.payable_weight')
-    def _compute_qty_delivered(self):
-        # 1. Let standard Odoo calculate delivered quantities normally first
-        super()._compute_qty_delivered()
-        
-        # 2. Override the delivered quantity ONLY for Commodity Contracts
-        for line in self:
-            if line.order_id.commodity_contract_id and line.product_id == line.order_id.commodity_contract_id.product_id:
-                total_payable = 0.0
-                
-                # FIX: Removed the 'scrapped' check. Just look for 'done' moves.
-                done_moves = line.move_ids.filtered(lambda m: m.state == 'done')
-                
-                # Group by picking to avoid double counting if there are multiple moves in one ticket
-                done_pickings = done_moves.mapped('picking_id')
-                
-                for picking in done_pickings:
-                    total_payable += picking.payable_weight
-                
-                # Overwrite the standard delivered qty with our custom Financial Payable Weight
-                line.qty_delivered = total_payable

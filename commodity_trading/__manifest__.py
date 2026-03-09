@@ -6,6 +6,7 @@
     'category': 'Sales/Sales',
     'depends': ['base', 'sale_management', 'purchase', 'stock', 'account'],
     'data': [
+        'security/security.xml',
         'data/sequence.xml',
         'security/ir.model.access.csv',
         'views/commodity_contract_views.xml',

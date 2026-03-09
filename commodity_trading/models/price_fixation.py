@@ -55,13 +55,12 @@ class PriceFixation(models.Model):
     @api.depends('fixation_type', 'provisional_percentage', 'market_price_at_fixation', 'differential')
     def _compute_fixed_price(self):
         for record in self:
-            # Base logic: Market Price +/- Differential
-            base_price = record.market_price_at_fixation + record.differential
-            
             # If Provisional, it acts as a stop-loss percentage
             if record.fixation_type == 'provisional':
+                base_price = record.market_price_at_fixation
                 record.final_fixed_price = base_price * (record.provisional_percentage / 100.0)
             else:
+                base_price = record.market_price_at_fixation + record.differential
                 # For Part or Final, apply the absolute adjusted market price
                 record.final_fixed_price = base_price
 

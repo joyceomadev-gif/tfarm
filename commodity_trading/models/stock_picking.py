@@ -12,27 +12,12 @@ class StockPicking(models.Model):
 
     bag_count = fields.Integer(string='Number of Bags Used')
     bag_discount = fields.Float(string='Bag Discount (KG)', compute='_compute_weighbridge_weights', store=True)
-    moisture_discount = fields.Float(string='Moisture Discount (KG)')
+    moisture_discount = fields.Float(string='Moisture Discount (%)')
 
     net_weight = fields.Float(string='Net Received Weight (KG)', compute='_compute_weighbridge_weights', store=True)
-
-    # ==========================================
-    # STEP 4 ADDITIONS: QUALITY CONTROL
-    # ==========================================
-    qc_adm = fields.Float(string='ADM (%)')
-    qc_crm = fields.Float(string='CRM (%)')
-    qc_td = fields.Float(string='TD (%)')
-    qc_slaty = fields.Float(string='Slaty (%)')
-    qc_bc = fields.Float(string='Bean Count (BC)')
     
-    qc_state = fields.Selection([
-        ('pending', 'Pending QC'),
-        ('pass', 'Passed'),
-        ('fail', 'Failed'),
-        ('approved', 'Approved with Discount')
-    ], string='QC Status', default='pending', tracking=True)
 
-    quality_discount_weight = fields.Float(string='Quality Discount (KG)', tracking=True, help="This does NOT reduce physical stock, only payable weight.")
+    quality_discount_weight = fields.Float(string='Quality Discount (%)', tracking=True, help="This does NOT reduce physical stock, only payable weight.")
     payable_weight = fields.Float(string='Payable Weight (KG)', compute='_compute_payable_weight', store=True)
 
     # ==========================================
@@ -49,6 +34,77 @@ class StockPicking(models.Model):
         readonly=False
     )
     is_discount_invoiced = fields.Boolean(string='Discount Invoiced', copy=False, default=False)    
+
+# ==========================================
+    # QUALITY CONTROL (QC) PARAMETERS
+    # ==========================================
+    is_qc_locked = fields.Boolean(string='QC Locked', default=False, copy=False)
+
+    # 1. ADM Group
+    qc_sieve = fields.Float(string='Sieve (%)')
+    qc_fm = fields.Float(string='FM (%)')
+    qc_flat = fields.Float(string='FLAT (%)')
+    qc_adm_sum = fields.Float(string='ADM Sum', readonly=True)
+
+    # 2. CRM Group
+    qc_bb = fields.Float(string='BB (%)')
+    qc_fragment = fields.Float(string='Fragment (%)')
+    qc_cluster = fields.Float(string='Cluster (%)')
+    qc_crm_sum = fields.Float(string='CRM Sum', readonly=True)
+
+    # 3. TD Group
+    qc_mould = fields.Float(string='Mould (%)')
+    qc_insect = fields.Float(string='Insect (%)')
+    qc_td_sum = fields.Float(string='TD Sum', readonly=True)
+
+    # 4. Bean Bloc
+    qc_slaty = fields.Float(string='Slaty (%)')
+    qc_moisture = fields.Float(string='Moisture Content (%)')
+    qc_bean_count = fields.Float(string='Bean Count')
+
+    # Status
+    qc_status = fields.Selection([
+        ('pending', 'Pending QC'),
+        ('pass', 'Passed'),
+        ('fail', 'Failed')
+    ], string='QC Result', default='pending', tracking=True)
+
+    # ==========================================
+    # NEW QC BUTTON ACTIONS
+    # ==========================================
+    def action_calculate_qc(self):
+        """ Button 1: Evaluates the inputs and sets Pass/Fail """
+        for picking in self:
+            # Calculate Sums
+            picking.qc_adm_sum = picking.qc_sieve + picking.qc_fm + picking.qc_flat
+            picking.qc_crm_sum = picking.qc_bb + picking.qc_fragment + picking.qc_cluster
+            picking.qc_td_sum = picking.qc_mould + picking.qc_insect
+
+            # Evaluate thresholds
+            adm_pass = (picking.qc_sieve <= 2.0 and picking.qc_fm < 2.0 and picking.qc_flat <= 2.0 and picking.qc_adm_sum <= 3.5)
+            crm_pass = (picking.qc_bb <= 2.0 and picking.qc_fragment <= 2.0 and picking.qc_cluster <= 2.0 and picking.qc_crm_sum <= 3.5)
+            td_pass = (picking.qc_mould <= 5.0 and picking.qc_insect <= 5.0 and picking.qc_td_sum <= 5.0)
+            bean_bloc_pass = (picking.qc_slaty <= 7.0 and picking.qc_moisture < 8.0 and picking.qc_bean_count >= 200.0)
+
+            # Determine Result
+            if adm_pass and crm_pass and td_pass and bean_bloc_pass:
+                picking.qc_status = 'pass'
+                picking.quality_discount_weight = 0.0
+                picking.is_qc_locked = True  # Automatically lock if it passes perfectly
+            else:
+                picking.qc_status = 'fail'
+                # We do NOT lock it yet, so the manager can type the penalty discount
+
+    def action_finalize_qc(self):
+        """ Button 2: Locks the record after a manager inputs the penalty for a Fail """
+        for picking in self:
+            if picking.qc_status == 'fail' and picking.quality_discount_weight <= 0:
+                raise exceptions.UserError("You must enter a Quality Discount penalty before finalizing a Failed QC.")
+            
+            picking.is_qc_locked = True
+
+
+
     @api.depends('sale_id.commodity_contract_id')
     def _compute_contract_from_sale(self):
         for picking in self:
@@ -65,13 +121,13 @@ class StockPicking(models.Model):
         for picking in self:
             picking.gross_weight = picking.weighbridge_in - picking.weighbridge_out
             picking.bag_discount = picking.bag_count * 1.0  # 1 bag = 1kg
-            picking.net_weight = picking.gross_weight - picking.bag_discount - picking.moisture_discount
+            picking.net_weight = picking.gross_weight - picking.bag_discount - (picking.gross_weight*picking.moisture_discount)
 
     @api.depends('net_weight', 'quality_discount_weight')
     def _compute_payable_weight(self):
         for picking in self:
             # Payable Weight is the Final Financial Quantity
-            picking.payable_weight = picking.net_weight - picking.quality_discount_weight
+            picking.payable_weight = picking.net_weight*(1 - picking.quality_discount_weight)
 
     @api.depends('sale_id.commodity_contract_id', 'purchase_id.commodity_contract_id')
     def _compute_contract_from_sale_or_purchase(self):

@@ -3,13 +3,57 @@ from odoo import models, fields, api
 class PurchaseOrder(models.Model):
     _inherit = 'purchase.order'
 
+
+    state = fields.Selection(selection_add=[
+        ('approved', 'Approved'),
+        ('purchase',)
+    ], ondelete={'approved': 'set default'})
     # Link only to Purchase Contracts
     commodity_contract_id = fields.Many2one(
         'commodity.contract', 
         string='Commodity Contract', 
-        domain="[('contract_type', '=', 'purchase')]",
         copy=False
     )
+    
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        orders = super(PurchaseOrder, self).create(vals_list)
+        
+        # When a PO is created, automatically notify everyone in the Approver group
+        approver_group = self.env.ref('commodity_trading.group_commodity_po_approver', raise_if_not_found=False)
+        
+        # FIXED FOR ODOO 19: Changed .users to .user_ids
+        if approver_group and approver_group.user_ids:
+            for order in orders:
+                for user in approver_group.user_ids:
+                    # This schedules a native Odoo "To-Do" Activity in their top-right notification bell!
+                    order.activity_schedule(
+                        'mail.mail_activity_data_todo',
+                        summary='Approve New Purchase Request',
+                        note=f'A new Purchase Request ({order.name}) has been created and requires your approval.',
+                        user_id=user.id
+                    )
+        return orders
+
+    def action_approve_po(self):
+        """ Custom button action to approve the PO """
+        for order in self:
+            order.state = 'approved'
+            # Optional: Mark the scheduled To-Do activities as "Done" automatically
+            order.activity_feedback(['mail.mail_activity_data_todo'])
+
+    def button_confirm(self):
+        """ Override standard confirm to enforce our new Approved state """
+        for order in self:
+            if order.state in ['draft', 'sent']:
+                raise exceptions.UserError("You must Approve the Purchase Request before confirming the order.")
+            
+            if order.state == 'approved':
+                # Temporarily revert to draft so standard Odoo confirmation logic works perfectly behind the scenes
+                order.state = 'draft'
+                
+        return super(PurchaseOrder, self).button_confirm()
 
     @api.onchange('commodity_contract_id')
     def _onchange_commodity_contract_id(self):
@@ -67,7 +111,7 @@ class PurchaseOrder(models.Model):
                 invoice_vals['invoice_line_ids'].append((0, 0, {
                     'name': f"Delivery Ref: {picking.name} - Payable Weight",
                     'product_id': self.product_id.id if hasattr(self, 'product_id') else po_line.product_id.id,
-                    'quantity': picking.payable_weight,
+                    'quantity': picking.payable_weight/1000,
                     'price_unit': po_line.price_unit if po_line else 0.0,
                     'product_uom_id': po_line.product_id.uom_id.id if po_line else False,
                     'purchase_line_id': po_line.id if po_line else False,
@@ -78,7 +122,7 @@ class PurchaseOrder(models.Model):
                 invoice_vals['invoice_line_ids'].append((0, 0, {
                     'name': f"Quality Discount Penalty (Ref: {picking.name})",
                     'product_id': self.product_id.id if hasattr(self, 'product_id') else po_line.product_id.id,
-                    'quantity': picking.quality_discount_weight,
+                    'quantity': (picking.quality_discount_weight*picking.net_weight)/1000,
                     'price_unit': 0.0, # ZERO PRICE
                     'product_uom_id': po_line.product_id.uom_id.id if po_line else False,
                     'purchase_line_id': po_line.id if po_line else False,
@@ -110,5 +154,5 @@ class PurchaseOrderLine(models.Model):
                 done_moves = line.move_ids.filtered(lambda m: m.state == 'done')
                 done_pickings = done_moves.mapped('picking_id')
                 for picking in done_pickings:
-                    total_net += picking.net_weight # Changed to Net Weight
+                    total_net += picking.net_weight/1000 # Changed to Net Weight
                 line.qty_received = total_net

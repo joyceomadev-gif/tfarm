@@ -6,11 +6,26 @@
         <field name="inherit_id" ref="purchase.purchase_order_form"/>
         <field name="arch" type="xml">
             <xpath expr="//header" position="inside">
+                
+                <button name="action_approve_po" 
+                        type="object" 
+                        string="Approve Request" 
+                        class="btn-success" 
+                        invisible="state not in ('draft', 'sent')"
+                        groups="commodity_trading.group_commodity_po_approver"/>
+                
                 <button name="action_create_commodity_bill" 
                         type="object" 
                         string="Create Commodity Bill" 
                         class="btn-primary" 
                         invisible="not commodity_contract_id or state not in ('purchase', 'done')"/>
+            </xpath>
+
+            <xpath expr="//button[@name='button_confirm'][1]" position="attributes">
+                <attribute name="invisible">state != 'approved'</attribute>
+            </xpath>
+            <xpath expr="//button[@name='button_confirm'][2]" position="attributes">
+                <attribute name="invisible">state != 'approved'</attribute>
             </xpath>
             <xpath expr="//field[@name='partner_ref']" position="after">
                 <field name="commodity_contract_id"/>
