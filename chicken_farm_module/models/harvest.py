@@ -72,7 +72,7 @@ class FarmHarvest(models.Model):
                 record.total_feed_consumed_kg = total_feed_g / 1000.0
                 
                 # 2. Count Meds
-                med_logs = record.flock_id.log_ids.filtered(lambda l: l.medication_name or l.vaccine_name)
+                med_logs = record.flock_id.log_ids.filtered(lambda l: l.medication_product_id or l.vaccine_name)
                 record.total_meds_count = len(med_logs)
 
                 # 3. Calculate FCR (Total Feed Kg / Total Live Weight Kg)
