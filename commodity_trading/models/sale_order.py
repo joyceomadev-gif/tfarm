@@ -1,10 +1,62 @@
 from odoo import models, fields, api
 from odoo import exceptions
 
+
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
     commodity_contract_id = fields.Many2one('commodity.contract', string='Commodity Contract', copy=False)
+
+    # Exchange rate from the order currency to the company currency (as used by Odoo on the order date)
+    exchange_rate_to_company = fields.Float(
+        string='Exchange Rate (to Company Currency)',
+        compute='_compute_exchange_rate_to_company',
+        digits=(12, 6),
+        store=False,
+    )
+
+
+    def _compute_exchange_rate_to_company(self):
+        for order in self:
+            # Default to 1.0 when currencies are identical or missing
+            rate = 1.0
+            if order.currency_id and order.company_id and order.company_id.currency_id and order.currency_id != order.company_id.currency_id:
+                # Use Odoo's conversion utility to get the rate used on the order date
+                # The env helper `_get_conversion_rate` returns the multiplier from from_currency -> to_currency
+                try:
+                    date = order.date_order or fields.Date.context_today(order)
+                    rate = self.env['res.currency']._get_conversion_rate(
+                        order.currency_id, order.company_id.currency_id, order.company_id, date
+                    )
+                except Exception:
+                    # Fallback: keep rate = 1.0 if conversion isn't available for some reason
+                    rate = 1.0
+            order.exchange_rate_to_company = rate
+
+    def action_view_currency_rates(self):
+        self.ensure_one()
+        # Show res.currency.rate for the order currency and the company currency
+        currencies = []
+        if self.currency_id:
+            currencies.append(self.currency_id.id)
+        if self.company_id and self.company_id.currency_id:
+            currencies.append(self.company_id.currency_id.id)
+
+        domain = []
+        if currencies:
+            domain.append(('currency_id', 'in', list(set(currencies))))
+        # If the order has a date, prefer showing rates up to that date
+        if self.date_order:
+            domain.append(('name', '<=', self.date_order))
+
+        return {
+            'name': 'Exchange Rates',
+            'type': 'ir.actions.act_window',
+            'res_model': 'res.currency.rate',
+            'view_mode': 'tree,form',
+            'domain': domain,
+            'target': 'new',
+        }
 
 
     @api.onchange('commodity_contract_id')

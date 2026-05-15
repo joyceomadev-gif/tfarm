@@ -18,6 +18,14 @@
                         string="Print Consolidated PDF" 
                         class="btn-secondary" 
                         invisible="not commodity_contract_id"/>
+                
+                <button name="action_view_currency_rates"
+                    type="object"
+                    string="Exchange Rates"
+                    class="btn-default"
+                    attrs="{'invisible': [('currency_id', '=', False)]}"/>
+                
+                <field name="exchange_rate_to_company" widget="monetary" options="{'currency_field': 'company_id'}"/>
             </xpath>
 
             <xpath expr="//button[@id='create_invoice']" position="attributes">
