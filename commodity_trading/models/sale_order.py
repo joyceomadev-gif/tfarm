@@ -15,6 +15,13 @@ class SaleOrder(models.Model):
         store=False,
     )
 
+    # Compute relevant currency rates to display in the form
+    related_currency_rate_ids = fields.Many2many(
+        'res.currency.rate',
+        string='Exchange Rates',
+        compute='_compute_related_currency_rates',
+        store=False,
+    )
 
     def _compute_exchange_rate_to_company(self):
         for order in self:
@@ -33,30 +40,30 @@ class SaleOrder(models.Model):
                     rate = 1.0
             order.exchange_rate_to_company = rate
 
-    def action_view_currency_rates(self):
-        self.ensure_one()
-        # Show res.currency.rate for the order currency and the company currency
-        currencies = []
-        if self.currency_id:
-            currencies.append(self.currency_id.id)
-        if self.company_id and self.company_id.currency_id:
-            currencies.append(self.company_id.currency_id.id)
-
-        domain = []
-        if currencies:
-            domain.append(('currency_id', 'in', list(set(currencies))))
-        # If the order has a date, prefer showing rates up to that date
-        if self.date_order:
-            domain.append(('name', '<=', self.date_order))
-
-        return {
-            'name': 'Exchange Rates',
-            'type': 'ir.actions.act_window',
-            'res_model': 'res.currency.rate',
-            'view_mode': 'tree,form',
-            'domain': domain,
-            'target': 'new',
-        }
+    def _compute_related_currency_rates(self):
+        """Fetch all currency rates for the order currency and company currency up to the order date."""
+        for order in self:
+            rates = self.env['res.currency.rate']
+            currencies = []
+            
+            # Collect the relevant currencies
+            if order.currency_id:
+                currencies.append(order.currency_id.id)
+            if order.company_id and order.company_id.currency_id:
+                currencies.append(order.company_id.currency_id.id)
+            
+            # Remove duplicates
+            currencies = list(set(currencies))
+            
+            if currencies:
+                domain = [('currency_id', 'in', currencies)]
+                # If the order has a date, prefer showing rates up to that date
+                if order.date_order:
+                    domain.append(('name', '<=', order.date_order))
+                
+                rates = self.env['res.currency.rate'].search(domain, order='name desc')
+            
+            order.related_currency_rate_ids = rates
 
 
     @api.onchange('commodity_contract_id')
