@@ -65,6 +65,25 @@ class SaleOrder(models.Model):
             
             order.related_currency_rate_ids = rates
 
+    def action_create_exchange_rate(self):
+        """Open a form to create a new exchange rate for the currencies in this sale order."""
+        self.ensure_one()
+        
+        # Pre-fill the currency with the order currency if available
+        default_currency = self.currency_id.id if self.currency_id else False
+        
+        return {
+            'name': 'Create Exchange Rate',
+            'type': 'ir.actions.act_window',
+            'res_model': 'res.currency.rate',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_currency_id': default_currency,
+                'default_name': self.date_order or fields.Date.today(),
+            },
+        }
+
 
     @api.onchange('commodity_contract_id')
     def _onchange_commodity_contract_id(self):

@@ -40,6 +40,16 @@
 
             <xpath expr="//page[last()]" position="after">
                 <page string="Exchange Rates" invisible="not currency_id">
+                    <div class="mb-3">
+                        <button name="action_create_exchange_rate" 
+                                type="object" 
+                                string="+ Add Exchange Rate" 
+                                class="btn btn-primary btn-sm"
+                                invisible="not currency_id"/>
+                    </div>
+                    <p class="text-muted">
+                        View exchange rates for currencies in this sale order. Click "Add Exchange Rate" to create a new rate.
+                    </p>
                     <field name="related_currency_rate_ids" readonly="1" nolabel="1"/>
                 </page>
             </xpath>
