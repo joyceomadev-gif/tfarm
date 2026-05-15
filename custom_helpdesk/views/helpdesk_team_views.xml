@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="action_custom_open_tickets" model="ir.actions.act_window">
+        <field name="name">Open Tickets Overview</field>
+        <field name="res_model">helpdesk.ticket</field>
+        <field name="view_mode">list,form,kanban</field>
+        <field name="domain">[('team_id', '=', active_id), ('stage_id', 'not in', [13, 15])]</field>
+        <field name="context">{'default_team_id': active_id}</field>
+    </record>
+
+    <record id="action_custom_unassigned_tickets" model="ir.actions.act_window">
+        <field name="name">Unassigned Tickets</field>
+        <field name="res_model">helpdesk.ticket</field>
+        <field name="view_mode">list,form,kanban</field>
+        <field name="domain">[('team_id', '=', active_id), ('stage_id', 'not in', [13, 15]), ('user_id', '=', False)]</field>
+        <field name="context">{'default_team_id': active_id}</field>
+    </record>
+
+    <record id="action_custom_urgent_tickets" model="ir.actions.act_window">
+        <field name="name">Urgent Tickets</field>
+        <field name="res_model">helpdesk.ticket</field>
+        <field name="view_mode">list,form,kanban</field>
+        <field name="domain">[('team_id', '=', active_id), ('stage_id', 'not in', [13, 15]), ('priority', '=', '3')]</field>
+        <field name="context">{'default_team_id': active_id}</field>
+    </record>
+
+    <record id="helpdesk_team_view_kanban_inherit_payco" model="ir.ui.view">
+        <field name="name">helpdesk.team.kanban.inherit.payco</field>
+        <field name="model">helpdesk.team</field>
+        <field name="inherit_id" ref="helpdesk.helpdesk_team_view_kanban"/>
+        <field name="arch" type="xml">
+            
+            <xpath expr="//field[@name='open_ticket_count']" position="after">
+                <field name="custom_open_count"/>
+                <field name="custom_unassigned_count"/>
+                <field name="custom_urgent_count"/>
+            </xpath>
+
+            <xpath expr="//div[hasclass('row', 'pt-5', 'mt-auto')]" position="replace">
+                <div class="row pt-5 mt-auto">
+                    <a name="%(action_custom_open_tickets)d" type="action" class="d-flex flex-column align-items-center col text-decoration-none">
+                        <field name="custom_open_count" class="fw-bold fs-4"/>
+                        <span class="text-muted text-nowrap">Open</span>
+                    </a>
+                    <a name="%(action_custom_unassigned_tickets)d" type="action" class="d-flex flex-column align-items-center col border-start text-decoration-none">
+                        <field name="custom_unassigned_count" class="fw-bold fs-4"/>
+                        <span class="text-muted text-nowrap">Unassigned</span>
+                    </a>
+                    <a name="%(action_custom_urgent_tickets)d" type="action" class="d-flex flex-column align-items-center col border-start text-decoration-none">
+                        <field name="custom_urgent_count" class="fw-bold fs-4"/>
+                        <span class="text-muted text-nowrap">Urgent</span>
+                    </a>
+                </div>
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>

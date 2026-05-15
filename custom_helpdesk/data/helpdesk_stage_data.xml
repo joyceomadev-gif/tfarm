@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        
+        <function model="helpdesk.stage" name="write">
+            <value model="helpdesk.stage" eval="obj().search([('name', '=', 'Resolved')]).ids"/>
+            <value eval="{'is_close': True, 'fold': True}"/>
+        </function>
+
+    </data>
+</odoo>

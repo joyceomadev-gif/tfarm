@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="rule_hide_auto_templates_internal" model="ir.rule">
+            <field name="name">Hide automatic templates for team</field>
+            <field name="model_id" ref="mail.model_mail_template"/>
+            <field name="domain_force">[('name', 'not ilike', '[AUTO]')]</field>
+            <field name="groups" eval="[(4, ref('base.group_user'))]"/> 
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <record id="rule_show_auto_templates_admin" model="ir.rule">
+            <field name="name">Show all templates for System Administrator</field>
+            <field name="model_id" ref="mail.model_mail_template"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('base.group_system'))]"/> 
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <record id="rule_knowledge_portal_access" model="ir.rule">
+            <field name="name">Knowledge: Portal access to published articles</field>
+            <field name="model_id" ref="knowledge.model_knowledge_article"/>
+            <field name="domain_force">[('website_published', '=', True)]</field>
+            <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+    </data>
+</odoo>

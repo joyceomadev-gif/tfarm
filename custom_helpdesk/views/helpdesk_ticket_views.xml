@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="helpdesk_ticket_view_form_inherit_payco" model="ir.ui.view">
+        <field name="name">helpdesk.ticket.form.inherit.payco</field>
+        <field name="model">helpdesk.ticket</field>
+        <field name="inherit_id" ref="helpdesk.helpdesk_ticket_view_form"/>
+        <field name="arch" type="xml">
+            
+            <xpath expr="//field[@name='email_cc']" position="after">
+                
+                <field name="solution" 
+                       placeholder="Describe the solution here..." 
+                       required="stage_id == 13" 
+                       invisible="stage_id != 13"/>
+                       
+                <field name="send_email_on_resolve" 
+                       invisible="stage_id != 13"/>
+                
+                <field name="reason_on_hold" 
+                       widget="text" 
+                       required="stage_id == 3" 
+                       invisible="stage_id != 3"/>
+                       
+                <field name="send_email_on_hold" 
+                       invisible="stage_id != 3"/>
+                       
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>
