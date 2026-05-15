@@ -40,7 +40,7 @@
 
             <xpath expr="//page[last()]" position="after">
                 <page string="Exchange Rates" invisible="not currency_id">
-                    <field name="related_currency_rate_ids" readonly="1" nolabel="1" mode="tree"/>
+                    <field name="related_currency_rate_ids" readonly="1" nolabel="1"/>
                 </page>
             </xpath>
             
