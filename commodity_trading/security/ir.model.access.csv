@@ -1,3 +1,4 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_commodity_contract,commodity.contract,model_commodity_contract,base.group_user,1,1,1,1
 access_price_fixation,price.fixation,model_price_fixation,base.group_user,1,1,1,1
+access_currency_rate_line,commodity_trading.currency_rate_line,model_commodity_trading_currency_rate_line,base.group_user,1,1,1,1

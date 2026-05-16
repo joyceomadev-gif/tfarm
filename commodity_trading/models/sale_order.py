@@ -65,6 +65,31 @@ class SaleOrder(models.Model):
             
             order.related_currency_rate_ids = rates
 
+    currency_rate_line_ids = fields.One2many(
+        'commodity_trading.currency_rate_line', 'sale_order_id', string='Currency Rate Lines')
+
+    def refresh_currency_rate_lines(self):
+        """Populate `commodity_trading.currency_rate_line` with the latest rate per active currency."""
+        for order in self:
+            # remove existing lines
+            if order.currency_rate_line_ids:
+                order.currency_rate_line_ids.unlink()
+
+            # get active currencies
+            currencies = self.env['res.currency'].search([('active', '=', True)])
+            lines = []
+            for curr in currencies:
+                last = self.env['res.currency.rate'].search([('currency_id', '=', curr.id)], order='name desc', limit=1)
+                vals = {
+                    'sale_order_id': order.id,
+                    'currency_id': curr.id,
+                    'last_rate': last.rate if last else 1.0,
+                    'last_update': last.name if last else False,
+                }
+                lines.append(vals)
+            if lines:
+                self.env['commodity_trading.currency_rate_line'].create(lines)
+
     def action_create_exchange_rate(self):
         """Open a form to create a new exchange rate for the currencies in this sale order."""
         self.ensure_one()
@@ -112,6 +137,16 @@ class SaleOrder(models.Model):
                 # 4. If the line exists, just update its quantity and price
                 existing_line.product_uom_qty = contract.contract_qty
                 existing_line.price_unit = contract.estimated_contract_price
+
+    @api.onchange('currency_id')
+    def _onchange_currency_id_refresh_rates(self):
+        # When the order currency changes, refresh the displayed last-rates
+        if self.currency_id:
+            try:
+                self.refresh_currency_rate_lines()
+            except Exception:
+                # Avoid breaking the form if refresh fails
+                pass
 
     def action_create_commodity_invoice(self):
         self.ensure_one()
