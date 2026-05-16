@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_currency_rate_line_tree" model="ir.ui.view">
+        <field name="name">commodity_trading.currency.rate.line.tree</field>
+        <field name="model">commodity_trading.currency_rate_line</field>
+        <field name="arch" type="xml">
+            <tree string="Currency Rate Lines">
+                <field name="currency_id"/>
+                <field name="last_update"/>
+                <field name="last_rate"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_currency_rate_line_form" model="ir.ui.view">
+        <field name="name">commodity_trading.currency.rate.line.form</field>
+        <field name="model">commodity_trading.currency_rate_line</field>
+        <field name="arch" type="xml">
+            <form string="Currency Rate Line">
+                <sheet>
+                    <group>
+                        <field name="currency_id"/>
+                        <field name="last_update"/>
+                        <field name="last_rate"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>
