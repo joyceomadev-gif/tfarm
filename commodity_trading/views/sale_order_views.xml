@@ -40,26 +40,26 @@
 
             <xpath expr="//page[last()]" position="after">
                 <page string="Exchange Rates" invisible="not currency_id">
-                        <div class="mb-3 d-flex gap-2">
+                    <div class="mb-3 d-flex gap-2">
                         <button name="action_create_exchange_rate" 
-                            type="object" 
-                            string="+ Add Exchange Rate" 
-                            class="btn btn-primary btn-sm"
-                            invisible="not currency_id"/>
-                        <button name="refresh_currency_rate_lines"
-                            type="object"
-                            string="Refresh Rates"
-                            class="btn btn-secondary btn-sm"
-                            invisible="not currency_id"/>
-                        </div>
+                                type="object" 
+                                string="+ Add Exchange Rate" 
+                                class="btn btn-primary btn-sm"
+                                invisible="not currency_id"/>
+                        <button name="compute_related_rates"
+                                type="object"
+                                string="Refresh Rates"
+                                class="btn btn-secondary btn-sm"
+                                invisible="not currency_id"/>
+                    </div>
                     <p class="text-muted">
-                        View exchange rates for currencies in this sale order. Click "Add Exchange Rate" to create a new rate.
+                        Latest rates per active currency (as in Currency settings). Click "Refresh Rates" to update.
                     </p>
-                    <field name="currency_rate_line_ids" nolabel="1">
+                    <field name="related_currency_rate_ids" nolabel="1">
                         <tree string="Currency Rates" create="0" delete="0" edit="0">
                             <field name="currency_id"/>
-                            <field name="last_update"/>
-                            <field name="last_rate"/>
+                            <field name="name" string="Last Update"/>
+                            <field name="rate"/>
                         </tree>
                     </field>
                 </page>

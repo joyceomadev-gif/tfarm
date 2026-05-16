@@ -90,6 +90,12 @@ class SaleOrder(models.Model):
             if lines:
                 self.env['commodity_trading.currency_rate_line'].create(lines)
 
+    def compute_related_rates(self):
+        """Public method called from the view to recompute `related_currency_rate_ids`. Returns a reload action."""
+        for order in self:
+            order._compute_related_currency_rates()
+        return {'type': 'ir.actions.client', 'tag': 'reload'}
+
     def action_create_exchange_rate(self):
         """Open a form to create a new exchange rate for the currencies in this sale order."""
         self.ensure_one()
