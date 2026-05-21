@@ -4,6 +4,18 @@ class StockPicking(models.Model):
     _inherit = 'stock.picking'
 
 
+    # Logistics details for deliveries and receipts
+    truck_number = fields.Char(string='Truck Number', tracking=True)
+    driver_name = fields.Char(string='Driver Name', tracking=True)
+    driver_phone = fields.Char(string='Driver Phone', tracking=True)
+    driver_id_number = fields.Char(string='Driver ID Number')
+    mileage_to_cover = fields.Float(string='Mileage To Cover (KM)', tracking=True)
+    destination = fields.Char(string='Destination', tracking=True)
+    truck_seal_number = fields.Char(string='Truck Seal Number', tracking=True)
+    route = fields.Char(string='Route', tracking=True)
+    estimated_arrival_datetime = fields.Datetime(string='Estimated Arrival Date/Time', tracking=True)
+    logistics_notes = fields.Text(string='Logistics Notes')
+
 
     # Weighbridge capture (From Step 3)
     weighbridge_in = fields.Float(string='Weighbridge IN (KG)', tracking=True)

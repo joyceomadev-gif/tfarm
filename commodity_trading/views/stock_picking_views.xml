@@ -19,6 +19,27 @@
             </xpath>
 
             <xpath expr="//notebook" position="inside">
+
+                <page string="Logistics" name="logistics">
+                    <group>
+                        <group string="Truck & Driver">
+                            <field name="truck_number"/>
+                            <field name="driver_name"/>
+                            <field name="driver_phone"/>
+                            <field name="driver_id_number"/>
+                            <field name="truck_seal_number"/>
+                        </group>
+                        <group string="Route & Schedule">
+                            <field name="destination"/>
+                            <field name="route"/>
+                            <field name="mileage_to_cover"/>
+                            <field name="estimated_arrival_datetime"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="logistics_notes" placeholder="Add dispatch instructions, special handling, or delivery remarks..."/>
+                    </group>
+                </page>
                 
                 <page string="Weighbridge" name="weighbridge_discounts" invisible="picking_type_code != 'incoming'">
                     <group>
