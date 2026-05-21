@@ -22,14 +22,14 @@
 
                 <page string="Logistics" name="logistics">
                     <group>
-                        <group string="Truck & Driver">
+                        <group string="Truck &amp; Driver">
                             <field name="truck_number"/>
                             <field name="driver_name"/>
                             <field name="driver_phone"/>
                             <field name="driver_id_number"/>
                             <field name="truck_seal_number"/>
                         </group>
-                        <group string="Route & Schedule">
+                        <group string="Route &amp; Schedule">
                             <field name="destination"/>
                             <field name="route"/>
                             <field name="mileage_to_cover"/>
