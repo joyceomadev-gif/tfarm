@@ -65,7 +65,7 @@
                 <notebook>
                     <page string="Price Fixations">
                         <field name="fixation_ids">
-                            <list editable="bottom">
+                            <list editable="bottom" open_form_view="1">
                                 <field name="date"/>
                                 <field name="fixation_type"/>
                                 <field name="fixed_qty"/>
