@@ -192,7 +192,7 @@ class SaleOrder(models.Model):
             # ========================================================
             if fix.linked_provisional_id:
                 # 1. Identify the quantities and prices
-                prov_qty = fix.linked_provisional_id.fixed_qty
+                prov_qty = fix.linked_provisional_qty or fix.linked_provisional_id.fixed_qty
                 prov_price = fix.linked_provisional_id.final_fixed_price
                 
                 # 2. Calculate the unpaid difference for the old quantity

@@ -8,5 +8,13 @@
             <field name="padding">4</field>
             <field name="company_id" eval="False"/>
         </record>
+        
+        <record id="seq_price_fixation" model="ir.sequence">
+            <field name="name">Price Fixation</field>
+            <field name="code">price.fixation</field>
+            <field name="prefix">FIX/%(year)s/</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
     </data>
 </odoo>

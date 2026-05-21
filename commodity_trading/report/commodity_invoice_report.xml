@@ -75,6 +75,22 @@
                                     <div style="margin-left: 15px; font-style: italic; margin-top: 5px;">
                                         (Fobbing Charges deducted to arrive at price below)
                                     </div>
+                                    
+                                    <!-- Explicitly show provisional fixations for audit clarity -->
+                                    <t t-if="o.commodity_contract_id.fixation_ids.filtered(lambda f: f.fixation_type == 'provisional')">
+                                        <div style="margin-top:10px; margin-left: 5px;">
+                                            <strong>Provisional Fixations:</strong>
+                                            <t t-foreach="o.commodity_contract_id.fixation_ids.filtered(lambda f: f.fixation_type == 'provisional')" t-as="prov">
+                                                <div style="margin-left: 10px; margin-bottom: 3px;">
+                                                    <span t-field="prov.name"/> — <span t-field="prov.fixed_qty"/> MT @ <span t-field="prov.final_fixed_price"/>
+                                                    <t t-if="prov.invoice_id">(Invoiced: <span t-field="prov.invoice_id.name"/>)</t>
+                                                </div>
+                                            </t>
+                                        </div>
+                                    </t>
+                                    <div style="margin-left: 15px; font-style: italic; margin-top: 5px;">
+                                        (Fobbing Charges deducted to arrive at price below)
+                                    </div>
                                 </div>
                             </div>
                         </div>
