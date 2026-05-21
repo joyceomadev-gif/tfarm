@@ -1,4 +1,5 @@
 from odoo import models, fields, api
+from odoo.fields import Command
 from odoo import exceptions
 
 
@@ -90,6 +91,20 @@ class SaleOrder(models.Model):
             if lines:
                 self.env['commodity_trading.currency_rate_line'].create(lines)
 
+    def _prepare_currency_rate_line_commands(self):
+        """Prepare virtual x2many commands for onchange usage without writing to the database."""
+        self.ensure_one()
+        currencies = self.env['res.currency'].search([('active', '=', True)])
+        commands = [Command.clear()]
+        for curr in currencies:
+            last = self.env['res.currency.rate'].search([('currency_id', '=', curr.id)], order='name desc', limit=1)
+            commands.append(Command.create({
+                'currency_id': curr.id,
+                'last_rate': last.rate if last else 1.0,
+                'last_update': last.name if last else False,
+            }))
+        return commands
+
     def compute_related_rates(self):
         """Public method called from the view to refresh per-order currency rate snapshot lines and reload the view."""
         for order in self:
@@ -137,8 +152,8 @@ class SaleOrder(models.Model):
                     'price_unit': contract.estimated_contract_price,
                     'product_uom_id': contract.product_id.uom_id.id,
                 }
-                # Odoo syntax to append a new line to a One2many field
-                self.order_line = [(0, 0, line_vals)]
+                # Use x2many commands so onchange keeps virtual records instead of raw ints
+                self.order_line = [Command.create(line_vals)]
             else:
                 # 4. If the line exists, just update its quantity and price
                 existing_line.product_uom_qty = contract.contract_qty
@@ -149,7 +164,7 @@ class SaleOrder(models.Model):
         # When the order currency changes, refresh the displayed last-rates
         if self.currency_id:
             try:
-                self.refresh_currency_rate_lines()
+                self.currency_rate_line_ids = self._prepare_currency_rate_line_commands()
             except Exception:
                 # Avoid breaking the form if refresh fails
                 pass
