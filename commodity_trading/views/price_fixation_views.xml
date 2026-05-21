@@ -14,7 +14,7 @@
                     </div>
                     <header>
                         <button name="action_convert_to_final" type="object" string="Convert to Final" class="btn-primary"
-                                attrs="{ 'invisible': [('fixation_type', '!=', 'provisional')] }"/>
+                                invisible="fixation_type != 'provisional'"/>
                     </header>
                     <group>
                         <group>
