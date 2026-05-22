@@ -28,8 +28,12 @@
                             <field name="market_price_at_fixation"/>
                             <field name="differential"/>
                             <field name="final_fixed_price"/>
+                            <field name="final_fixed_price_sales" readonly="1"/>
+                            <field name="fx_rate" readonly="1"/>
+                            <field name="fx_date" readonly="1"/>
                             <field name="linked_provisional_id"/>
                             <field name="currency_id" invisible="1"/>
+                            <field name="sales_currency_id" invisible="1"/>
                         </group>
                     </group>
                 </sheet>
@@ -75,6 +79,8 @@
                                 
                                 <field name="market_price_at_fixation"/>
                                 <field name="final_fixed_price" readonly="1"/>
+                                <field name="final_fixed_price_sales" readonly="1" optional="show"/>
+                                <field name="fx_rate" readonly="1" optional="show"/>
                                 <field name="state"/>
                             </list>
                         </field>

@@ -130,6 +130,22 @@ class SaleOrder(models.Model):
             },
         }
 
+    def _convert_fixation_amount_to_sales_currency(self, fixation, amount_contract_currency):
+        """Convert an amount from fixation contract currency to sales currency using fixation snapshot."""
+        from_currency = fixation.currency_id or fixation.contract_id.contract_currency_id
+        to_currency = fixation.sales_currency_id or fixation.contract_id.sales_currency_id or self.env.company.currency_id
+        if not from_currency or not to_currency:
+            return amount_contract_currency
+        if from_currency == to_currency:
+            return amount_contract_currency
+
+        if fixation.fx_rate:
+            return amount_contract_currency * fixation.fx_rate
+
+        company = self.company_id or self.env.company
+        conversion_date = fixation.fx_date or fixation.date or fields.Date.context_today(self)
+        return from_currency._convert(amount_contract_currency, to_currency, company, conversion_date)
+
 
     @api.onchange('commodity_contract_id')
     def _onchange_commodity_contract_id(self):
@@ -208,28 +224,31 @@ class SaleOrder(models.Model):
             if fix.linked_provisional_id:
                 # 1. Identify the quantities and prices
                 prov_qty = fix.linked_provisional_qty or fix.linked_provisional_id.fixed_qty
-                prov_price = fix.linked_provisional_id.final_fixed_price
+                prov_price_cc = fix.linked_provisional_id.final_fixed_price
+                final_price_cc = fix.final_fixed_price
+                final_price_sc = fix.final_fixed_price_sales or self._convert_fixation_amount_to_sales_currency(fix, final_price_cc)
                 
                 # 2. Calculate the unpaid difference for the old quantity
-                price_difference = fix.final_fixed_price - prov_price
+                price_difference_cc = final_price_cc - prov_price_cc
+                price_difference_sc = self._convert_fixation_amount_to_sales_currency(fix, price_difference_cc)
                 
                 # Line 1: The NEW quantity at the Final Price (e.g., 60 MT @ $5,000)
                 invoice_vals['invoice_line_ids'].append((0, 0, {
                     'name': f"{contract.product_id.name} - Final Price Fixation",
                     'product_id': contract.product_id.id,
                     'quantity': fix.fixed_qty,
-                    'price_unit': fix.final_fixed_price,
+                    'price_unit': final_price_sc,
                     'product_uom_id': contract.product_id.uom_id.id,
                     'sale_line_ids': [(6, 0, so_line.ids)] if so_line else []
                 }))
                 
                 # Line 2: The unpaid DIFFERENCE for the old Provisional quantity (e.g., 40 MT @ $1,500)
-                if price_difference != 0:
+                if price_difference_sc != 0:
                     invoice_vals['invoice_line_ids'].append((0, 0, {
                         'name': f"{contract.product_id.name} - Difference not paid for Provisional (Ref: {fix.linked_provisional_id.name})",
                         'product_id': contract.product_id.id,
                         'quantity': prov_qty,
-                        'price_unit': price_difference, # This is just the positive difference
+                        'price_unit': price_difference_sc,
                         'product_uom_id': contract.product_id.uom_id.id,
                         'sale_line_ids': [(6, 0, so_line.ids)] if so_line else []
                     }))
@@ -239,11 +258,12 @@ class SaleOrder(models.Model):
             # ========================================================
             else:
                 fix_type_label = dict(fix._fields['fixation_type'].selection).get(fix.fixation_type)
+                unit_price_sc = fix.final_fixed_price_sales or self._convert_fixation_amount_to_sales_currency(fix, fix.final_fixed_price)
                 invoice_vals['invoice_line_ids'].append((0, 0, {
                     'name': f"{contract.product_id.name} - {fix_type_label} Fixation",
                     'product_id': contract.product_id.id,
                     'quantity': fix.fixed_qty,
-                    'price_unit': fix.final_fixed_price,
+                    'price_unit': unit_price_sc,
                     'product_uom_id': contract.product_id.uom_id.id,
                     'sale_line_ids': [(6, 0, so_line.ids)] if so_line else []
                 }))

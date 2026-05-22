@@ -29,16 +29,30 @@ class PriceFixation(models.Model):
     # Only applies if 'provisional' is selected
     provisional_percentage = fields.Float(string='Provisional %', help='Enter 70 for 70%')
     
-    # Financial fields
-    currency_id = fields.Many2one(related='contract_id.contract_currency_id', depends=['contract_id'])
+    # Financial fields (snapshotted per fixation)
+    currency_id = fields.Many2one('res.currency', string='Contract Currency')
+    sales_currency_id = fields.Many2one('res.currency', string='Sales Currency')
     market_price_at_fixation = fields.Monetary(string='Current Market Price', currency_field='currency_id', required=True)
-    differential = fields.Float(string='Contract Differential', related='contract_id.differential', store=True)
+    differential = fields.Float(string='Contract Differential')
     
     final_fixed_price = fields.Monetary(
         string='Calculated Fixation Price', 
         compute='_compute_fixed_price', 
         store=True, 
         currency_field='currency_id'
+    )
+    fx_rate = fields.Float(
+        string='FX Rate (Contract -> Sales)',
+        compute='_compute_fx_snapshot',
+        store=True,
+        digits=(12, 6),
+    )
+    fx_date = fields.Date(string='FX Date', compute='_compute_fx_snapshot', store=True)
+    final_fixed_price_sales = fields.Monetary(
+        string='Fixation Price (Sales Currency)',
+        compute='_compute_fixed_price_sales',
+        store=True,
+        currency_field='sales_currency_id',
     )
 
     invoice_id = fields.Many2one('account.move', string='Linked Invoice', readonly=True, copy=False)
@@ -70,6 +84,43 @@ class PriceFixation(models.Model):
                 # For Part or Final, apply the absolute adjusted market price
                 record.final_fixed_price = base_price
 
+    @api.depends('currency_id', 'sales_currency_id', 'date')
+    def _compute_fx_snapshot(self):
+        for record in self:
+            record.fx_date = record.date or fields.Date.context_today(record)
+            if not record.currency_id or not record.sales_currency_id:
+                record.fx_rate = 1.0
+                continue
+            if record.currency_id == record.sales_currency_id:
+                record.fx_rate = 1.0
+                continue
+            company = self.env.company
+            record.fx_rate = self.env['res.currency']._get_conversion_rate(
+                record.currency_id,
+                record.sales_currency_id,
+                company,
+                record.fx_date,
+            )
+
+    @api.depends('final_fixed_price', 'fx_rate')
+    def _compute_fixed_price_sales(self):
+        for record in self:
+            record.final_fixed_price_sales = record.final_fixed_price * (record.fx_rate or 1.0)
+
+    @api.onchange('contract_id')
+    def _onchange_contract_snapshot_fields(self):
+        for record in self:
+            if not record.contract_id:
+                continue
+            if not record.currency_id:
+                record.currency_id = record.contract_id.contract_currency_id
+            if not record.sales_currency_id:
+                record.sales_currency_id = record.contract_id.sales_currency_id
+            if not record.differential:
+                record.differential = record.contract_id.differential
+            if not record.provisional_percentage:
+                record.provisional_percentage = record.contract_id.provisional_percentage
+
     @api.constrains('fixed_qty')
     def _check_quantity(self):
         for record in self:
@@ -82,7 +133,27 @@ class PriceFixation(models.Model):
             if vals.get('name', 'New') == 'New':
                 # Use dedicated sequence for price fixations
                 vals['name'] = self.env['ir.sequence'].next_by_code('price.fixation') or 'New'
+            contract_id = vals.get('contract_id')
+            if contract_id:
+                contract = self.env['commodity.contract'].browse(contract_id)
+                vals.setdefault('currency_id', contract.contract_currency_id.id)
+                vals.setdefault('sales_currency_id', contract.sales_currency_id.id)
+                vals.setdefault('differential', contract.differential)
+                vals.setdefault('provisional_percentage', contract.provisional_percentage)
         return super(PriceFixation, self).create(vals_list)
+
+    def write(self, vals):
+        frozen_fields = {
+            'contract_id', 'fixation_type', 'fixed_qty', 'provisional_percentage',
+            'market_price_at_fixation', 'differential', 'currency_id', 'sales_currency_id',
+            'linked_provisional_id', 'linked_provisional_qty'
+        }
+        for record in self:
+            if record.state in ('confirmed', 'invoiced') and frozen_fields.intersection(vals.keys()):
+                raise exceptions.UserError(
+                    'You cannot modify fixation pricing/currency data once the fixation is confirmed or invoiced.'
+                )
+        return super(PriceFixation, self).write(vals)
 
     def action_convert_to_final(self):
         """Open a small wizard to convert (possibly partially) a provisional fixation to a final one."""
