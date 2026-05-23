@@ -66,23 +66,23 @@ class SaleOrder(models.Model):
             
             order.related_currency_rate_ids = rates
 
-        def _convert_amount_between_currencies(self, amount, from_currency, to_currency, date=None):
-            """Convert amount from one currency to another using Odoo currency conversion utilities.
+    def _convert_amount_between_currencies(self, amount, from_currency, to_currency, date=None):
+        """Convert amount from one currency to another using Odoo currency conversion utilities.
 
-            If either currency is missing, returns the original amount.
-            """
-            if not from_currency or not to_currency:
-                return amount
-            if from_currency == to_currency:
-                return amount
-            company = self.company_id or self.env.company
-            conv_date = date or self.date_order or fields.Date.context_today(self)
-            try:
-                return from_currency._convert(amount, to_currency, company, conv_date)
-            except Exception:
-                # Fallback to _get_conversion_rate when _convert isn't available
-                rate = self.env['res.currency']._get_conversion_rate(from_currency, to_currency, company, conv_date)
-                return amount * (rate or 1.0)
+        If either currency is missing, returns the original amount.
+        """
+        if not from_currency or not to_currency:
+            return amount
+        if from_currency == to_currency:
+            return amount
+        company = self.company_id or self.env.company
+        conv_date = date or self.date_order or fields.Date.context_today(self)
+        try:
+            return from_currency._convert(amount, to_currency, company, conv_date)
+        except Exception:
+            # Fallback to _get_conversion_rate when _convert isn't available
+            rate = self.env['res.currency']._get_conversion_rate(from_currency, to_currency, company, conv_date)
+            return amount * (rate or 1.0)
 
     currency_rate_line_ids = fields.One2many(
         'commodity_trading.currency_rate_line', 'sale_order_id', string='Currency Rate Lines')
