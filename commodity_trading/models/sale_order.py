@@ -66,6 +66,24 @@ class SaleOrder(models.Model):
             
             order.related_currency_rate_ids = rates
 
+        def _convert_amount_between_currencies(self, amount, from_currency, to_currency, date=None):
+            """Convert amount from one currency to another using Odoo currency conversion utilities.
+
+            If either currency is missing, returns the original amount.
+            """
+            if not from_currency or not to_currency:
+                return amount
+            if from_currency == to_currency:
+                return amount
+            company = self.company_id or self.env.company
+            conv_date = date or self.date_order or fields.Date.context_today(self)
+            try:
+                return from_currency._convert(amount, to_currency, company, conv_date)
+            except Exception:
+                # Fallback to _get_conversion_rate when _convert isn't available
+                rate = self.env['res.currency']._get_conversion_rate(from_currency, to_currency, company, conv_date)
+                return amount * (rate or 1.0)
+
     currency_rate_line_ids = fields.One2many(
         'commodity_trading.currency_rate_line', 'sale_order_id', string='Currency Rate Lines')
 
@@ -159,13 +177,19 @@ class SaleOrder(models.Model):
             # 2. Check if a line with this product already exists to avoid duplicates
             existing_line = self.order_line.filtered(lambda l: l.product_id == contract.product_id)
             
+            # compute price_unit converted from contract currency -> order currency
+            contract_price_cc = contract.estimated_contract_price
+            order_currency = self.currency_id or self.env.company.currency_id
+            contract_currency = contract.contract_currency_id
+            converted_price = self._convert_amount_between_currencies(contract_price_cc or 0.0, contract_currency, order_currency)
+
             if not existing_line:
                 # 3. Create a new Sales Order Line with the contract details
                 line_vals = {
                     'product_id': contract.product_id.id,
                     'name': f"{contract.product_id.name} - Contract {contract.name}",
                     'product_uom_qty': contract.contract_qty,
-                    'price_unit': contract.estimated_contract_price,
+                    'price_unit': converted_price,
                     'product_uom_id': contract.product_id.uom_id.id,
                 }
                 # Use x2many commands so onchange keeps virtual records instead of raw ints
@@ -173,7 +197,7 @@ class SaleOrder(models.Model):
             else:
                 # 4. If the line exists, just update its quantity and price
                 existing_line.product_uom_qty = contract.contract_qty
-                existing_line.price_unit = contract.estimated_contract_price
+                existing_line.price_unit = self._convert_amount_between_currencies(contract.estimated_contract_price or 0.0, contract.contract_currency_id, self.currency_id or self.env.company.currency_id)
 
     @api.onchange('currency_id')
     def _onchange_currency_id_refresh_rates(self):
