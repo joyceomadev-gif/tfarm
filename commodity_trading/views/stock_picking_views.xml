@@ -23,9 +23,11 @@
                 <page string="Logistics" name="logistics">
                     <group>
                         <group string="Truck &amp; Driver">
-                            <field name="truck_number"/>
-                            <field name="driver_name"/>
-                            <field name="driver_phone"/>
+                            <field name="vehicle_id"/>
+                            <field name="truck_number" readonly="1"/>
+                            <field name="driver_id"/>
+                            <field name="driver_name" readonly="1"/>
+                            <field name="driver_phone" readonly="1"/>
                             <field name="driver_id_number"/>
                             <field name="truck_seal_number"/>
                         </group>

@@ -5,9 +5,11 @@ class StockPicking(models.Model):
 
 
     # Logistics details for deliveries and receipts
-    truck_number = fields.Char(string='Truck Number', tracking=True)
-    driver_name = fields.Char(string='Driver Name', tracking=True)
-    driver_phone = fields.Char(string='Driver Phone', tracking=True)
+    vehicle_id = fields.Many2one('fleet.vehicle', string='Vehicle')
+    truck_number = fields.Char(string='Truck Number', related='vehicle_id.license_plate', store=True, tracking=True)
+    driver_id = fields.Many2one('res.partner', string='Driver')
+    driver_name = fields.Char(string='Driver Name', related='driver_id.name', store=True, tracking=True)
+    driver_phone = fields.Char(string='Driver Phone', related='driver_id.phone', store=True, tracking=True)
     driver_id_number = fields.Char(string='Driver ID Number')
     mileage_to_cover = fields.Float(string='Mileage To Cover (KM)', tracking=True)
     destination = fields.Char(string='Destination', tracking=True)
