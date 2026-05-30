@@ -16,11 +16,12 @@ class SaleOrder(models.Model):
 
     def action_confirm(self):
         for order in self.filtered(lambda sale_order: sale_order.state in ('draft', 'sent')):
-            picking_type = order.picking_type_id
+            warehouse = order.warehouse_id
+            picking_type = warehouse.out_type_id if warehouse else False
             if not picking_type:
                 continue
 
-            source_location = picking_type.default_location_src_id or order.warehouse_id.lot_stock_id
+            source_location = picking_type.default_location_src_id or warehouse.lot_stock_id
 
             if not source_location or picking_type.code != 'outgoing':
                 continue
