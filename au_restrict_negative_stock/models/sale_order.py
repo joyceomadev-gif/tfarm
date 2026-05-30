@@ -35,7 +35,7 @@ class SaleOrder(models.Model):
 
                 key = (product.id, source_location.id)
                 product_by_key[key] = product
-                grouped_lines[key] += get_required_quantity(line.product_uom_qty, line.product_uom, product.uom_id)
+                grouped_lines[key] += get_required_quantity(line.product_uom_qty, line.product_uom_id, product.uom_id)
 
             for key, required_qty in grouped_lines.items():
                 product = product_by_key[key]
