@@ -36,7 +36,7 @@ It ensures accurate inventory management and allows **flexible configuration** f
     'author': 'Mudassir Amin',
     'website': 'https://mudassir.odoo',
     'license': 'LGPL-3',
-    'depends': ['stock'],
+    'depends': ['stock', 'sale_stock'],
     'data': [
         'views/product_views.xml',
         'views/product_category_views.xml',

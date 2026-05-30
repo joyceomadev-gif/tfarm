@@ -1,44 +1,41 @@
-from odoo import models, _
-from odoo.exceptions import UserError
-from odoo.tools.float_utils import float_compare, float_round
+from collections import defaultdict
+
+from odoo import models
+
+from .negative_stock_utils import (
+    get_available_quantity,
+    get_required_quantity,
+    is_negative_stock_allowed,
+    is_negative_stock_blocked,
+    raise_negative_stock_error,
+)
 
 
 class StockMove(models.Model):
     _inherit = "stock.move"
 
     def _action_done(self, cancel_backorder=False):
-        for move in self:
-            product = move.product_id
+        outgoing_moves = self.filtered(
+            lambda move: move.state != 'cancel'
+            and move.quantity > 0
+            and move.picked
+            and move.product_id.is_storable
+            and move.location_id.usage == 'internal'
+            and move.location_dest_id.usage != 'internal'
+            and not is_negative_stock_allowed(move.product_id, move.location_id)
+        )
 
-            # Match the Odoo 19 done flow: only validate moves that will really be completed.
-            if move.state == 'cancel' or (move.quantity <= 0 and not move.is_inventory) or not move.picked:
-                continue
+        grouped_moves = defaultdict(float)
+        move_by_key = {}
+        for move in outgoing_moves:
+            key = (move.location_id.id, move.product_id.id)
+            move_by_key[key] = move
+            grouped_moves[key] += get_required_quantity(move.quantity, move.product_uom, move.product_id.uom_id)
 
-            # Skip non-storable products and configured exceptions.
-            if not product.is_storable:
-                continue
-
-            if (product.allow_negative_stock or
-                product.categ_id.allow_negative_stock or
-                move.location_id.allow_negative_stock or
-                move.location_dest_id.allow_negative_stock):
-                continue
-
-            # Available stock is expressed in the product's default UoM.
-            qty_on_hand = product.with_context(location=move.location_id.id).qty_available
-            required_qty = move.quantity * move.product_uom.factor / product.uom_id.factor
-            required_qty = float_round(required_qty, precision_rounding=product.uom_id.rounding)
-            if float_compare(qty_on_hand, required_qty, precision_rounding=product.uom_id.rounding) < 0:
-                raise UserError(_(
-                    "Operation not allowed!\n\n"
-                    "Product: %s\n"
-                    "Available: %.2f %s\n"
-                    "Required: %.2f %s\n\n"
-                    "This move would cause negative stock."
-                ) % (
-                    product.display_name,
-                    qty_on_hand, product.uom_id.name,
-                    required_qty, product.uom_id.name
-                ))
+        for key, required_qty in grouped_moves.items():
+            move = move_by_key[key]
+            qty_on_hand = get_available_quantity(move.product_id, move.location_id)
+            if is_negative_stock_blocked(move.product_id, move.location_id, qty_on_hand, required_qty):
+                raise_negative_stock_error(move.product_id, qty_on_hand, required_qty)
 
         return super()._action_done(cancel_backorder=cancel_backorder)
