@@ -86,7 +86,21 @@
                                     <field name="vaccine_name"/>
                                 </group>
                             </group>
-                            <separator string="Remarks"/>
+                        </page>
+
+                        <page string="Daily Activities">
+                            <group>
+                                <group>
+                                    <field name="store_items_received" placeholder="Items received from the store, feed, meds, tools, etc."/>
+                                </group>
+                                <group>
+                                    <field name="farm_observations" placeholder="Bird condition, housing, temperature, behavior, and observations."/>
+                                </group>
+                            </group>
+                            <field name="farm_activities" placeholder="Daily tasks, movements, cleaning, sorting, vaccination, feeding, and similar activities."/>
+                        </page>
+
+                        <page string="Remarks">
                             <field name="remarks" placeholder="Enter notes about bird behavior, weather, or health issues..."/>
                         </page>
 

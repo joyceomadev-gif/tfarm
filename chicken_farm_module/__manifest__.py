@@ -16,6 +16,7 @@
         'views/abattoir_views.xml',
         'views/product_views.xml',
         'views/batch_views.xml',
+        'views/breeder_views.xml',
         'views/dashboard.xml',
     ],
     'installable': True,

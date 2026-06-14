@@ -26,7 +26,7 @@ class FarmFlock(models.Model):
     breed = fields.Char(string='Breed', default='Ross 308')
     
     # NEW FIELD: Which product is this?
-    product_id = fields.Many2one('product.product', string='Bird Variant', required=True)
+    product_id = fields.Many2one('product.product', string='Bird Variant', required=True, domain="[('product_tmpl_id.bird_variant', '=', True)]")
     # Inventory Data
     initial_birds = fields.Integer(related='quantity_placed', store=True, string='Initial Stock')
     current_birds = fields.Integer(string='Current Birds', compute='_compute_current_birds', store=True)

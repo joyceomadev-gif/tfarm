@@ -6,6 +6,9 @@
         <field name="arch" type="xml">
         
             <field name="categ_id" position="after">
+                <field name="bird_variant" widget="boolean_toggle"/>
+                <field name="bird_flow" invisible="not bird_variant"/>
+                <field name="bird_sex" invisible="not bird_variant"/>
                 <field name="abattoir_type" widget="radio"/>
             </field>
         </field>

@@ -51,6 +51,9 @@ class FarmDailyLog(models.Model):
 
     # --- 4. OTHER & HARVEST ---
     water_consumed = fields.Float(string='Water (L)')
+    store_items_received = fields.Text(string='Items Received from Store')
+    farm_observations = fields.Text(string='Farm Observations')
+    farm_activities = fields.Text(string='Farm Activities')
     medication_product_id = fields.Many2one(
         'product.product', 
         string='Medication', 

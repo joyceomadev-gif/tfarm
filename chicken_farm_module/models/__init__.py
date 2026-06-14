@@ -6,3 +6,4 @@ from . import harvest
 from . import abattoir
 from . import product
 from . import batch
+from . import breeder

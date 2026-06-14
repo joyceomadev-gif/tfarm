@@ -1,0 +1,112 @@
+<odoo>
+    <record id="view_taghini_breeder_batch_form" model="ir.ui.view">
+        <field name="name">taghini.breeder.batch.form</field>
+        <field name="model">taghini.breeder.batch</field>
+        <field name="arch" type="xml">
+            <form string="Breeder Stock Batch">
+                <header>
+                    <button name="action_mark_received" string="Mark Received" type="object" class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_mark_sorted" string="Mark Sorted" type="object" class="btn-primary" invisible="state != 'received'"/>
+                    <button name="action_mark_mating" string="Mark Mating" type="object" class="btn-primary" invisible="state != 'sorted'"/>
+                    <button name="action_mark_laying" string="Mark Laying" type="object" class="btn-primary" invisible="state != 'mating'"/>
+                    <button name="action_mark_harvested" string="Mark Harvested" type="object" class="btn-success" invisible="state not in ('laying', 'mating')"/>
+                    <button name="action_close_batch" string="Close Batch" type="object" class="btn-secondary" invisible="state == 'closed'"/>
+                    <button name="action_cancel_batch" string="Cancel" type="object" invisible="state == 'cancelled'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,received,sorted,mating,laying,harvested,closed"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group string="Source">
+                            <field name="date"/>
+                            <field name="source_type"/>
+                            <field name="source_partner_id"/>
+                            <field name="source_reference"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group string="Bird Variant">
+                            <field name="bird_variant_id" domain="[('bird_variant', '=', True)]"/>
+                            <field name="standard_id"/>
+                            <field name="female_order_qty"/>
+                            <field name="male_order_qty" readonly="1"/>
+                            <field name="gift_total_qty" readonly="1"/>
+                            <field name="gift_male_qty"/>
+                            <field name="gift_female_qty"/>
+                        </group>
+                    </group>
+
+                    <group string="Shipping and Mortality">
+                        <group>
+                            <field name="shipped_male_qty" readonly="1"/>
+                            <field name="shipped_female_qty" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="transit_male_mortality"/>
+                            <field name="transit_female_mortality"/>
+                            <field name="premise_male_mortality"/>
+                            <field name="premise_female_mortality"/>
+                        </group>
+                    </group>
+
+                    <group string="Final Day-One Stock">
+                        <group>
+                            <field name="stocked_male_qty" readonly="1"/>
+                            <field name="stocked_female_qty" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="stocked_total_qty" readonly="1"/>
+                            <field name="male_section_qty"/>
+                            <field name="female_section_qty"/>
+                            <field name="introduced_male_qty"/>
+                            <field name="introduced_female_qty"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Daily Farm Activities">
+                            <field name="log_ids">
+                                <list editable="bottom">
+                                    <field name="date"/>
+                                    <field name="activity_type"/>
+                                    <field name="store_items_received" optional="show"/>
+                                    <field name="observations" optional="show"/>
+                                    <field name="activities" optional="show"/>
+                                    <field name="eggs_collected"/>
+                                    <field name="eggs_sent_to_hatchery"/>
+                                    <field name="state"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_taghini_breeder_batch_tree" model="ir.ui.view">
+        <field name="name">taghini.breeder.batch.tree</field>
+        <field name="model">taghini.breeder.batch</field>
+        <field name="arch" type="xml">
+            <list string="Breeder Batches">
+                <field name="name"/>
+                <field name="date"/>
+                <field name="source_type"/>
+                <field name="source_partner_id"/>
+                <field name="bird_variant_id"/>
+                <field name="stocked_total_qty"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_taghini_breeder_batch" model="ir.actions.act_window">
+        <field name="name">Breeder Stock</field>
+        <field name="res_model">taghini.breeder.batch</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_taghini_breeder_root" name="Breeder Stock" parent="menu_taghini_root" sequence="20"/>
+    <menuitem id="menu_taghini_breeder_batch" name="Breeder Batches" parent="menu_taghini_breeder_root" action="action_taghini_breeder_batch" sequence="1"/>
+</odoo>
