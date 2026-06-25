@@ -33,8 +33,7 @@ It ensures accurate inventory management and allows **flexible configuration** f
 - Odoo 19 Enterprise ✅
 
     """,
-    'author': 'Mudassir Amin',
-    'website': 'https://mudassir.odoo',
+    'author': 'Kadi',
     'license': 'LGPL-3',
     'depends': ['stock', 'sale_stock'],
     'data': [

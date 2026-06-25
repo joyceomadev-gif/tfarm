@@ -1,5 +1,4 @@
 from collections import defaultdict
-
 from odoo import models
 
 from .negative_stock_utils import (
@@ -20,7 +19,9 @@ class StockPicking(models.Model):
 
             grouped_moves = defaultdict(float)
             product_by_key = {}
-            for move in picking.move_ids_without_package.filtered(
+            
+            # FIXED: Replaced move_ids_without_package with move_ids
+            for move in picking.move_ids.filtered(
                 lambda stock_move: stock_move.state != 'cancel'
                 and stock_move.quantity > 0
                 and stock_move.picked
