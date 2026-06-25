@@ -34,7 +34,6 @@ It ensures accurate inventory management and allows **flexible configuration** f
 
     """,
     'author': 'Kadi',
-    'license': 'LGPL-3',
     'depends': ['stock', 'sale_stock'],
     'data': [
         'views/product_views.xml',
@@ -44,7 +43,4 @@ It ensures accurate inventory management and allows **flexible configuration** f
     'images': ['static/description/banner.png'],
     'installable': True,
     'application': True,
-    'auto_install': False,
-    'price': 0.0,
-    'currency': 'USD',
 }
