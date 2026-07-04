@@ -9,11 +9,11 @@
             <field name="arch" type="xml">
                 <form string="Performance Cycle">
                     <header>
-                        <button name="action_launch_cycle" string="Launch Cycle" type="object" states="draft" class="oe_highlight"/>
-                        <button name="action_start_goal_setting" string="Start Goal Setting" type="object" states="open" class="oe_highlight"/>
-                        <button name="action_start_evaluation" string="Start Evaluation" type="object" states="in_progress" class="oe_highlight"/>
-                        <button name="action_close_cycle" string="Close Cycle" type="object" states="evaluation"/>
-                        <button name="action_reopen_cycle" string="Reopen Cycle" type="object" states="closed"/>
+                        <button name="action_launch_cycle" string="Launch Cycle" type="object" invisible="status != 'draft'" class="oe_highlight"/>
+                        <button name="action_start_goal_setting" string="Start Goal Setting" type="object" invisible="status != 'open'" class="oe_highlight"/>
+                        <button name="action_start_evaluation" string="Start Evaluation" type="object" invisible="status != 'in_progress'" class="oe_highlight"/>
+                        <button name="action_close_cycle" string="Close Cycle" type="object" invisible="status != 'evaluation'"/>
+                        <button name="action_reopen_cycle" string="Reopen Cycle" type="object" invisible="status != 'closed'"/>
                         <field name="status" widget="statusbar" statusbar_visible="draft,open,in_progress,evaluation,closed"/>
                     </header>
                     <sheet>
@@ -54,46 +54,46 @@
 
                             <page string="Evaluator Assignments" name="assignments">
                                 <field name="evaluator_assignment_ids" nolabel="1">
-                                    <tree>
+                                    <list>
                                         <field name="employee_id"/>
                                         <field name="department_id"/>
                                         <field name="line_manager_id"/>
                                         <field name="status"/>
-                                    </tree>
+                                    </list>
                                 </field>
                             </page>
 
                             <page string="Goals" name="goals">
                                 <field name="goal_ids" nolabel="1">
-                                    <tree>
+                                    <list>
                                         <field name="goal_code"/>
                                         <field name="employee_id"/>
                                         <field name="goal_description"/>
                                         <field name="weight"/>
                                         <field name="status"/>
-                                    </tree>
+                                    </list>
                                 </field>
                             </page>
 
                             <page string="Coaching Sessions" name="coaching">
                                 <field name="coaching_session_ids" nolabel="1">
-                                    <tree>
+                                    <list>
                                         <field name="employee_id"/>
                                         <field name="supervisor_id"/>
                                         <field name="meeting_date"/>
                                         <field name="status"/>
-                                    </tree>
+                                    </list>
                                 </field>
                             </page>
 
                             <page string="Scorecards" name="scorecards">
                                 <field name="scorecard_ids" nolabel="1">
-                                    <tree>
+                                    <list>
                                         <field name="employee_id"/>
                                         <field name="final_score"/>
                                         <field name="performance_rating"/>
                                         <field name="status"/>
-                                    </tree>
+                                    </list>
                                 </field>
                             </page>
                         </notebook>
@@ -107,19 +107,19 @@
             </field>
         </record>
 
-        <!-- Performance Cycle Tree View -->
+        <!-- Performance Cycle List View -->
         <record id="view_performance_cycle_tree" model="ir.ui.view">
-            <field name="name">performance.cycle.tree</field>
+            <field name="name">performance.cycle.list</field>
             <field name="model">hr.performance.cycle</field>
             <field name="arch" type="xml">
-                <tree string="Performance Cycles" decoration-warning="status=='in_progress'" decoration-success="status=='closed'">
+                <list string="Performance Cycles" decoration-warning="status=='in_progress'" decoration-success="status=='closed'">
                     <field name="name"/>
                     <field name="start_date"/>
                     <field name="goal_submission_deadline"/>
                     <field name="total_employees"/>
                     <field name="goals_approved_count"/>
                     <field name="status" widget="badge"/>
-                </tree>
+                </list>
             </field>
         </record>
 
