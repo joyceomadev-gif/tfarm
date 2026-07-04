@@ -10,7 +10,7 @@
         <menuitem id="menu_performance_cycle" name="Performance Cycles" parent="menu_hr_performance_cycles" action="action_performance_cycle" sequence="1"/>
         
         <!-- Submenu: Goal Setting & Tracking -->
-        <menuitem id="menu_hr_performance_goals" name="Goals & Progress" parent="menu_hr_performance_root" sequence="2"/>
+        <menuitem id="menu_hr_performance_goals" name="Goals &amp; Progress" parent="menu_hr_performance_root" sequence="2"/>
         <menuitem id="menu_performance_goal" name="Performance Goals" parent="menu_hr_performance_goals" action="action_performance_goal" sequence="1"/>
         <menuitem id="menu_goal_progress_update" name="Goal Progress Updates" parent="menu_hr_performance_goals" action="action_goal_progress_update" sequence="2"/>
         
@@ -21,12 +21,12 @@
         <menuitem id="menu_behavioural_evaluation" name="Behavioral Evaluations" parent="menu_hr_performance_evaluations" action="action_behavioural_evaluation" sequence="3"/>
         
         <!-- Submenu: Reviews & Coaching -->
-        <menuitem id="menu_hr_performance_reviews" name="Reviews & Coaching" parent="menu_hr_performance_root" sequence="4"/>
+        <menuitem id="menu_hr_performance_reviews" name="Reviews &amp; Coaching" parent="menu_hr_performance_root" sequence="4"/>
         <menuitem id="menu_coaching_session" name="Coaching Sessions" parent="menu_hr_performance_reviews" action="action_coaching_session" sequence="1"/>
         <menuitem id="menu_final_scorecard" name="Final Scorecards" parent="menu_hr_performance_reviews" action="action_final_scorecard" sequence="2"/>
         
         <!-- Submenu: Appeals & PIP -->
-        <menuitem id="menu_hr_performance_appeals" name="Appeals & Development" parent="menu_hr_performance_root" sequence="5"/>
+        <menuitem id="menu_hr_performance_appeals" name="Appeals &amp; Development" parent="menu_hr_performance_root" sequence="5"/>
         <menuitem id="menu_appeal_record" name="Appeal Records" parent="menu_hr_performance_appeals" action="action_appeal_record" sequence="1"/>
         <menuitem id="menu_performance_improvement_plan" name="Performance Improvement Plans" parent="menu_hr_performance_appeals" action="action_performance_improvement_plan" sequence="2"/>
 
