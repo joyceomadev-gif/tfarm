@@ -51,18 +51,18 @@
             </field>
         </record>
 
-        <!-- Goal Progress Update Tree -->
+        <!-- Goal Progress Update List -->
         <record id="view_goal_progress_update_tree" model="ir.ui.view">
-            <field name="name">goal.progress.update.tree</field>
+            <field name="name">goal.progress.update.list</field>
             <field name="model">hr.goal.progress.update</field>
             <field name="arch" type="xml">
-                <tree string="Goal Progress Updates">
+                <list string="Goal Progress Updates">
                     <field name="date_updated"/>
                     <field name="goal_id"/>
                     <field name="employee_id"/>
                     <field name="progress_percentage" widget="progressbar"/>
                     <field name="achievements"/>
-                </tree>
+                </list>
             </field>
         </record>
 

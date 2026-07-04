@@ -9,13 +9,13 @@
             <field name="arch" type="xml">
                 <form string="Performance Goal">
                     <header>
-                        <button name="action_request_employee_review" string="Send to Employee" type="object" states="draft" class="oe_highlight" groups="hr.group_hr_manager"/>
-                        <button name="action_employee_agree" string="I Agree" type="object" states="employee_review" class="oe_highlight"/>
-                        <button name="action_employee_request_modification" string="Request Modification" type="object" states="employee_review"/>
-                        <button name="action_manager_revise_goal" string="Revise Goal" type="object" states="employee_response" groups="hr.group_hr_manager"/>
-                        <button name="action_approve_goal" string="Approve Goal" type="object" states="manager_revision,draft,employee_review" class="oe_highlight" groups="hr.group_hr_manager"/>
-                        <button name="action_lock_goal" string="Lock Goal" type="object" states="approved"/>
-                        <button name="action_close_goal" string="Close Goal" type="object" states="locked"/>
+                        <button name="action_request_employee_review" string="Send to Employee" type="object" invisible="status != 'draft'" class="oe_highlight" groups="hr.group_hr_manager"/>
+                        <button name="action_employee_agree" string="I Agree" type="object" invisible="status != 'employee_review'" class="oe_highlight"/>
+                        <button name="action_employee_request_modification" string="Request Modification" type="object" invisible="status != 'employee_review'"/>
+                        <button name="action_manager_revise_goal" string="Revise Goal" type="object" invisible="status != 'employee_response'" groups="hr.group_hr_manager"/>
+                        <button name="action_approve_goal" string="Approve Goal" type="object" invisible="status not in ('manager_revision', 'draft', 'employee_review')" class="oe_highlight" groups="hr.group_hr_manager"/>
+                        <button name="action_lock_goal" string="Lock Goal" type="object" invisible="status != 'approved'"/>
+                        <button name="action_close_goal" string="Close Goal" type="object" invisible="status != 'locked'"/>
                         <field name="status" widget="statusbar" statusbar_visible="draft,employee_review,employee_response,manager_revision,approved,locked,closed"/>
                     </header>
                     <sheet>
@@ -56,7 +56,7 @@
                             <field name="measurement_criteria" required="1" nolabel="1" placeholder="How will success be measured?"/>
                         </group>
 
-                        <group string="Resources & Support">
+                        <group string="Resources &amp; Support">
                             <group>
                                 <field name="expected_outcome"/>
                                 <field name="required_tools"/>
@@ -79,12 +79,12 @@
 
                             <page string="Progress Updates" name="progress">
                                 <field name="progress_update_ids" nolabel="1">
-                                    <tree>
+                                    <list>
                                         <field name="date_updated"/>
                                         <field name="progress_percentage"/>
                                         <field name="achievements"/>
                                         <field name="challenges"/>
-                                    </tree>
+                                    </list>
                                 </field>
                             </page>
 
@@ -103,12 +103,12 @@
             </field>
         </record>
 
-        <!-- Performance Goal Tree -->
+        <!-- Performance Goal List -->
         <record id="view_performance_goal_tree" model="ir.ui.view">
-            <field name="name">performance.goal.tree</field>
+            <field name="name">performance.goal.list</field>
             <field name="model">hr.performance.goal</field>
             <field name="arch" type="xml">
-                <tree string="Performance Goals" decoration-warning="progress_percentage &lt; 50" decoration-success="actual_achievement_percentage >= 100">
+                <list string="Performance Goals" decoration-warning="progress_percentage &lt; 50" decoration-success="actual_achievement_percentage >= 100">
                     <field name="goal_code"/>
                     <field name="cycle_id"/>
                     <field name="employee_id"/>
@@ -116,7 +116,7 @@
                     <field name="weight"/>
                     <field name="progress_percentage" widget="progressbar"/>
                     <field name="status" widget="badge"/>
-                </tree>
+                </list>
             </field>
         </record>
 

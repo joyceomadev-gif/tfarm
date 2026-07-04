@@ -9,10 +9,10 @@
             <field name="arch" type="xml">
                 <form string="Performance Improvement Plan (PIP)">
                     <header>
-                        <button name="action_activate_pip" string="Activate PIP" type="object" states="active" class="oe_highlight" groups="hr.group_hr_manager"/>
-                        <button name="action_complete_pip" string="Complete PIP" type="object" states="active" class="oe_highlight" groups="hr.group_hr_manager"/>
-                        <button name="action_convert_to_disciplinary" string="Convert to Disciplinary" type="object" states="active" groups="hr.group_hr_manager"/>
-                        <button name="action_terminate_pip" string="Terminate (Employee)" type="object" states="active" groups="hr.group_hr_manager"/>
+                        <button name="action_activate_pip" string="Activate PIP" type="object" invisible="status != 'active'" class="oe_highlight" groups="hr.group_hr_manager"/>
+                        <button name="action_complete_pip" string="Complete PIP" type="object" invisible="status != 'active'" class="oe_highlight" groups="hr.group_hr_manager"/>
+                        <button name="action_convert_to_disciplinary" string="Convert to Disciplinary" type="object" invisible="status != 'active'" groups="hr.group_hr_manager"/>
+                        <button name="action_terminate_pip" string="Terminate (Employee)" type="object" invisible="status != 'active'" groups="hr.group_hr_manager"/>
                         <field name="status" widget="statusbar" statusbar_visible="active,completed,converted,terminated"/>
                     </header>
                     <sheet>
@@ -63,7 +63,7 @@
                             </group>
                         </group>
 
-                        <separator string="Monitoring & Progress"/>
+                        <separator string="Monitoring &amp; Progress"/>
                         <group>
                             <group>
                                 <field name="review_frequency" required="1"/>
@@ -95,12 +95,12 @@
             </field>
         </record>
 
-        <!-- Performance Improvement Plan Tree -->
+        <!-- Performance Improvement Plan List -->
         <record id="view_performance_improvement_plan_tree" model="ir.ui.view">
-            <field name="name">performance.improvement.plan.tree</field>
+            <field name="name">performance.improvement.plan.list</field>
             <field name="model">hr.performance.improvement.plan</field>
             <field name="arch" type="xml">
-                <tree string="Performance Improvement Plans" decoration-danger="status=='terminated'" decoration-warning="outcome=='not_met'" decoration-success="outcome=='met' or outcome=='exceeded'">
+                <list string="Performance Improvement Plans" decoration-danger="status=='terminated'" decoration-warning="outcome=='not_met'" decoration-success="outcome=='met' or outcome=='exceeded'">
                     <field name="employee_id"/>
                     <field name="start_date"/>
                     <field name="end_date"/>
@@ -108,7 +108,7 @@
                     <field name="outcome"/>
                     <field name="follow_up_action"/>
                     <field name="status" widget="badge"/>
-                </tree>
+                </list>
             </field>
         </record>
 

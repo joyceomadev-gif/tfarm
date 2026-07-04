@@ -9,9 +9,9 @@
             <field name="arch" type="xml">
                 <form string="Appeal Record">
                     <header>
-                        <button name="action_submit_to_hr" string="Submit to HR" type="object" states="submitted" class="oe_highlight"/>
-                        <button name="action_mark_resolved" string="Resolve Appeal" type="object" states="under_review" class="oe_highlight" groups="hr.group_hr_manager"/>
-                        <button name="action_escalate" string="Escalate Appeal" type="object" states="under_review" groups="hr.group_hr_manager"/>
+                        <button name="action_submit_to_hr" string="Submit to HR" type="object" invisible="appeal_status != 'submitted'" class="oe_highlight"/>
+                        <button name="action_mark_resolved" string="Resolve Appeal" type="object" invisible="appeal_status != 'under_review'" class="oe_highlight" groups="hr.group_hr_manager"/>
+                        <button name="action_escalate" string="Escalate Appeal" type="object" invisible="appeal_status != 'under_review'" groups="hr.group_hr_manager"/>
                         <button name="action_view_scorecard" string="View Scorecard" type="object"/>
                         <field name="appeal_status" widget="statusbar" statusbar_visible="submitted,under_review,resolved,escalated"/>
                     </header>
@@ -52,7 +52,7 @@
                         <group string="Resolution">
                             <group>
                                 <field name="resolution"/>
-                                <field name="adjusted_final_score" attrs="{'required': [('resolution', '!=', False)]}"/>
+                                <field name="adjusted_final_score" required="resolution != False"/>
                             </group>
                             <group>
                                 <field name="resolution_notes" nolabel="1" placeholder="Resolution notes..."/>
@@ -68,19 +68,19 @@
             </field>
         </record>
 
-        <!-- Appeal Record Tree -->
+        <!-- Appeal Record List -->
         <record id="view_appeal_record_tree" model="ir.ui.view">
-            <field name="name">appeal.record.tree</field>
+            <field name="name">appeal.record.list</field>
             <field name="model">hr.appeal.record</field>
             <field name="arch" type="xml">
-                <tree string="Appeal Records">
+                <list string="Appeal Records">
                     <field name="employee_id"/>
                     <field name="cycle_id"/>
                     <field name="appeal_date"/>
                     <field name="appeal_reason"/>
                     <field name="resolution"/>
                     <field name="appeal_status" widget="badge"/>
-                </tree>
+                </list>
             </field>
         </record>
 

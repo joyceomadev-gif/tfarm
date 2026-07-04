@@ -7,11 +7,11 @@
             <field name="name">coaching.session.form</field>
             <field name="model">hr.coaching.session</field>
             <field name="arch" type="xml">
-                <form string="Coaching & Review Meeting">
+                <form string="Coaching &amp; Review Meeting">
                     <header>
-                        <button name="action_mark_completed" string="Mark Completed" type="object" states="scheduled" class="oe_highlight"/>
-                        <button name="action_cancel_session" string="Cancel Session" type="object" states="scheduled"/>
-                        <button name="action_schedule_follow_up" string="Schedule Follow-up" type="object" states="completed"/>
+                        <button name="action_mark_completed" string="Mark Completed" type="object" invisible="status != 'scheduled'" class="oe_highlight"/>
+                        <button name="action_cancel_session" string="Cancel Session" type="object" invisible="status != 'scheduled'"/>
+                        <button name="action_schedule_follow_up" string="Schedule Follow-up" type="object" invisible="status != 'completed'"/>
                         <field name="status" widget="statusbar" statusbar_visible="scheduled,completed,cancelled"/>
                     </header>
                     <sheet>
@@ -66,19 +66,19 @@
             </field>
         </record>
 
-        <!-- Coaching Session Tree -->
+        <!-- Coaching Session List -->
         <record id="view_coaching_session_tree" model="ir.ui.view">
-            <field name="name">coaching.session.tree</field>
+            <field name="name">coaching.session.list</field>
             <field name="model">hr.coaching.session</field>
             <field name="arch" type="xml">
-                <tree string="Coaching Sessions">
+                <list string="Coaching Sessions">
                     <field name="meeting_date"/>
                     <field name="employee_id"/>
                     <field name="supervisor_id"/>
                     <field name="objectives_discussed"/>
                     <field name="follow_up_date"/>
                     <field name="status" widget="badge"/>
-                </tree>
+                </list>
             </field>
         </record>
 

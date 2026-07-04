@@ -9,8 +9,8 @@
             <field name="arch" type="xml">
                 <form string="Evaluator Assignment">
                     <header>
-                        <button name="action_submit_assignment" string="Submit" type="object" states="draft" class="oe_highlight"/>
-                        <button name="action_approve_assignment" string="Approve" type="object" states="submitted" class="oe_highlight" groups="hr.group_hr_manager"/>
+                        <button name="action_submit_assignment" string="Submit" type="object" invisible="status != 'draft'" class="oe_highlight"/>
+                        <button name="action_approve_assignment" string="Approve" type="object" invisible="status != 'submitted'" class="oe_highlight" groups="hr.group_hr_manager"/>
                         <field name="status" widget="statusbar" statusbar_visible="draft,submitted,approved"/>
                     </header>
                     <sheet>
@@ -61,19 +61,19 @@
             </field>
         </record>
 
-        <!-- Evaluator Assignment Tree -->
+        <!-- Evaluator Assignment List -->
         <record id="view_evaluator_assignment_tree" model="ir.ui.view">
-            <field name="name">evaluator.assignment.tree</field>
+            <field name="name">evaluator.assignment.list</field>
             <field name="model">hr.evaluator.assignment</field>
             <field name="arch" type="xml">
-                <tree string="Evaluator Assignments">
+                <list string="Evaluator Assignments">
                     <field name="cycle_id"/>
                     <field name="employee_id"/>
                     <field name="department_id"/>
                     <field name="line_manager_id"/>
                     <field name="hod_id"/>
                     <field name="status" widget="badge"/>
-                </tree>
+                </list>
             </field>
         </record>
 

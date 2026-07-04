@@ -9,8 +9,8 @@
             <field name="arch" type="xml">
                 <form string="Technical Evaluation">
                     <header>
-                        <button name="action_submit_evaluation" string="Submit" type="object" states="draft" class="oe_highlight"/>
-                        <button name="action_finalize_evaluation" string="Finalize" type="object" states="submitted" class="oe_highlight"/>
+                        <button name="action_submit_evaluation" string="Submit" type="object" invisible="status != 'draft'" class="oe_highlight"/>
+                        <button name="action_finalize_evaluation" string="Finalize" type="object" invisible="status != 'submitted'" class="oe_highlight"/>
                         <field name="status" widget="statusbar" statusbar_visible="draft,submitted,finalized"/>
                     </header>
                     <sheet>
@@ -26,7 +26,7 @@
                             </group>
                             <group>
                                 <field name="evaluator_id" required="1"/>
-                                <field name="technical_score" readonly="1" widget="float" decoration-warning="technical_score &lt; 60" decoration-success="technical_score >= 80"/>
+                                <field name="technical_score" readonly="1" widget="float"/>
                             </group>
                         </group>
 
@@ -66,12 +66,12 @@
             </field>
         </record>
 
-        <!-- Technical Evaluation Tree -->
+        <!-- Technical Evaluation List -->
         <record id="view_technical_evaluation_tree" model="ir.ui.view">
-            <field name="name">technical.evaluation.tree</field>
+            <field name="name">technical.evaluation.list</field>
             <field name="model">hr.technical.evaluation</field>
             <field name="arch" type="xml">
-                <tree string="Technical Evaluations" decoration-warning="technical_score &lt; 60" decoration-success="technical_score >= 80">
+                <list string="Technical Evaluations" decoration-warning="technical_score &lt; 60" decoration-success="technical_score >= 80">
                     <field name="cycle_id"/>
                     <field name="employee_id"/>
                     <field name="evaluator_id"/>
@@ -81,7 +81,7 @@
                     <field name="innovation_score"/>
                     <field name="technical_score" widget="float"/>
                     <field name="status" widget="badge"/>
-                </tree>
+                </list>
             </field>
         </record>
 
