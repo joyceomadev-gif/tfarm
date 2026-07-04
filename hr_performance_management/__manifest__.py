@@ -28,6 +28,7 @@
         
         # Data
         'data/ir_sequence_data.xml',
+        'security/ir.model.access.csv',
         
         # Views - Performance Cycle
         'views/performance_cycle_views.xml',
