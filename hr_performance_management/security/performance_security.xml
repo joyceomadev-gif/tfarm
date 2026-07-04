@@ -1,65 +1,266 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data noupdate="1">
+    <data noupdate="0">
         
-        <!-- Record rules for Performance Cycle -->
-        <!-- HR can see all cycles, managers see only their company -->
-        <record id="rule_performance_cycle_hr_all" model="ir.rule">
-            <field name="name">Performance Cycle - HR Full Access</field>
-            <field name="model_id" ref="model_hr_performance_cycle"/>
-            <field name="groups" eval="[(4, ref('hr.group_hr_manager'))]"/>
-            <field name="perm_read" eval="1"/>
-            <field name="perm_write" eval="1"/>
-            <field name="perm_create" eval="1"/>
-            <field name="perm_unlink" eval="1"/>
-            <field name="domain_force">[(1, '=', 1)]</field>
+        <!-- ===== MODEL ACCESS CONTROL (User-level) ===== -->
+        
+        <!-- Performance Cycle -->
+        <record id="access_hr_performance_cycle_user" model="ir.model.access">
+            <field name="name">Performance Cycle - HR User</field>
+            <field name="model_id" search="[('model', '=', 'hr.performance.cycle')]"/>
+            <field name="group_id" ref="hr.group_hr_user"/>
+            <field name="perm_read">True</field>
+            <field name="perm_write">False</field>
+            <field name="perm_create">False</field>
+            <field name="perm_unlink">False</field>
         </record>
+
+        <record id="access_hr_performance_cycle_manager" model="ir.model.access">
+            <field name="name">Performance Cycle - HR Manager</field>
+            <field name="model_id" search="[('model', '=', 'hr.performance.cycle')]"/>
+            <field name="group_id" ref="hr.group_hr_manager"/>
+            <field name="perm_read">True</field>
+            <field name="perm_write">True</field>
+            <field name="perm_create">True</field>
+            <field name="perm_unlink">True</field>
+        </record>
+
+        <!-- Evaluator Assignment -->
+        <record id="access_hr_evaluator_assignment_user" model="ir.model.access">
+            <field name="name">Evaluator Assignment - HR User</field>
+            <field name="model_id" search="[('model', '=', 'hr.evaluator.assignment')]"/>
+            <field name="group_id" ref="hr.group_hr_user"/>
+            <field name="perm_read">True</field>
+            <field name="perm_write">False</field>
+            <field name="perm_create">False</field>
+            <field name="perm_unlink">False</field>
+        </record>
+
+        <record id="access_hr_evaluator_assignment_manager" model="ir.model.access">
+            <field name="name">Evaluator Assignment - HR Manager</field>
+            <field name="model_id" search="[('model', '=', 'hr.evaluator.assignment')]"/>
+            <field name="group_id" ref="hr.group_hr_manager"/>
+            <field name="perm_read">True</field>
+            <field name="perm_write">True</field>
+            <field name="perm_create">True</field>
+            <field name="perm_unlink">False</field>
+        </record>
+
+        <!-- Performance Goal -->
+        <record id="access_hr_performance_goal_user" model="ir.model.access">
+            <field name="name">Performance Goal - HR User</field>
+            <field name="model_id" search="[('model', '=', 'hr.performance.goal')]"/>
+            <field name="group_id" ref="hr.group_hr_user"/>
+            <field name="perm_read">True</field>
+            <field name="perm_write">True</field>
+            <field name="perm_create">False</field>
+            <field name="perm_unlink">False</field>
+        </record>
+
+        <record id="access_hr_performance_goal_manager" model="ir.model.access">
+            <field name="name">Performance Goal - HR Manager</field>
+            <field name="model_id" search="[('model', '=', 'hr.performance.goal')]"/>
+            <field name="group_id" ref="hr.group_hr_manager"/>
+            <field name="perm_read">True</field>
+            <field name="perm_write">True</field>
+            <field name="perm_create">True</field>
+            <field name="perm_unlink">False</field>
+        </record>
+
+        <!-- Goal Progress Update -->
+        <record id="access_hr_goal_progress_update_user" model="ir.model.access">
+            <field name="name">Goal Progress Update - HR User</field>
+            <field name="model_id" search="[('model', '=', 'hr.goal.progress.update')]"/>
+            <field name="group_id" ref="hr.group_hr_user"/>
+            <field name="perm_read">True</field>
+            <field name="perm_write">True</field>
+            <field name="perm_create">True</field>
+            <field name="perm_unlink">False</field>
+        </record>
+
+        <record id="access_hr_goal_progress_update_manager" model="ir.model.access">
+            <field name="name">Goal Progress Update - HR Manager</field>
+            <field name="model_id" search="[('model', '=', 'hr.goal.progress.update')]"/>
+            <field name="group_id" ref="hr.group_hr_manager"/>
+            <field name="perm_read">True</field>
+            <field name="perm_write">True</field>
+            <field name="perm_create">True</field>
+            <field name="perm_unlink">False</field>
+        </record>
+
+        <!-- Coaching Session -->
+        <record id="access_hr_coaching_session_user" model="ir.model.access">
+            <field name="name">Coaching Session - HR User</field>
+            <field name="model_id" search="[('model', '=', 'hr.coaching.session')]"/>
+            <field name="group_id" ref="hr.group_hr_user"/>
+            <field name="perm_read">True</field>
+            <field name="perm_write">True</field>
+            <field name="perm_create">True</field>
+            <field name="perm_unlink">False</field>
+        </record>
+
+        <record id="access_hr_coaching_session_manager" model="ir.model.access">
+            <field name="name">Coaching Session - HR Manager</field>
+            <field name="model_id" search="[('model', '=', 'hr.coaching.session')]"/>
+            <field name="group_id" ref="hr.group_hr_manager"/>
+            <field name="perm_read">True</field>
+            <field name="perm_write">True</field>
+            <field name="perm_create">True</field>
+            <field name="perm_unlink">True</field>
+        </record>
+
+        <!-- Technical Evaluation -->
+        <record id="access_hr_technical_evaluation_user" model="ir.model.access">
+            <field name="name">Technical Evaluation - HR User</field>
+            <field name="model_id" search="[('model', '=', 'hr.technical.evaluation')]"/>
+            <field name="group_id" ref="hr.group_hr_user"/>
+            <field name="perm_read">True</field>
+            <field name="perm_write">True</field>
+            <field name="perm_create">True</field>
+            <field name="perm_unlink">False</field>
+        </record>
+
+        <record id="access_hr_technical_evaluation_manager" model="ir.model.access">
+            <field name="name">Technical Evaluation - HR Manager</field>
+            <field name="model_id" search="[('model', '=', 'hr.technical.evaluation')]"/>
+            <field name="group_id" ref="hr.group_hr_manager"/>
+            <field name="perm_read">True</field>
+            <field name="perm_write">True</field>
+            <field name="perm_create">True</field>
+            <field name="perm_unlink">True</field>
+        </record>
+
+        <!-- Behavioral Evaluation -->
+        <record id="access_hr_behavioural_evaluation_user" model="ir.model.access">
+            <field name="name">Behavioral Evaluation - HR User</field>
+            <field name="model_id" search="[('model', '=', 'hr.behavioural.evaluation')]"/>
+            <field name="group_id" ref="hr.group_hr_user"/>
+            <field name="perm_read">True</field>
+            <field name="perm_write">True</field>
+            <field name="perm_create">True</field>
+            <field name="perm_unlink">False</field>
+        </record>
+
+        <record id="access_hr_behavioural_evaluation_manager" model="ir.model.access">
+            <field name="name">Behavioral Evaluation - HR Manager</field>
+            <field name="model_id" search="[('model', '=', 'hr.behavioural.evaluation')]"/>
+            <field name="group_id" ref="hr.group_hr_manager"/>
+            <field name="perm_read">True</field>
+            <field name="perm_write">True</field>
+            <field name="perm_create">True</field>
+            <field name="perm_unlink">True</field>
+        </record>
+
+        <!-- Final Scorecard -->
+        <record id="access_hr_final_scorecard_user" model="ir.model.access">
+            <field name="name">Final Scorecard - HR User</field>
+            <field name="model_id" search="[('model', '=', 'hr.final.scorecard')]"/>
+            <field name="group_id" ref="hr.group_hr_user"/>
+            <field name="perm_read">True</field>
+            <field name="perm_write">False</field>
+            <field name="perm_create">False</field>
+            <field name="perm_unlink">False</field>
+        </record>
+
+        <record id="access_hr_final_scorecard_manager" model="ir.model.access">
+            <field name="name">Final Scorecard - HR Manager</field>
+            <field name="model_id" search="[('model', '=', 'hr.final.scorecard')]"/>
+            <field name="group_id" ref="hr.group_hr_manager"/>
+            <field name="perm_read">True</field>
+            <field name="perm_write">True</field>
+            <field name="perm_create">False</field>
+            <field name="perm_unlink">False</field>
+        </record>
+
+        <!-- Appeal Record -->
+        <record id="access_hr_appeal_record_user" model="ir.model.access">
+            <field name="name">Appeal Record - HR User</field>
+            <field name="model_id" search="[('model', '=', 'hr.appeal.record')]"/>
+            <field name="group_id" ref="hr.group_hr_user"/>
+            <field name="perm_read">True</field>
+            <field name="perm_write">False</field>
+            <field name="perm_create">False</field>
+            <field name="perm_unlink">False</field>
+        </record>
+
+        <record id="access_hr_appeal_record_manager" model="ir.model.access">
+            <field name="name">Appeal Record - HR Manager</field>
+            <field name="model_id" search="[('model', '=', 'hr.appeal.record')]"/>
+            <field name="group_id" ref="hr.group_hr_manager"/>
+            <field name="perm_read">True</field>
+            <field name="perm_write">True</field>
+            <field name="perm_create">True</field>
+            <field name="perm_unlink">True</field>
+        </record>
+
+        <!-- Performance Improvement Plan -->
+        <record id="access_hr_performance_improvement_plan_user" model="ir.model.access">
+            <field name="name">Performance Improvement Plan - HR User</field>
+            <field name="model_id" search="[('model', '=', 'hr.performance.improvement.plan')]"/>
+            <field name="group_id" ref="hr.group_hr_user"/>
+            <field name="perm_read">True</field>
+            <field name="perm_write">False</field>
+            <field name="perm_create">False</field>
+            <field name="perm_unlink">False</field>
+        </record>
+
+        <record id="access_hr_performance_improvement_plan_manager" model="ir.model.access">
+            <field name="name">Performance Improvement Plan - HR Manager</field>
+            <field name="model_id" search="[('model', '=', 'hr.performance.improvement.plan')]"/>
+            <field name="group_id" ref="hr.group_hr_manager"/>
+            <field name="perm_read">True</field>
+            <field name="perm_write">True</field>
+            <field name="perm_create">True</field>
+            <field name="perm_unlink">True</field>
+        </record>
+
+        <!-- ===== RECORD-LEVEL RULES ===== -->
 
         <!-- Performance Goal - Employee sees only their own goals -->
         <record id="rule_performance_goal_employee" model="ir.rule">
             <field name="name">Performance Goal - Employee Own Goals</field>
-            <field name="model_id" ref="model_hr_performance_goal"/>
+            <field name="model_id" search="[('model', '=', 'hr.performance.goal')]"/>
             <field name="groups" eval="[(4, ref('base.group_user'))]"/>
-            <field name="perm_read" eval="1"/>
-            <field name="perm_write" eval="1"/>
+            <field name="perm_read">True</field>
+            <field name="perm_write">True</field>
             <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
         </record>
 
         <!-- Manager sees goals of direct reports -->
         <record id="rule_performance_goal_manager" model="ir.rule">
             <field name="name">Performance Goal - Manager Team Goals</field>
-            <field name="model_id" ref="model_hr_performance_goal"/>
+            <field name="model_id" search="[('model', '=', 'hr.performance.goal')]"/>
             <field name="groups" eval="[(4, ref('hr.group_hr_manager'))]"/>
-            <field name="perm_read" eval="1"/>
-            <field name="perm_write" eval="1"/>
+            <field name="perm_read">True</field>
+            <field name="perm_write">True</field>
             <field name="domain_force">[(1, '=', 1)]</field>
         </record>
 
         <!-- Goal Progress - Employee updates own -->
         <record id="rule_goal_progress_employee" model="ir.rule">
             <field name="name">Goal Progress - Employee Own Progress</field>
-            <field name="model_id" ref="model_hr_goal_progress_update"/>
+            <field name="model_id" search="[('model', '=', 'hr.goal.progress.update')]"/>
             <field name="groups" eval="[(4, ref('base.group_user'))]"/>
-            <field name="perm_read" eval="1"/>
-            <field name="perm_write" eval="1"/>
+            <field name="perm_read">True</field>
+            <field name="perm_write">True</field>
             <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
         </record>
 
         <!-- Final Scorecard - Employee sees own, Manager sees team -->
         <record id="rule_final_scorecard_employee" model="ir.rule">
             <field name="name">Final Scorecard - Employee Own Score</field>
-            <field name="model_id" ref="model_hr_final_scorecard"/>
+            <field name="model_id" search="[('model', '=', 'hr.final.scorecard')]"/>
             <field name="groups" eval="[(4, ref('base.group_user'))]"/>
-            <field name="perm_read" eval="1"/>
+            <field name="perm_read">True</field>
             <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
         </record>
 
         <!-- Appeal Record - Employee sees own appeals -->
         <record id="rule_appeal_record_employee" model="ir.rule">
             <field name="name">Appeal Record - Employee Own Appeals</field>
-            <field name="model_id" ref="model_hr_appeal_record"/>
+            <field name="model_id" search="[('model', '=', 'hr.appeal.record')]"/>
             <field name="groups" eval="[(4, ref('base.group_user'))]"/>
-            <field name="perm_read" eval="1"/>
+            <field name="perm_read">True</field>
             <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
         </record>
 

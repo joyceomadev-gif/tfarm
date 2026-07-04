@@ -24,7 +24,6 @@
     ],
     'data': [
         # Security
-        'security/ir.model.access.csv',
         'security/performance_security.xml',
         
         # Data
