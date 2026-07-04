@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        
+        <!-- Final Scorecard Form -->
+        <record id="view_final_scorecard_form" model="ir.ui.view">
+            <field name="name">final.scorecard.form</field>
+            <field name="model">hr.final.scorecard</field>
+            <field name="arch" type="xml">
+                <form string="Final Performance Scorecard">
+                    <header>
+                        <button name="action_request_employee_review" string="Send to Employee" type="object" states="draft" class="oe_highlight" groups="hr.group_hr_manager"/>
+                        <button name="action_employee_accept" string="Accept Appraisal" type="object" states="employee_review" class="oe_highlight"/>
+                        <button name="action_employee_appeal" string="Appeal Appraisal" type="object" states="employee_review"/>
+                        <button name="action_hr_approve" string="HR Approve" type="object" states="employee_review,appeal" class="oe_highlight" groups="hr.group_hr_manager"/>
+                        <field name="status" widget="statusbar" statusbar_visible="draft,employee_review,appeal,closed"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1><field name="employee_id"/> - <field name="cycle_id"/></h1>
+                        </div>
+
+                        <div class="alert alert-info" role="alert">
+                            <strong>Final Score: <field name="final_score" widget="float"/> / 100</strong>
+                            <field name="performance_rating" widget="badge" />
+                            <field name="requires_pip" invisible="1"/>
+                        </div>
+
+                        <group>
+                            <group>
+                                <field name="cycle_id" required="1" readonly="1"/>
+                                <field name="employee_id" required="1" readonly="1"/>
+                                <field name="manager_id" readonly="1"/>
+                            </group>
+                            <group>
+                                <field name="employee_acknowledgement"/>
+                                <field name="hr_approved" readonly="1"/>
+                                <field name="requires_pip" readonly="1"/>
+                            </group>
+                        </group>
+
+                        <separator string="Component Scores"/>
+                        <group>
+                            <group string="Goal Achievement (60% weight)">
+                                <field name="total_goals"/>
+                                <field name="goals_approved"/>
+                                <field name="average_goal_achievement" readonly="1" widget="percentpie"/>
+                                <field name="goal_achievement_score" readonly="1" widget="float" decoration-warning="goal_achievement_score &lt; 60" decoration-success="goal_achievement_score >= 80"/>
+                            </group>
+                            <group string="Technical Evaluation (25% weight)">
+                                <field name="average_technical_score" readonly="1" widget="float" decoration-warning="average_technical_score &lt; 60" decoration-success="average_technical_score >= 80"/>
+                            </group>
+                            <group string="Behavioral Evaluation (15% weight)">
+                                <field name="average_behavioral_score" readonly="1" widget="float" decoration-warning="average_behavioral_score &lt; 3" decoration-success="average_behavioral_score >= 4"/>
+                            </group>
+                        </group>
+
+                        <notebook>
+                            <page string="Employee Acknowledgement" name="acknowledgement">
+                                <group>
+                                    <field name="employee_comments" nolabel="1" placeholder="Employee comments, concerns, or appeal reasons..."/>
+                                </group>
+                            </page>
+
+                            <page string="Goals" name="goals">
+                                <field name="cycle_id.goal_ids" nolabel="1" domain="[('employee_id', '=', employee_id)]">
+                                    <tree>
+                                        <field name="goal_code"/>
+                                        <field name="goal_description"/>
+                                        <field name="actual_achievement_percentage"/>
+                                        <field name="weight"/>
+                                        <field name="status"/>
+                                    </tree>
+                                </field>
+                            </page>
+
+                            <page string="Technical Evaluations" name="technical">
+                                <field name="technical_evaluation_ids" nolabel="1">
+                                    <tree>
+                                        <field name="evaluator_id"/>
+                                        <field name="goal_achievement_score"/>
+                                        <field name="quality_of_work_score"/>
+                                        <field name="productivity_score"/>
+                                        <field name="innovation_score"/>
+                                        <field name="technical_score" widget="float"/>
+                                    </tree>
+                                </field>
+                            </page>
+
+                            <page string="Behavioral Evaluations" name="behavioral">
+                                <field name="behavioural_evaluation_ids" nolabel="1">
+                                    <tree>
+                                        <field name="evaluator_id"/>
+                                        <field name="evaluator_type"/>
+                                        <field name="teamwork_score"/>
+                                        <field name="communication_score"/>
+                                        <field name="behavioral_average_score" widget="float"/>
+                                    </tree>
+                                </field>
+                            </page>
+
+                            <page string="Performance Improvement Plan" name="pip" attrs="{'invisible': [('requires_pip', '=', False)]}">
+                                <group>
+                                    <div class="alert alert-warning" role="alert">
+                                        <strong>Score below 60% detected!</strong> A Performance Improvement Plan has been initiated to support employee development.
+                                    </div>
+                                </group>
+                                <field name="pip_id" nolabel="1">
+                                    <tree>
+                                        <field name="start_date"/>
+                                        <field name="end_date"/>
+                                        <field name="status"/>
+                                        <field name="outcome"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="activity_ids" widget="mail_activity"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <!-- Final Scorecard Tree -->
+        <record id="view_final_scorecard_tree" model="ir.ui.view">
+            <field name="name">final.scorecard.tree</field>
+            <field name="model">hr.final.scorecard</field>
+            <field name="arch" type="xml">
+                <tree string="Final Scorecards" decoration-warning="final_score &lt; 60" decoration-success="final_score >= 80" decoration-info="requires_pip">
+                    <field name="employee_id"/>
+                    <field name="cycle_id"/>
+                    <field name="goal_achievement_score" widget="float"/>
+                    <field name="average_technical_score" widget="float"/>
+                    <field name="average_behavioral_score" widget="float"/>
+                    <field name="final_score" widget="float"/>
+                    <field name="performance_rating" widget="badge"/>
+                    <field name="status" widget="badge"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Final Scorecard Search -->
+        <record id="view_final_scorecard_search" model="ir.ui.view">
+            <field name="name">final.scorecard.search</field>
+            <field name="model">hr.final.scorecard</field>
+            <field name="arch" type="xml">
+                <search string="Final Scorecards">
+                    <field name="employee_id"/>
+                    <field name="cycle_id"/>
+                    <field name="manager_id"/>
+                    <separator/>
+                    <filter name="filter_excellent" string="Excellent (81-100)" domain="[('final_score', '>=', 81)]"/>
+                    <filter name="filter_very_good" string="Very Good (61-80)" domain="[('final_score', '>=', 61), ('final_score', '&lt;', 81)]"/>
+                    <filter name="filter_good" string="Good (41-60)" domain="[('final_score', '>=', 41), ('final_score', '&lt;', 61)]"/>
+                    <filter name="filter_poor" string="Poor (&lt;41)" domain="[('final_score', '&lt;', 41)]"/>
+                    <separator/>
+                    <filter name="filter_pip_required" string="PIP Required" domain="[('requires_pip', '=', True)]"/>
+                    <filter name="filter_draft" string="Draft" domain="[('status', '=', 'draft')]"/>
+                    <filter name="filter_closed" string="Closed" domain="[('status', '=', 'closed')]"/>
+                </search>
+            </field>
+        </record>
+
+        <!-- Final Scorecard Action -->
+        <record id="action_final_scorecard" model="ir.actions.act_window">
+            <field name="name">Final Scorecards</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">hr.final.scorecard</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_final_scorecard_search"/>
+        </record>
+
+    </data>
+</odoo>

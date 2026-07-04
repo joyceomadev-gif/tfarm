@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        
+        <!-- Sequences -->
+        <record id="ir_sequence_performance_cycle" model="ir.sequence">
+            <field name="name">Performance Cycle Sequence</field>
+            <field name="code">hr.performance.cycle</field>
+            <field name="prefix">PERF-CYCLE-</field>
+            <field name="padding">4</field>
+            <field name="number_next">1</field>
+        </record>
+
+        <record id="ir_sequence_performance_goal" model="ir.sequence">
+            <field name="name">Performance Goal Sequence</field>
+            <field name="code">hr.performance.goal</field>
+            <field name="prefix">GOAL-</field>
+            <field name="padding">5</field>
+            <field name="number_next">1</field>
+        </record>
+
+        <record id="ir_sequence_coaching_session" model="ir.sequence">
+            <field name="name">Coaching Session Sequence</field>
+            <field name="code">hr.coaching.session</field>
+            <field name="prefix">COACH-</field>
+            <field name="padding">5</field>
+            <field name="number_next">1</field>
+        </record>
+
+        <record id="ir_sequence_pip" model="ir.sequence">
+            <field name="name">Performance Improvement Plan Sequence</field>
+            <field name="code">hr.performance.improvement.plan</field>
+            <field name="prefix">PIP-</field>
+            <field name="padding">5</field>
+            <field name="number_next">1</field>
+        </record>
+
+    </data>
+</odoo>

@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        
+        <!-- Behavioral Evaluation Form -->
+        <record id="view_behavioural_evaluation_form" model="ir.ui.view">
+            <field name="name">behavioural.evaluation.form</field>
+            <field name="model">hr.behavioural.evaluation</field>
+            <field name="arch" type="xml">
+                <form string="Behavioral Evaluation">
+                    <header>
+                        <button name="action_submit_evaluation" string="Submit" type="object" states="draft" class="oe_highlight"/>
+                        <button name="action_finalize_evaluation" string="Finalize" type="object" states="submitted" class="oe_highlight"/>
+                        <field name="status" widget="statusbar" statusbar_visible="draft,submitted,finalized"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h2><field name="employee_id"/> - Behavioral Evaluation</h2>
+                        </div>
+
+                        <group>
+                            <group>
+                                <field name="cycle_id" required="1" readonly="1"/>
+                                <field name="goal_id" required="1"/>
+                                <field name="employee_id" readonly="1"/>
+                            </group>
+                            <group>
+                                <field name="evaluator_id" required="1"/>
+                                <field name="evaluator_type" required="1"/>
+                                <field name="anonymous_feedback"/>
+                            </group>
+                        </group>
+
+                        <separator string="Behavioral Competencies (Scale 1-5)"/>
+                        <group>
+                            <group>
+                                <field name="teamwork_score" required="1" widget="selection"/>
+                                <field name="communication_score" required="1" widget="selection"/>
+                                <field name="leadership_score" required="1" widget="selection"/>
+                            </group>
+                            <group>
+                                <field name="integrity_score" required="1" widget="selection"/>
+                                <field name="initiative_score" required="1" widget="selection"/>
+                                <field name="problem_solving_score" required="1" widget="selection"/>
+                            </group>
+                        </group>
+
+                        <group>
+                            <field name="behavioral_average_score" readonly="1" widget="float" decoration-warning="behavioral_average_score &lt; 3" decoration-success="behavioral_average_score >= 4"/>
+                        </group>
+
+                        <group>
+                            <field name="evaluator_comments" nolabel="1" placeholder="Evaluator comments..."/>
+                        </group>
+
+                        <div class="alert alert-info" role="alert">
+                            <strong>Rating Scale:</strong> 1 = Poor | 2 = Fair | 3 = Good | 4 = Very Good | 5 = Excellent
+                        </div>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="activity_ids" widget="mail_activity"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <!-- Behavioral Evaluation Tree -->
+        <record id="view_behavioural_evaluation_tree" model="ir.ui.view">
+            <field name="name">behavioural.evaluation.tree</field>
+            <field name="model">hr.behavioural.evaluation</field>
+            <field name="arch" type="xml">
+                <tree string="Behavioral Evaluations" decoration-warning="behavioral_average_score &lt; 3" decoration-success="behavioral_average_score >= 4">
+                    <field name="cycle_id"/>
+                    <field name="employee_id"/>
+                    <field name="evaluator_id"/>
+                    <field name="evaluator_type"/>
+                    <field name="teamwork_score"/>
+                    <field name="communication_score"/>
+                    <field name="leadership_score"/>
+                    <field name="behavioral_average_score" widget="float"/>
+                    <field name="status" widget="badge"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Behavioral Evaluation Action -->
+        <record id="action_behavioural_evaluation" model="ir.actions.act_window">
+            <field name="name">Behavioral Evaluations</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">hr.behavioural.evaluation</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+    </data>
+</odoo>

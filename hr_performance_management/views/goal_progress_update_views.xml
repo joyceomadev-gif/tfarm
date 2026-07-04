@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        
+        <!-- Goal Progress Update Form -->
+        <record id="view_goal_progress_update_form" model="ir.ui.view">
+            <field name="name">goal.progress.update.form</field>
+            <field name="model">hr.goal.progress.update</field>
+            <field name="arch" type="xml">
+                <form string="Goal Progress Update">
+                    <sheet>
+                        <div class="oe_title">
+                            <h2><field name="goal_id"/> - Progress Update</h2>
+                        </div>
+
+                        <group>
+                            <group>
+                                <field name="goal_id" required="1" readonly="1"/>
+                                <field name="employee_id" readonly="1"/>
+                                <field name="manager_id" readonly="1"/>
+                                <field name="date_updated" required="1"/>
+                            </group>
+                            <group>
+                                <field name="progress_percentage" required="1" widget="percentpie"/>
+                                <field name="cycle_id" readonly="1"/>
+                            </group>
+                        </group>
+
+                        <group>
+                            <field name="achievements" nolabel="1" placeholder="What has been accomplished..."/>
+                        </group>
+
+                        <group>
+                            <field name="challenges" nolabel="1" placeholder="Obstacles or difficulties faced..."/>
+                        </group>
+
+                        <group>
+                            <field name="support_required" nolabel="1" placeholder="What support is needed..."/>
+                        </group>
+
+                        <group string="Evidence">
+                            <field name="evidence_attachment_ids" nolabel="1" widget="many2many_tags"/>
+                        </group>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="activity_ids" widget="mail_activity"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <!-- Goal Progress Update Tree -->
+        <record id="view_goal_progress_update_tree" model="ir.ui.view">
+            <field name="name">goal.progress.update.tree</field>
+            <field name="model">hr.goal.progress.update</field>
+            <field name="arch" type="xml">
+                <tree string="Goal Progress Updates">
+                    <field name="date_updated"/>
+                    <field name="goal_id"/>
+                    <field name="employee_id"/>
+                    <field name="progress_percentage" widget="progressbar"/>
+                    <field name="achievements"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Goal Progress Update Action -->
+        <record id="action_goal_progress_update" model="ir.actions.act_window">
+            <field name="name">Goal Progress Updates</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">hr.goal.progress.update</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+    </data>
+</odoo>

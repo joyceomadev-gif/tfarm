@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        
+        <!-- Technical Evaluation Form -->
+        <record id="view_technical_evaluation_form" model="ir.ui.view">
+            <field name="name">technical.evaluation.form</field>
+            <field name="model">hr.technical.evaluation</field>
+            <field name="arch" type="xml">
+                <form string="Technical Evaluation">
+                    <header>
+                        <button name="action_submit_evaluation" string="Submit" type="object" states="draft" class="oe_highlight"/>
+                        <button name="action_finalize_evaluation" string="Finalize" type="object" states="submitted" class="oe_highlight"/>
+                        <field name="status" widget="statusbar" statusbar_visible="draft,submitted,finalized"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h2><field name="employee_id"/> - Technical Evaluation</h2>
+                        </div>
+
+                        <group>
+                            <group>
+                                <field name="cycle_id" required="1" readonly="1"/>
+                                <field name="goal_id" required="1"/>
+                                <field name="employee_id" readonly="1"/>
+                            </group>
+                            <group>
+                                <field name="evaluator_id" required="1"/>
+                                <field name="technical_score" readonly="1" widget="float" decoration-warning="technical_score &lt; 60" decoration-success="technical_score >= 80"/>
+                            </group>
+                        </group>
+
+                        <separator string="Evaluation Areas"/>
+                        <group>
+                            <group string="Goal Achievement (60%)">
+                                <field name="goal_achievement_score" required="1" widget="float"/>
+                                <field name="goal_achievement_weight" readonly="1" widget="float"/>
+                            </group>
+                            <group string="Quality of Work (15%)">
+                                <field name="quality_of_work_score" required="1" widget="float"/>
+                                <field name="quality_of_work_weight" readonly="1" widget="float"/>
+                            </group>
+                        </group>
+
+                        <group>
+                            <group string="Productivity (10%)">
+                                <field name="productivity_score" required="1" widget="float"/>
+                                <field name="productivity_weight" readonly="1" widget="float"/>
+                            </group>
+                            <group string="Innovation (15%)">
+                                <field name="innovation_score" required="1" widget="float"/>
+                                <field name="innovation_weight" readonly="1" widget="float"/>
+                            </group>
+                        </group>
+
+                        <group>
+                            <field name="evaluator_comments" nolabel="1" placeholder="Evaluator comments..."/>
+                        </group>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="activity_ids" widget="mail_activity"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <!-- Technical Evaluation Tree -->
+        <record id="view_technical_evaluation_tree" model="ir.ui.view">
+            <field name="name">technical.evaluation.tree</field>
+            <field name="model">hr.technical.evaluation</field>
+            <field name="arch" type="xml">
+                <tree string="Technical Evaluations" decoration-warning="technical_score &lt; 60" decoration-success="technical_score >= 80">
+                    <field name="cycle_id"/>
+                    <field name="employee_id"/>
+                    <field name="evaluator_id"/>
+                    <field name="goal_achievement_score"/>
+                    <field name="quality_of_work_score"/>
+                    <field name="productivity_score"/>
+                    <field name="innovation_score"/>
+                    <field name="technical_score" widget="float"/>
+                    <field name="status" widget="badge"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Technical Evaluation Action -->
+        <record id="action_technical_evaluation" model="ir.actions.act_window">
+            <field name="name">Technical Evaluations</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">hr.technical.evaluation</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+    </data>
+</odoo>

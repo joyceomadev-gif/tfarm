@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        
+        <!-- Performance Goal Form -->
+        <record id="view_performance_goal_form" model="ir.ui.view">
+            <field name="name">performance.goal.form</field>
+            <field name="model">hr.performance.goal</field>
+            <field name="arch" type="xml">
+                <form string="Performance Goal">
+                    <header>
+                        <button name="action_request_employee_review" string="Send to Employee" type="object" states="draft" class="oe_highlight" groups="hr.group_hr_manager"/>
+                        <button name="action_employee_agree" string="I Agree" type="object" states="employee_review" class="oe_highlight"/>
+                        <button name="action_employee_request_modification" string="Request Modification" type="object" states="employee_review"/>
+                        <button name="action_manager_revise_goal" string="Revise Goal" type="object" states="employee_response" groups="hr.group_hr_manager"/>
+                        <button name="action_approve_goal" string="Approve Goal" type="object" states="manager_revision,draft,employee_review" class="oe_highlight" groups="hr.group_hr_manager"/>
+                        <button name="action_lock_goal" string="Lock Goal" type="object" states="approved"/>
+                        <button name="action_close_goal" string="Close Goal" type="object" states="locked"/>
+                        <field name="status" widget="statusbar" statusbar_visible="draft,employee_review,employee_response,manager_revision,approved,locked,closed"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1><field name="goal_code"/> - <field name="goal_description"/></h1>
+                        </div>
+
+                        <group>
+                            <group>
+                                <field name="cycle_id" required="1"/>
+                                <field name="employee_id" required="1"/>
+                                <field name="manager_id" readonly="1"/>
+                            </group>
+                            <group>
+                                <field name="weight" required="1" help="Percentage weight towards final score"/>
+                                <field name="progress_percentage" readonly="1"/>
+                                <field name="actual_achievement_percentage"/>
+                            </group>
+                        </group>
+
+                        <group string="Goal Definition">
+                            <field name="goal_code" required="1"/>
+                            <field name="goal_description" required="1" nolabel="1"/>
+                        </group>
+
+                        <group>
+                            <group>
+                                <field name="objective" required="1"/>
+                                <field name="kpi" required="1"/>
+                            </group>
+                            <group>
+                                <field name="start_date" required="1"/>
+                                <field name="end_date" required="1"/>
+                            </group>
+                        </group>
+
+                        <group>
+                            <field name="measurement_criteria" required="1" nolabel="1" placeholder="How will success be measured?"/>
+                        </group>
+
+                        <group string="Resources & Support">
+                            <group>
+                                <field name="expected_outcome"/>
+                                <field name="required_tools"/>
+                            </group>
+                            <group>
+                                <field name="required_training"/>
+                                <field name="resources_needed"/>
+                            </group>
+                        </group>
+
+                        <notebook>
+                            <page string="Feedback" name="feedback">
+                                <group>
+                                    <field name="employee_comments" nolabel="1" placeholder="Employee feedback/concerns..."/>
+                                </group>
+                                <group>
+                                    <field name="manager_comments" nolabel="1" placeholder="Manager notes..."/>
+                                </group>
+                            </page>
+
+                            <page string="Progress Updates" name="progress">
+                                <field name="progress_update_ids" nolabel="1">
+                                    <tree>
+                                        <field name="date_updated"/>
+                                        <field name="progress_percentage"/>
+                                        <field name="achievements"/>
+                                        <field name="challenges"/>
+                                    </tree>
+                                </field>
+                            </page>
+
+                            <page string="Evaluations" name="evaluations">
+                                <field name="technical_evaluation_id" nolabel="1"/>
+                                <field name="behavioural_evaluation_ids" nolabel="1"/>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="activity_ids" widget="mail_activity"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <!-- Performance Goal Tree -->
+        <record id="view_performance_goal_tree" model="ir.ui.view">
+            <field name="name">performance.goal.tree</field>
+            <field name="model">hr.performance.goal</field>
+            <field name="arch" type="xml">
+                <tree string="Performance Goals" decoration-warning="progress_percentage &lt; 50" decoration-success="actual_achievement_percentage >= 100">
+                    <field name="goal_code"/>
+                    <field name="cycle_id"/>
+                    <field name="employee_id"/>
+                    <field name="kpi"/>
+                    <field name="weight"/>
+                    <field name="progress_percentage" widget="progressbar"/>
+                    <field name="status" widget="badge"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Performance Goal Search -->
+        <record id="view_performance_goal_search" model="ir.ui.view">
+            <field name="name">performance.goal.search</field>
+            <field name="model">hr.performance.goal</field>
+            <field name="arch" type="xml">
+                <search string="Performance Goals">
+                    <field name="goal_code"/>
+                    <field name="cycle_id"/>
+                    <field name="employee_id"/>
+                    <field name="manager_id"/>
+                    <separator/>
+                    <filter name="filter_draft" string="Draft" domain="[('status', '=', 'draft')]"/>
+                    <filter name="filter_approved" string="Approved" domain="[('status', '=', 'approved')]"/>
+                    <filter name="filter_closed" string="Closed" domain="[('status', '=', 'closed')]"/>
+                </search>
+            </field>
+        </record>
+
+        <!-- Performance Goal Action -->
+        <record id="action_performance_goal" model="ir.actions.act_window">
+            <field name="name">Performance Goals</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">hr.performance.goal</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_performance_goal_search"/>
+        </record>
+
+    </data>
+</odoo>

@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        
+        <!-- Performance Cycle Form View -->
+        <record id="view_performance_cycle_form" model="ir.ui.view">
+            <field name="name">performance.cycle.form</field>
+            <field name="model">hr.performance.cycle</field>
+            <field name="arch" type="xml">
+                <form string="Performance Cycle">
+                    <header>
+                        <button name="action_launch_cycle" string="Launch Cycle" type="object" states="draft" class="oe_highlight"/>
+                        <button name="action_start_goal_setting" string="Start Goal Setting" type="object" states="open" class="oe_highlight"/>
+                        <button name="action_start_evaluation" string="Start Evaluation" type="object" states="in_progress" class="oe_highlight"/>
+                        <button name="action_close_cycle" string="Close Cycle" type="object" states="evaluation"/>
+                        <button name="action_reopen_cycle" string="Reopen Cycle" type="object" states="closed"/>
+                        <field name="status" widget="statusbar" statusbar_visible="draft,open,in_progress,evaluation,closed"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1><field name="name" placeholder="e.g. 2026 Annual Appraisal"/></h1>
+                        </div>
+                        
+                        <group>
+                            <group>
+                                <field name="start_date" required="1"/>
+                                <field name="goal_submission_deadline" required="1"/>
+                                <field name="mid_year_review_date"/>
+                            </group>
+                            <group>
+                                <field name="final_evaluation_date"/>
+                                <field name="first_cycle_launch_date"/>
+                                <field name="hr_coordinator_id"/>
+                            </group>
+                        </group>
+
+                        <group>
+                            <field name="description" nolabel="1" placeholder="Cycle description..."/>
+                        </group>
+
+                        <notebook>
+                            <page string="Statistics" name="stats">
+                                <group>
+                                    <group>
+                                        <field name="total_employees"/>
+                                        <field name="goals_approved_count"/>
+                                    </group>
+                                    <group>
+                                        <field name="evaluations_pending_count"/>
+                                        <field name="evaluations_completed_count"/>
+                                    </group>
+                                </group>
+                            </page>
+
+                            <page string="Evaluator Assignments" name="assignments">
+                                <field name="evaluator_assignment_ids" nolabel="1">
+                                    <tree>
+                                        <field name="employee_id"/>
+                                        <field name="department_id"/>
+                                        <field name="line_manager_id"/>
+                                        <field name="status"/>
+                                    </tree>
+                                </field>
+                            </page>
+
+                            <page string="Goals" name="goals">
+                                <field name="goal_ids" nolabel="1">
+                                    <tree>
+                                        <field name="goal_code"/>
+                                        <field name="employee_id"/>
+                                        <field name="goal_description"/>
+                                        <field name="weight"/>
+                                        <field name="status"/>
+                                    </tree>
+                                </field>
+                            </page>
+
+                            <page string="Coaching Sessions" name="coaching">
+                                <field name="coaching_session_ids" nolabel="1">
+                                    <tree>
+                                        <field name="employee_id"/>
+                                        <field name="supervisor_id"/>
+                                        <field name="meeting_date"/>
+                                        <field name="status"/>
+                                    </tree>
+                                </field>
+                            </page>
+
+                            <page string="Scorecards" name="scorecards">
+                                <field name="scorecard_ids" nolabel="1">
+                                    <tree>
+                                        <field name="employee_id"/>
+                                        <field name="final_score"/>
+                                        <field name="performance_rating"/>
+                                        <field name="status"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="activity_ids" widget="mail_activity"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <!-- Performance Cycle Tree View -->
+        <record id="view_performance_cycle_tree" model="ir.ui.view">
+            <field name="name">performance.cycle.tree</field>
+            <field name="model">hr.performance.cycle</field>
+            <field name="arch" type="xml">
+                <tree string="Performance Cycles" decoration-warning="status=='in_progress'" decoration-success="status=='closed'">
+                    <field name="name"/>
+                    <field name="start_date"/>
+                    <field name="goal_submission_deadline"/>
+                    <field name="total_employees"/>
+                    <field name="goals_approved_count"/>
+                    <field name="status" widget="badge"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Performance Cycle Search View -->
+        <record id="view_performance_cycle_search" model="ir.ui.view">
+            <field name="name">performance.cycle.search</field>
+            <field name="model">hr.performance.cycle</field>
+            <field name="arch" type="xml">
+                <search string="Performance Cycles">
+                    <field name="name" string="Cycle Name"/>
+                    <field name="status"/>
+                    <field name="hr_coordinator_id"/>
+                    <separator/>
+                    <filter name="filter_draft" string="Draft" domain="[('status', '=', 'draft')]"/>
+                    <filter name="filter_open" string="Open" domain="[('status', '=', 'open')]"/>
+                    <filter name="filter_in_progress" string="In Progress" domain="[('status', '=', 'in_progress')]"/>
+                    <filter name="filter_evaluation" string="Evaluation" domain="[('status', '=', 'evaluation')]"/>
+                    <filter name="filter_closed" string="Closed" domain="[('status', '=', 'closed')]"/>
+                </search>
+            </field>
+        </record>
+
+        <!-- Performance Cycle Action -->
+        <record id="action_performance_cycle" model="ir.actions.act_window">
+            <field name="name">Performance Cycles</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">hr.performance.cycle</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_performance_cycle_search"/>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create a new performance management cycle.
+                </p>
+            </field>
+        </record>
+
+    </data>
+</odoo>
