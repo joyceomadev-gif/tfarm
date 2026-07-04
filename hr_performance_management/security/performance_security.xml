@@ -247,7 +247,7 @@
             <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
         </record>
 
-        <!-- Final Scorecard - Employee sees own, Manager sees team -->
+        <!-- Final Scorecard - Employee sees own -->
         <record id="rule_final_scorecard_employee" model="ir.rule">
             <field name="name">Final Scorecard - Employee Own Score</field>
             <field name="model_id" search="[('model', '=', 'hr.final.scorecard')]" model="ir.model"/>
