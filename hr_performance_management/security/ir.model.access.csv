@@ -1,21 +1,31 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_hr_performance_cycle_user,hr.performance.cycle user,model_hr_performance_cycle,hr.group_hr_user,1,0,0,0
-access_hr_performance_cycle_manager,hr.performance.cycle manager,model_hr_performance_cycle,hr.group_hr_manager,1,1,1,1
-access_evaluator_assignment_user,hr.evaluator.assignment user,model_hr_evaluator_assignment,hr.group_hr_user,1,0,0,0
-access_evaluator_assignment_manager,hr.evaluator.assignment manager,model_hr_evaluator_assignment,hr.group_hr_manager,1,1,1,0
-access_performance_goal_user,hr.performance.goal user,model_hr_performance_goal,hr.group_hr_user,1,1,0,0
-access_performance_goal_manager,hr.performance.goal manager,model_hr_performance_goal,hr.group_hr_manager,1,1,1,0
-access_goal_progress_user,hr.goal.progress.update user,model_hr_goal_progress_update,hr.group_hr_user,1,1,1,0
-access_goal_progress_manager,hr.goal.progress.update manager,model_hr_goal_progress_update,hr.group_hr_manager,1,1,1,0
-access_coaching_session_user,hr.coaching.session user,model_hr_coaching_session,hr.group_hr_user,1,1,1,0
-access_coaching_session_manager,hr.coaching.session manager,model_hr_coaching_session,hr.group_hr_manager,1,1,1,1
-access_technical_evaluation_user,hr.technical.evaluation user,model_hr_technical_evaluation,hr.group_hr_user,1,1,1,0
-access_technical_evaluation_manager,hr.technical.evaluation manager,model_hr_technical_evaluation,hr.group_hr_manager,1,1,1,1
-access_behavioural_evaluation_user,hr.behavioural.evaluation user,model_hr_behavioural_evaluation,hr.group_hr_user,1,1,1,0
-access_behavioural_evaluation_manager,hr.behavioural.evaluation manager,model_hr_behavioural_evaluation,hr.group_hr_manager,1,1,1,1
-access_final_scorecard_user,hr.final.scorecard user,model_hr_final_scorecard,hr.group_hr_user,1,0,0,0
-access_final_scorecard_manager,hr.final.scorecard manager,model_hr_final_scorecard,hr.group_hr_manager,1,1,0,0
-access_appeal_record_user,hr.appeal.record user,model_hr_appeal_record,hr.group_hr_user,1,0,0,0
-access_appeal_record_manager,hr.appeal.record manager,model_hr_appeal_record,hr.group_hr_manager,1,1,1,1
-access_pip_user,hr.performance.improvement.plan user,model_hr_performance_improvement_plan,hr.group_hr_user,1,0,0,0
-access_pip_manager,hr.performance.improvement.plan manager,model_hr_performance_improvement_plan,hr.group_hr_manager,1,1,1,1
+
+access_hr_performance_cycle_user,hr.performance.cycle.user,model_hr_performance_cycle,hr.group_hr_user,1,0,0,0
+access_hr_performance_cycle_manager,hr.performance.cycle.manager,model_hr_performance_cycle,hr.group_hr_manager,1,1,1,1
+
+access_hr_evaluator_assignment_user,hr.evaluator.assignment.user,model_hr_evaluator_assignment,hr.group_hr_user,1,0,0,0
+access_hr_evaluator_assignment_manager,hr.evaluator.assignment.manager,model_hr_evaluator_assignment,hr.group_hr_manager,1,1,1,0
+
+access_hr_performance_goal_user,hr.performance.goal.user,model_hr_performance_goal,hr.group_hr_user,1,1,0,0
+access_hr_performance_goal_manager,hr.performance.goal.manager,model_hr_performance_goal,hr.group_hr_manager,1,1,1,0
+
+access_hr_goal_progress_update_user,hr.goal.progress.update.user,model_hr_goal_progress_update,hr.group_hr_user,1,1,1,0
+access_hr_goal_progress_update_manager,hr.goal.progress.update.manager,model_hr_goal_progress_update,hr.group_hr_manager,1,1,1,0
+
+access_hr_coaching_session_user,hr.coaching.session.user,model_hr_coaching_session,hr.group_hr_user,1,1,1,0
+access_hr_coaching_session_manager,hr.coaching.session.manager,model_hr_coaching_session,hr.group_hr_manager,1,1,1,1
+
+access_hr_technical_evaluation_user,hr.technical.evaluation.user,model_hr_technical_evaluation,hr.group_hr_user,1,1,1,0
+access_hr_technical_evaluation_manager,hr.technical.evaluation.manager,model_hr_technical_evaluation,hr.group_hr_manager,1,1,1,1
+
+access_hr_behavioural_evaluation_user,hr.behavioural.evaluation.user,model_hr_behavioural_evaluation,hr.group_hr_user,1,1,1,0
+access_hr_behavioural_evaluation_manager,hr.behavioural.evaluation.manager,model_hr_behavioural_evaluation,hr.group_hr_manager,1,1,1,1
+
+access_hr_final_scorecard_user,hr.final.scorecard.user,model_hr_final_scorecard,hr.group_hr_user,1,0,0,0
+access_hr_final_scorecard_manager,hr.final.scorecard.manager,model_hr_final_scorecard,hr.group_hr_manager,1,1,0,0
+
+access_hr_appeal_record_user,hr.appeal.record.user,model_hr_appeal_record,hr.group_hr_user,1,0,0,0
+access_hr_appeal_record_manager,hr.appeal.record.manager,model_hr_appeal_record,hr.group_hr_manager,1,1,1,1
+
+access_hr_performance_improvement_plan_user,hr.performance.improvement.plan.user,model_hr_performance_improvement_plan,hr.group_hr_user,1,0,0,0
+access_hr_performance_improvement_plan_manager,hr.performance.improvement.plan.manager,model_hr_performance_improvement_plan,hr.group_hr_manager,1,1,1,1
