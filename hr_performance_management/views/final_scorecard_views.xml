@@ -170,7 +170,7 @@
             <field name="name">Final Scorecards</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">hr.final.scorecard</field>
-            <field name="view_mode">tree,form</field>
+            <field name="view_mode">list,form</field>
             <field name="search_view_id" ref="view_final_scorecard_search"/>
         </record>
 
