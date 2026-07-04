@@ -28,7 +28,6 @@
         
         # Data
         'data/ir_sequence_data.xml',
-        'data/rating_scale_data.xml',
         
         # Views - Performance Cycle
         'views/performance_cycle_views.xml',
