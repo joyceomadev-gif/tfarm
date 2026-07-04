@@ -1,12 +1,10 @@
-from . import (
-    performance_cycle,
-    evaluator_assignment,
-    performance_goal,
-    goal_progress_update,
-    coaching_session,
-    technical_evaluation,
-    behavioural_evaluation,
-    final_scorecard,
-    appeal_record,
-    performance_improvement_plan,
-)
+from . import performance_cycle
+from . import evaluator_assignment
+from . import performance_goal
+from . import goal_progress_update
+from . import coaching_session
+from . import technical_evaluation
+from . import behavioural_evaluation
+from . import final_scorecard
+from . import appeal_record
+from . import performance_improvement_plan
