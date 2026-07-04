@@ -9,10 +9,10 @@
             <field name="arch" type="xml">
                 <form string="Final Performance Scorecard">
                     <header>
-                        <button name="action_request_employee_review" string="Send to Employee" type="object" states="draft" class="oe_highlight" groups="hr.group_hr_manager"/>
-                        <button name="action_employee_accept" string="Accept Appraisal" type="object" states="employee_review" class="oe_highlight"/>
-                        <button name="action_employee_appeal" string="Appeal Appraisal" type="object" states="employee_review"/>
-                        <button name="action_hr_approve" string="HR Approve" type="object" states="employee_review,appeal" class="oe_highlight" groups="hr.group_hr_manager"/>
+                        <button name="action_request_employee_review" string="Send to Employee" type="object" invisible="status != 'draft'" class="oe_highlight" groups="hr.group_hr_manager"/>
+                        <button name="action_employee_accept" string="Accept Appraisal" type="object" invisible="status != 'employee_review'" class="oe_highlight"/>
+                        <button name="action_employee_appeal" string="Appeal Appraisal" type="object" invisible="status != 'employee_review'"/>
+                        <button name="action_hr_approve" string="HR Approve" type="object" invisible="status not in ('employee_review', 'appeal')" class="oe_highlight" groups="hr.group_hr_manager"/>
                         <field name="status" widget="statusbar" statusbar_visible="draft,employee_review,appeal,closed"/>
                     </header>
                     <sheet>
@@ -45,13 +45,13 @@
                                 <field name="total_goals"/>
                                 <field name="goals_approved"/>
                                 <field name="average_goal_achievement" readonly="1" widget="percentpie"/>
-                                <field name="goal_achievement_score" readonly="1" widget="float" decoration-warning="goal_achievement_score &lt; 60" decoration-success="goal_achievement_score >= 80"/>
+                                <field name="goal_achievement_score" readonly="1" widget="float"/>
                             </group>
                             <group string="Technical Evaluation (25% weight)">
-                                <field name="average_technical_score" readonly="1" widget="float" decoration-warning="average_technical_score &lt; 60" decoration-success="average_technical_score >= 80"/>
+                                <field name="average_technical_score" readonly="1" widget="float"/>
                             </group>
                             <group string="Behavioral Evaluation (15% weight)">
-                                <field name="average_behavioral_score" readonly="1" widget="float" decoration-warning="average_behavioral_score &lt; 3" decoration-success="average_behavioral_score >= 4"/>
+                                <field name="average_behavioral_score" readonly="1" widget="float"/>
                             </group>
                         </group>
 
@@ -63,55 +63,55 @@
                             </page>
 
                             <page string="Goals" name="goals">
-                                <field name="cycle_id.goal_ids" nolabel="1" domain="[('employee_id', '=', employee_id)]">
-                                    <tree>
+                                <field name="scorecard_goal_ids" nolabel="1">
+                                    <list>
                                         <field name="goal_code"/>
                                         <field name="goal_description"/>
                                         <field name="actual_achievement_percentage"/>
                                         <field name="weight"/>
                                         <field name="status"/>
-                                    </tree>
+                                    </list>
                                 </field>
                             </page>
 
                             <page string="Technical Evaluations" name="technical">
                                 <field name="technical_evaluation_ids" nolabel="1">
-                                    <tree>
+                                    <list>
                                         <field name="evaluator_id"/>
                                         <field name="goal_achievement_score"/>
                                         <field name="quality_of_work_score"/>
                                         <field name="productivity_score"/>
                                         <field name="innovation_score"/>
                                         <field name="technical_score" widget="float"/>
-                                    </tree>
+                                    </list>
                                 </field>
                             </page>
 
                             <page string="Behavioral Evaluations" name="behavioral">
                                 <field name="behavioural_evaluation_ids" nolabel="1">
-                                    <tree>
+                                    <list>
                                         <field name="evaluator_id"/>
                                         <field name="evaluator_type"/>
                                         <field name="teamwork_score"/>
                                         <field name="communication_score"/>
                                         <field name="behavioral_average_score" widget="float"/>
-                                    </tree>
+                                    </list>
                                 </field>
                             </page>
 
-                            <page string="Performance Improvement Plan" name="pip" attrs="{'invisible': [('requires_pip', '=', False)]}">
+                            <page string="Performance Improvement Plan" name="pip" invisible="not requires_pip">
                                 <group>
                                     <div class="alert alert-warning" role="alert">
                                         <strong>Score below 60% detected!</strong> A Performance Improvement Plan has been initiated to support employee development.
                                     </div>
                                 </group>
                                 <field name="pip_id" nolabel="1">
-                                    <tree>
+                                    <list>
                                         <field name="start_date"/>
                                         <field name="end_date"/>
                                         <field name="status"/>
                                         <field name="outcome"/>
-                                    </tree>
+                                    </list>
                                 </field>
                             </page>
                         </notebook>
@@ -125,12 +125,12 @@
             </field>
         </record>
 
-        <!-- Final Scorecard Tree -->
+        <!-- Final Scorecard List -->
         <record id="view_final_scorecard_tree" model="ir.ui.view">
-            <field name="name">final.scorecard.tree</field>
+            <field name="name">final.scorecard.list</field>
             <field name="model">hr.final.scorecard</field>
             <field name="arch" type="xml">
-                <tree string="Final Scorecards" decoration-warning="final_score &lt; 60" decoration-success="final_score >= 80" decoration-info="requires_pip">
+                <list string="Final Scorecards" decoration-warning="final_score &lt; 60" decoration-success="final_score >= 80" decoration-info="requires_pip">
                     <field name="employee_id"/>
                     <field name="cycle_id"/>
                     <field name="goal_achievement_score" widget="float"/>
@@ -139,7 +139,7 @@
                     <field name="final_score" widget="float"/>
                     <field name="performance_rating" widget="badge"/>
                     <field name="status" widget="badge"/>
-                </tree>
+                </list>
             </field>
         </record>
 

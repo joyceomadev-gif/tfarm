@@ -77,6 +77,13 @@ class FinalScorecard(models.Model):
         'hr.behavioural.evaluation',
         compute='_get_behavioural_evaluations'
     )
+    
+    scorecard_goal_ids = fields.One2many(
+    'hr.performance.goal',
+    compute='_compute_scorecard_goals',
+    string='Goals'
+    )
+    
     average_behavioral_score = fields.Float(
         string='Average Behavioral Score',
         compute='_compute_behavioral_metrics',
@@ -219,6 +226,15 @@ class FinalScorecard(models.Model):
     def _compute_requires_pip(self):
         for scorecard in self:
             scorecard.requires_pip = scorecard.final_score < 60.0
+    
+    
+    @api.depends('cycle_id', 'employee_id')
+    def _compute_scorecard_goals(self):
+        for scorecard in self:
+            scorecard.scorecard_goal_ids = self.env['hr.performance.goal'].search([
+                ('cycle_id', '=', scorecard.cycle_id.id),
+                ('employee_id', '=', scorecard.employee_id.id),
+            ])
 
     def action_request_employee_review(self):
         """Send scorecard to employee for acknowledgement."""
