@@ -16,6 +16,18 @@
                     <button name="action_post_inventory" string="Post to Stock" type="object" 
                             class="btn-success" invisible="state != 'production'"/>
                     
+                    <button name="%(chicken_farm_module.action_report_abattoir_production)d" 
+                            string="Print Production &amp; Yield (TF/ABT/001)" 
+                            type="action" 
+                            class="btn-secondary" 
+                            icon="fa-print"/>
+                    
+                    <button name="%(chicken_farm_module.action_report_abattoir_qa)d" 
+                            string="Print QA Summary (TF/QA/022)" 
+                            type="action" 
+                            class="btn-secondary" 
+                            icon="fa-file-text-o"/>
+                    
                     <field name="state" widget="statusbar" statusbar_visible="draft,reception,slaughtering,production,done"/>
                 </header>
                 <sheet>
@@ -216,5 +228,5 @@
 
     <menuitem id="menu_taghini_abattoir_root" name="Abattoir" parent="menu_taghini_root" sequence="40"/>
 
-    <menuitem id="menu_taghini_abattoir_batch" name="Daily Production" parent="menu_taghini_abattoir_root" action="action_taghini_abattoir" sequence="1"/>
+    <menuitem id="menu_taghini_abattoir_batch" name="Daily Production" parent="menu_taghini_abattoir_root" action="action_taghini_abattoir" sequence="2"/>
 </odoo>

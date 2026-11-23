@@ -12,20 +12,35 @@
                     </div>
 
                     <div class="oe_title">
-                        <label for="name" class="oe_edit_only"/>
-                        <h1><field name="name" placeholder="e.g. Pen 01"/></h1>
+                        <h1><field name="pen_code" readonly="1"/></h1>
                     </div>
                     
                     
                     <group>
                         <group string="Configuration">
-                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="name" string="Pen Name" placeholder="e.g. Pen 01"/>
+                            <field name="farm_id"/>
                             <field name="location_id"/>
-                            
+                            <field name="company_id" groups="base.group_multi_company"/>
                         </group>
                         <group string="Staff Assignment">
                             <field name="manager_id" widget="many2one_avatar_user"/>
                             <field name="vet_id" widget="many2one_avatar_user"/>
+                        </group>
+                    </group>
+
+                    <group string="Housing &amp; Equipment Specifications">
+                        <group>
+                            <field name="housing_system"/>
+                            <field name="floor_area_m2"/>
+                            <field name="capacity" class="fw-bold fs-5"/>
+                            <field name="stocking_density"/>
+                            <field name="female_feeder_space_cm"/>
+                        </group>
+                        <group>
+                            <field name="male_feeder_count"/>
+                            <field name="drinker_count"/>
+                            <field name="nest_holes"/>
                         </group>
                     </group>
 
@@ -41,8 +56,11 @@
         <field name="name">taghini.pen.tree</field>
         <field name="model">taghini.pen</field>
         <field name="arch" type="xml">
-            <list string="Pens">
+            <list string="Pens" export_xlsx="1">
+                <field name="pen_code" string="Pen ID" class="fw-bold"/>
                 <field name="name"/>
+                <field name="capacity"/>
+                <field name="floor_area_m2" optional="show"/>
                 <field name="location_id"/>
                 <field name="manager_id" widget="many2one_avatar_user"/>
                 <field name="vet_id" widget="many2one_avatar_user"/>
@@ -57,5 +75,5 @@
         <field name="view_mode">list,form</field>
     </record>
 
-    <menuitem id="menu_taghini_pen" name="Pens / Houses" parent="menu_taghini_root" action="action_taghini_pen" sequence="1"/>
+    <menuitem id="menu_taghini_pen" name="Pens / Houses" parent="menu_taghini_config" action="action_taghini_pen" sequence="5"/>
 </odoo>

@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- ============================================================ -->
+        <!-- EMAIL TEMPLATE: PO Approval Request (To Approvers Only)      -->
+        <!-- ============================================================ -->
+        <record id="email_template_po_approval_request" model="mail.template">
+            <field name="name">Purchase Order: Approval Request</field>
+            <field name="model_id" ref="purchase.model_purchase_order"/>
+            <field name="subject">[Action Required] PO Approval Request: {{ object.name }} - {{ object.currency_id.symbol }} {{ object.amount_total }}</field>
+            <field name="email_from">{{ (object.company_id.email_formatted or object.company_id.email or user.email_formatted or user.email) }}</field>
+            <field name="description">Email notification sent to PO Approvers when an order requires approval</field>
+            <field name="body_html" type="html">
+<table border="0" cellpadding="0" cellspacing="0" style="padding-top: 16px; background-color: #F8F9FA; font-family:Verdana, Arial,sans-serif; color: #454748; width: 100%; border-collapse:separate;">
+<tr><td align="center">
+<table border="0" cellpadding="0" cellspacing="0" width="600" style="padding: 24px; background-color: #FFFFFF; border-radius: 8px; border: 1px solid #E5E7EB; color: #454748; border-collapse:separate;">
+<tbody>
+    <!-- HEADER -->
+    <tr>
+        <td valign="middle" style="padding-bottom: 20px; border-bottom: 2px solid #875A7B;">
+            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                <tr>
+                    <td valign="middle">
+                        <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #875A7B; font-weight: bold;">Purchase Approval</span><br/>
+                        <span style="font-size: 20px; font-weight: bold; color: #1F2937;">Approval Required: <t t-out="object.name or ''">P00001</t></span>
+                    </td>
+                    <td valign="middle" align="right" t-if="not object.company_id.uses_default_logo">
+                        <img t-attf-src="/logo.png?company={{ object.company_id.id }}" style="height: auto; max-width: 120px; max-height: 45px;" t-att-alt="object.company_id.name"/>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+
+    <!-- CONTENT -->
+    <tr>
+        <td style="padding: 24px 0px 16px 0px; font-size: 14px; line-height: 22px;">
+            <p style="margin: 0 0 16px 0;">Hello,</p>
+            <p style="margin: 0 0 16px 0;">
+                <strong t-out="object.approval_requester_id.name or object.create_uid.name or 'A buyer'">Buyer</strong> 
+                has submitted Purchase Order <strong t-out="object.name or ''">P00001</strong> for your approval.
+            </p>
+
+            <!-- DETAILS CARD -->
+            <table border="0" cellpadding="8" cellspacing="0" width="100%" style="background-color: #F9FAFB; border-radius: 6px; border: 1px solid #E5E7EB; font-size: 13px; margin-bottom: 20px;">
+                <tr>
+                    <td width="35%" style="color: #6B7280; font-weight: bold;">Order Reference:</td>
+                    <td width="65%" style="color: #111827; font-weight: bold;"><t t-out="object.name or ''">P00001</t></td>
+                </tr>
+                <tr>
+                    <td style="color: #6B7280; font-weight: bold;">Vendor:</td>
+                    <td style="color: #111827;"><t t-out="object.partner_id.name or ''">Vendor LLC</t></td>
+                </tr>
+                <tr>
+                    <td style="color: #6B7280; font-weight: bold;">Requested By:</td>
+                    <td style="color: #111827;"><t t-out="object.approval_requester_id.name or object.create_uid.name or ''">Buyer</t></td>
+                </tr>
+                <tr>
+                    <td style="color: #6B7280; font-weight: bold;">Date Order:</td>
+                    <td style="color: #111827;"><t t-out="format_date(object.date_order) or ''">2026-11-17</t></td>
+                </tr>
+                <tr style="border-top: 1px solid #E5E7EB;">
+                    <td style="color: #6B7280; font-weight: bold; font-size: 14px;">Total Amount:</td>
+                    <td style="color: #875A7B; font-weight: bold; font-size: 16px;">
+                        <t t-out="object.currency_id.symbol or ''">$</t> <t t-out="'%.2f' % object.amount_total">100.00</t>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- CTA BUTTON -->
+            <div style="text-align: center; margin: 28px 0px 24px 0px;">
+                <t t-set="access_url" t-value="object._get_approval_access_url()"/>
+                <a t-att-href="access_url" style="background-color: #875A7B; color: #FFFFFF; padding: 12px 28px; text-decoration: none; font-weight: bold; font-size: 14px; border-radius: 5px; display: inline-block;">
+                    Review &amp; Approve Order
+                </a>
+            </div>
+
+            <p style="margin: 0; font-size: 12px; color: #6B7280; text-align: center;">
+                You are receiving this notification because you are assigned as a PO Approver for <t t-out="object.company_id.name or 'your company'">Company</t>.
+            </p>
+        </td>
+    </tr>
+
+    <!-- FOOTER -->
+    <tr>
+        <td style="border-top: 1px solid #E5E7EB; padding-top: 16px; font-size: 11px; color: #9CA3AF; text-align: center;">
+            <t t-out="object.company_id.name or ''">Your Company</t>
+            <t t-if="object.company_id.phone"> &#8226; <t t-out="object.company_id.phone"/></t>
+            <t t-if="object.company_id.email"> &#8226; <t t-out="object.company_id.email"/></t>
+        </td>
+    </tr>
+</tbody>
+</table>
+</td></tr>
+</table>
+            </field>
+        </record>
+    </data>
+</odoo>

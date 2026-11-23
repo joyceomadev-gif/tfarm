@@ -3,29 +3,50 @@
         <field name="name">taghini.standard.form</field>
         <field name="model">taghini.farm.standard</field>
         <field name="arch" type="xml">
-            <form string="Farm Standard">
+            <form string="Breed &amp; Performance Standard">
                 <sheet>
                     <div class="oe_title">
                         <h1><field name="name"/></h1>
                     </div>
                     <group>
-                        <field name="breed"/>
-                        <field name="abattoir_location_id"/>
-                        <field name="storage_location_id"/>
+                        <group string="Standard Classification">
+                            <field name="standard_type" widget="radio" options="{'horizontal': true}"/>
+                            <field name="breed"/>
+                        </group>
+                        <group string="Slaughterhouse &amp; Storage" invisible="standard_type != 'broiler'">
+                            <field name="abattoir_location_id"/>
+                            <field name="storage_location_id"/>
+                        </group>
                     </group>
                     <notebook>
-                        <page string="Rules by Age">
+                        <page string="Performance Benchmark Lines">
                             <field name="line_ids">
                                 <list editable="bottom">
-                                
-                                    <field name="age_min"/>
-                                    <field name="age_max"/>
-                                    <field name="product_id"/>
-                                    <field name="expected_feed_g"/>
-                                    <field name="expected_weight_g"/>
-                                    <field name="medication_id" domain="[('purchase_ok', '=', True)]"/>
-                                    <field name="medication_qty"/>
-                                    <field name="medication_uom_id" optional="show" decoration-bf="1"/>
+                                    <field name="standard_type" column_invisible="True"/>
+                                    <!-- Broiler-Specific Columns -->
+                                    <field name="age_min" column_invisible="parent.standard_type != 'broiler'"/>
+                                    <field name="age_max" column_invisible="parent.standard_type != 'broiler'"/>
+                                    <field name="product_id" column_invisible="parent.standard_type != 'broiler'"/>
+                                    <field name="expected_feed_g" column_invisible="parent.standard_type != 'broiler'"/>
+                                    <field name="expected_weight_g" column_invisible="parent.standard_type != 'broiler'"/>
+                                    <field name="medication_id" domain="[('purchase_ok', '=', True)]" column_invisible="parent.standard_type != 'broiler'"/>
+                                    <field name="medication_qty" column_invisible="parent.standard_type != 'broiler'"/>
+                                    <field name="medication_uom_id" optional="show" decoration-bf="1" column_invisible="parent.standard_type != 'broiler'"/>
+
+                                    <!-- Breeder-Specific Columns (Arbor Acres Plus Benchmark) -->
+                                    <field name="week" column_invisible="parent.standard_type != 'breeder'"/>
+                                    <field name="aa_female_bw_g" column_invisible="parent.standard_type != 'breeder'"/>
+                                    <field name="aa_male_bw_g" column_invisible="parent.standard_type != 'breeder'"/>
+                                    <field name="aa_female_feed_g" column_invisible="parent.standard_type != 'breeder'"/>
+                                    <field name="aa_male_feed_g" column_invisible="parent.standard_type != 'breeder'"/>
+                                    <field name="aa_hen_week_pct" column_invisible="parent.standard_type != 'breeder'" widget="percentage"/>
+                                    <field name="aa_hatching_egg_pct" column_invisible="parent.standard_type != 'breeder'" widget="percentage"/>
+                                    <field name="aa_hatchability_pct" column_invisible="parent.standard_type != 'breeder'" widget="percentage"/>
+                                    <field name="aa_egg_weight_g" column_invisible="parent.standard_type != 'breeder'"/>
+                                    <field name="max_weekly_mort_pct" column_invisible="parent.standard_type != 'breeder'" widget="percentage"/>
+                                    <field name="cumulative_mort_target_pct" optional="hide" column_invisible="parent.standard_type != 'breeder'" widget="percentage"/>
+                                    <field name="female_weekly_gain_g" optional="hide" column_invisible="parent.standard_type != 'breeder'"/>
+                                    <field name="male_weekly_gain_g" optional="hide" column_invisible="parent.standard_type != 'breeder'"/>
                                 </list>
                             </field>
                         </page>
@@ -36,11 +57,11 @@
     </record>
 
     <record id="action_taghini_standard" model="ir.actions.act_window">
-        <field name="name">Growth Standards</field>
+        <field name="name">Breed &amp; Performance Standards</field>
         <field name="res_model">taghini.farm.standard</field>
         <field name="view_mode">list,form</field>
     </record>
 
     <menuitem id="menu_taghini_config" name="Configuration" parent="menu_taghini_root" sequence="100"/>
-    <menuitem id="menu_taghini_standard" name="Growth Standards" parent="menu_taghini_config" action="action_taghini_standard"/>
+    <menuitem id="menu_taghini_standard" name="Breed &amp; Performance Standards" parent="menu_taghini_config" action="action_taghini_standard"/>
 </odoo>

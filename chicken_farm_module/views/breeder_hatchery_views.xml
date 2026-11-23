@@ -1,0 +1,136 @@
+<odoo>
+    <!-- Breeder Hatchery Form View -->
+    <record id="view_taghini_breeder_hatchery_form" model="ir.ui.view">
+        <field name="name">taghini.breeder.hatchery.dispatch.form</field>
+        <field name="model">taghini.breeder.hatchery.dispatch</field>
+        <field name="arch" type="xml">
+            <form string="Hatchery Dispatch &amp; Incubation">
+                <header>
+                    <button name="action_start_incubation"
+                            string="Start Incubation"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_record_candling"
+                            string="Record Candling"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="state != 'incubating'"/>
+                    <button name="action_complete_hatch"
+                            string="Complete Hatch"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'candled'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,incubating,candled,hatched"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group string="Dispatch &amp; Setting">
+                            <field name="egg_room_id" readonly="state != 'draft'"/>
+                            <field name="batch_id" readonly="state != 'draft'"/>
+                            <field name="farm_id"/>
+                            <field name="dispatch_note_no" readonly="state != 'draft'"/>
+                            <field name="dispatch_date" readonly="state != 'draft'"/>
+                            <field name="flock_age_week" readonly="state != 'draft'"/>
+                            <field name="eggs_dispatched" readonly="state != 'draft'"/>
+                            <field name="received_at_hatchery" readonly="state != 'draft'"/>
+                            <field name="set_date" readonly="state in ('candled', 'hatched')"/>
+                            <field name="eggs_set" readonly="state in ('candled', 'hatched')" decoration-bf="1"/>
+                        </group>
+                        <group string="Hatch Output &amp; AA Benchmark">
+                            <field name="saleable_chicks" decoration-bf="1" readonly="state == 'hatched'"/>
+                            <field name="cull_chicks" readonly="state == 'hatched'"/>
+                            <field name="chicks_hatched" readonly="1"/>
+                            <field name="fertility_pct" widget="percentage" decoration-bf="1"/>
+                            <field name="hatch_pct_of_set" widget="percentage" decoration-bf="1"/>
+                            <field name="hatch_pct_of_fertile" widget="percentage"/>
+                            <field name="aa_hatch_pct" widget="percentage"/>
+                            <field name="hatch_dev_pts" decoration-danger="hatch_dev_pts &lt; 0" decoration-success="hatch_dev_pts &gt;= 0"/>
+                            <field name="chicks_per_hen_housed" decoration-bf="1"/>
+                        </group>
+                    </group>
+
+                    <group string="Embryo Breakout &amp; Candling Loss Breakdown">
+                        <group>
+                            <field name="candling_date" readonly="state == 'hatched'"/>
+                            <field name="infertile_clears" readonly="state == 'hatched'"/>
+                            <field name="early_dead" readonly="state == 'hatched'"/>
+                            <field name="mid_dead" readonly="state == 'hatched'"/>
+                        </group>
+                        <group>
+                            <field name="late_dead" readonly="state == 'hatched'"/>
+                            <field name="pipped_dead" readonly="state == 'hatched'"/>
+                            <field name="contaminated_exploders" readonly="state == 'hatched'"/>
+                        </group>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Breeder Hatchery List View -->
+    <record id="view_taghini_breeder_hatchery_tree" model="ir.ui.view">
+        <field name="name">taghini.breeder.hatchery.dispatch.tree</field>
+        <field name="model">taghini.breeder.hatchery.dispatch</field>
+        <field name="arch" type="xml">
+            <list string="Hatchery Dispatches">
+                <field name="name" class="fw-bold"/>
+                <field name="dispatch_date"/>
+                <field name="batch_id"/>
+                <field name="dispatch_note_no"/>
+                <field name="flock_age_week"/>
+                <field name="eggs_set" sum="Total Eggs Set"/>
+                <field name="saleable_chicks" sum="Total Grade-A DOCs"/>
+                <field name="fertility_pct" widget="percentage"/>
+                <field name="hatch_pct_of_set" widget="percentage" decoration-bf="1"/>
+                <field name="aa_hatch_pct" widget="percentage"/>
+                <field name="hatch_dev_pts" decoration-danger="hatch_dev_pts &lt; 0" decoration-success="hatch_dev_pts &gt;= 0"/>
+                <field name="chicks_per_hen_housed"/>
+                <field name="state" widget="badge" decoration-info="state in ('draft', 'incubating')" decoration-warning="state == 'candled'" decoration-success="state == 'hatched'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Breeder Hatchery Search View -->
+    <record id="view_taghini_breeder_hatchery_search" model="ir.ui.view">
+        <field name="name">taghini.breeder.hatchery.dispatch.search</field>
+        <field name="model">taghini.breeder.hatchery.dispatch</field>
+        <field name="arch" type="xml">
+            <search string="Hatchery Dispatches">
+                <field name="name"/>
+                <field name="batch_id"/>
+                <field name="dispatch_note_no"/>
+                <field name="dispatch_date"/>
+                <separator/>
+                <filter name="filter_draft" string="Draft" domain="[('state', '=', 'draft')]"/>
+                <filter name="filter_incubating" string="Incubating" domain="[('state', '=', 'incubating')]"/>
+                <filter name="filter_candled" string="Candled" domain="[('state', '=', 'candled')]"/>
+                <filter name="filter_hatched" string="Hatch Completed" domain="[('state', '=', 'hatched')]"/>
+                <separator/>
+                <filter name="group_batch" string="Breeder Batch" context="{'group_by': 'batch_id'}"/>
+                <filter name="group_date" string="Dispatch Date" context="{'group_by': 'dispatch_date:month'}"/>
+                <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- Breeder Hatchery Action -->
+    <record id="action_taghini_breeder_hatchery" model="ir.actions.act_window">
+        <field name="name">Hatchery Dispatch &amp; Incubation</field>
+        <field name="res_model">taghini.breeder.hatchery.dispatch</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_taghini_breeder_hatchery_search"/>
+        <field name="context">{'search_default_filter_draft': 1}</field>
+    </record>
+
+    <!-- Menu Item under Egg Room & Hatchery -->
+    <menuitem id="menu_taghini_breeder_hatchery"
+              name="Hatchery Dispatch &amp; Incubation"
+              parent="menu_taghini_reproduction_root"
+              action="action_taghini_breeder_hatchery"
+              sequence="2"/>
+</odoo>

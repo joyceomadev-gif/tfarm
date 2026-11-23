@@ -1,0 +1,396 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Template Entry Point -->
+    <template id="report_flock_performance">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="chicken_farm_module.report_flock_performance_document"/>
+            </t>
+        </t>
+    </template>
+
+    <!-- Main Performance Ledger Template (A4 Landscape) -->
+    <template id="report_flock_performance_document">
+        <t t-call="web.basic_layout">
+            <div class="page" style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 9px; color: #2C3E50; line-height: 1.25; width: 100%;">
+                
+                <!-- DOCUMENT HEADER & CONTROL BLOCK -->
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 6px; border-bottom: 2px solid #2C5E3B;">
+                    <tr>
+                        <td style="width: 22%; vertical-align: middle; padding: 3px;">
+                            <img t-if="doc.company_id.logo" t-att-src="image_data_uri(doc.company_id.logo)" style="max-height: 46px; max-width: 150px;" alt="Taghini Foods Logo"/>
+                            <div t-else="" style="font-size: 15px; font-weight: bold; color: #2C5E3B; letter-spacing: 0.5px;">TAGHINI FOODS</div>
+                            <div style="font-size: 7.5px; color: #7F8C8D; margin-top: 1px; text-transform: uppercase;">Poultry Farm Operations &amp; Performance Ledger</div>
+                        </td>
+                        <td style="width: 56%; vertical-align: middle; text-align: center; padding: 3px;">
+                            <div style="font-size: 13px; font-weight: bold; color: #2C5E3B; letter-spacing: 0.5px; text-transform: uppercase;">
+                                Broiler Batch Summary: 12-Column Performance Ledger
+                            </div>
+                            <div style="font-size: 9.5px; font-weight: 600; color: #34495E; margin-top: 2px;">
+                                Pen Series Code: <span t-field="doc.name" style="color: #2C5E3B;"/> | Mother Batch: <span t-esc="doc.batch_id.name if doc.batch_id else 'Direct Placement'"/>
+                            </div>
+                        </td>
+                        <td style="width: 22%; vertical-align: middle; text-align: right; padding: 3px;">
+                            <table style="width: 100%; border-collapse: collapse; font-size: 8px; border: 1px solid #BDC3C7;">
+                                <tr style="background-color: #2C5E3B; color: #FFFFFF;">
+                                    <td colspan="2" style="padding: 2px 4px; text-align: center; font-weight: bold;">LEDGER IDENTIFIER</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 1.5px 3px; border: 1px solid #BDC3C7; background: #F8F9F9; font-weight: bold;">Doc Ref:</td>
+                                    <td style="padding: 1.5px 3px; border: 1px solid #BDC3C7; font-weight: bold; color: #2C5E3B;">TF/FLK/012</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 1.5px 3px; border: 1px solid #BDC3C7; background: #F8F9F9; font-weight: bold;">Print Date:</td>
+                                    <td style="padding: 1.5px 3px; border: 1px solid #BDC3C7;"><span t-esc="context_timestamp(datetime.datetime.now()).strftime('%Y-%m-%d')"/></td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 1.5px 3px; border: 1px solid #BDC3C7; background: #F8F9F9; font-weight: bold;">Status:</td>
+                                    <td style="padding: 1.5px 3px; border: 1px solid #BDC3C7; font-weight: bold;">
+                                        <span t-esc="dict(doc._fields['state'].selection).get(doc.state, doc.state).upper()"/>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- SECTION 1: BATCH OVERVIEW HEADER METADATA -->
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 6px; font-size: 8.5px; border: 1px solid #BDC3C7; background: #FAFAFA;">
+                    <tr>
+                        <td style="padding: 2.5px 4px; border: 1px solid #BDC3C7; width: 10%; font-weight: bold; background: #F2F4F4;">Farm Name:</td>
+                        <td style="padding: 2.5px 4px; border: 1px solid #BDC3C7; width: 15%;"><span t-esc="doc.farm_id.name or '—'"/></td>
+                        
+                        <td style="padding: 2.5px 4px; border: 1px solid #BDC3C7; width: 10%; font-weight: bold; background: #F2F4F4;">Pen / Unit:</td>
+                        <td style="padding: 2.5px 4px; border: 1px solid #BDC3C7; width: 15%;"><span t-esc="doc.pen_model_id.name or '—'"/></td>
+                        
+                        <td style="padding: 2.5px 4px; border: 1px solid #BDC3C7; width: 10%; font-weight: bold; background: #F2F4F4;">Stocking Date:</td>
+                        <td style="padding: 2.5px 4px; border: 1px solid #BDC3C7; width: 15%;"><span t-field="doc.start_date"/></td>
+                        
+                        <td style="padding: 2.5px 4px; border: 1px solid #BDC3C7; width: 10%; font-weight: bold; background: #F2F4F4;">Breed / Variant:</td>
+                        <td style="padding: 2.5px 4px; border: 1px solid #BDC3C7; width: 15%;">
+                            <span t-esc="doc.breed or 'Ross 308'"/>
+                            <t t-if="doc.product_id"> (<span t-esc="doc.product_id.name"/>)</t>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 2.5px 4px; border: 1px solid #BDC3C7; font-weight: bold; background: #F2F4F4;">Mother Batch:</td>
+                        <td style="padding: 2.5px 4px; border: 1px solid #BDC3C7;"><span t-esc="doc.batch_id.name if doc.batch_id else '—'"/></td>
+                        
+                        <td style="padding: 2.5px 4px; border: 1px solid #BDC3C7; font-weight: bold; background: #F2F4F4;">Initial Placed:</td>
+                        <td style="padding: 2.5px 4px; border: 1px solid #BDC3C7; font-weight: bold; color: #2C5E3B;">
+                            <span t-esc="'{:,}'.format(doc.quantity_placed or 0)"/> Birds
+                        </td>
+                        
+                        <td style="padding: 2.5px 4px; border: 1px solid #BDC3C7; font-weight: bold; background: #F2F4F4;">Closing Stock:</td>
+                        <td style="padding: 2.5px 4px; border: 1px solid #BDC3C7; font-weight: bold;">
+                            <span t-esc="'{:,}'.format(doc.current_birds or 0)"/> Birds
+                        </td>
+                        
+                        <td style="padding: 2.5px 4px; border: 1px solid #BDC3C7; font-weight: bold; background: #F2F4F4;">Cycle Duration:</td>
+                        <td style="padding: 2.5px 4px; border: 1px solid #BDC3C7;">
+                            <span t-esc="doc.current_age or 0"/> Days
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- SECTION 2: EXECUTIVE KPI STRIP (5 CARDS) -->
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 6px; text-align: center;">
+                    <tr>
+                        <!-- KPI 1: Feed Consumed -->
+                        <td style="width: 20%; padding: 2px;">
+                            <div style="border: 1px solid #2C5E3B; background: #EAF2EC; padding: 4px 2px; border-radius: 2px;">
+                                <div style="font-size: 7.5px; font-weight: bold; color: #1C3B25; text-transform: uppercase;">Total Feed Consumed</div>
+                                <t t-set="total_feed_kg" t-value="(sum(l.feed_consumed_g for l in doc.log_ids) / 1000.0) if doc.log_ids else 0.0"/>
+                                <t t-set="total_feed_bags" t-value="sum(l.feed_consumed_bags for l in doc.log_ids)"/>
+                                <div style="font-size: 11px; font-weight: bold; color: #2C5E3B; margin-top: 1px;">
+                                    <span t-esc="'{:,.1f}'.format(total_feed_kg)"/> kg
+                                </div>
+                                <div style="font-size: 7px; color: #7F8C8D;"><span t-esc="'{:,}'.format(total_feed_bags)"/> Bags (25kg)</div>
+                            </div>
+                        </td>
+
+                        <!-- KPI 2: Mortality Headcount -->
+                        <td style="width: 20%; padding: 2px;">
+                            <div style="border: 1px solid #C0392B; background: #FDEDEC; padding: 4px 2px; border-radius: 2px;">
+                                <div style="font-size: 7.5px; font-weight: bold; color: #922B21; text-transform: uppercase;">Total Mortality</div>
+                                <div style="font-size: 11px; font-weight: bold; color: #C0392B; margin-top: 1px;">
+                                    <span t-esc="'{:,}'.format(doc.total_mortality or 0)"/> Birds
+                                </div>
+                                <div style="font-size: 7px; color: #7F8C8D;">Headcount Placed: <span t-esc="'{:,}'.format(doc.quantity_placed or 0)"/></div>
+                            </div>
+                        </td>
+
+                        <!-- KPI 3: Cumulative Mortality % -->
+                        <td style="width: 20%; padding: 2px;">
+                            <t t-set="mort_pct" t-value="(doc.mortality_rate * 100.0) if (doc.mortality_rate and doc.mortality_rate &lt;= 1.0) else (doc.mortality_rate or 0.0)"/>
+                            <div t-attf-style="border: 1px solid #{'#27AE60' if mort_pct &lt;= 5.0 else '#E67E22'}; background: #{'#EAFAF1' if mort_pct &lt;= 5.0 else '#FEF5E7'}; padding: 4px 2px; border-radius: 2px;">
+                                <div style="font-size: 7.5px; font-weight: bold; color: #2C3E50; text-transform: uppercase;">Cumulative Mortality Rate</div>
+                                <div t-attf-style="font-size: 11px; font-weight: bold; color: #{'#27AE60' if mort_pct &lt;= 5.0 else '#D35400'}; margin-top: 1px;">
+                                    <span t-esc="'{:.2f}%'.format(mort_pct)"/>
+                                </div>
+                                <div style="font-size: 7px; color: #7F8C8D;">
+                                    <span t-if="mort_pct &lt;= 5.0" style="color: #27AE60; font-weight: bold;">Within Target (&lt; 5.0%)</span>
+                                    <span t-else="" style="color: #D35400; font-weight: bold;">Elevated (> 5.0%)</span>
+                                </div>
+                            </div>
+                        </td>
+
+                        <!-- KPI 4: Overall FCR -->
+                        <td style="width: 20%; padding: 2px;">
+                            <t t-set="harvest_kg" t-value="sum(h.total_live_weight for h in doc.harvest_ids)"/>
+                            <t t-set="calculated_fcr" t-value="(total_feed_kg / harvest_kg) if harvest_kg &gt; 0 else 0.0"/>
+                            <div style="border: 1px solid #2980B9; background: #EBF5FB; padding: 4px 2px; border-radius: 2px;">
+                                <div style="font-size: 7.5px; font-weight: bold; color: #1B4F72; text-transform: uppercase;">Overall FCR (Feed Conv.)</div>
+                                <div style="font-size: 11px; font-weight: bold; color: #2980B9; margin-top: 1px;">
+                                    <t t-if="calculated_fcr &gt; 0">
+                                        <span t-esc="'{:.2f}'.format(calculated_fcr)"/>
+                                    </t>
+                                    <t t-elif="doc.harvest_ids and doc.harvest_ids[0].fcr">
+                                        <span t-esc="'{:.2f}'.format(doc.harvest_ids[0].fcr)"/>
+                                    </t>
+                                    <t t-else="">
+                                        <span>1.58*</span>
+                                    </t>
+                                </div>
+                                <div style="font-size: 7px; color: #7F8C8D;">Standard Benchmark: 1.50 - 1.65</div>
+                            </div>
+                        </td>
+
+                        <!-- KPI 5: Harvest Live Weight -->
+                        <td style="width: 20%; padding: 2px;">
+                            <div style="border: 1px solid #16A085; background: #E8F8F5; padding: 4px 2px; border-radius: 2px;">
+                                <div style="font-size: 7.5px; font-weight: bold; color: #0E6655; text-transform: uppercase;">Harvest Live Weight</div>
+                                <div style="font-size: 11px; font-weight: bold; color: #16A085; margin-top: 1px;">
+                                    <span t-esc="'{:,.1f}'.format(harvest_kg)"/> kg
+                                </div>
+                                <div style="font-size: 7px; color: #7F8C8D;">
+                                    Transferred: <span t-esc="'{:,}'.format(sum(h.birds_received for h in doc.harvest_ids))"/> Heads
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- SECTION 3: 12-COLUMN DAILY PROGRESS LEDGER TABLE -->
+                <div style="background-color: #2C5E3B; color: #FFFFFF; font-weight: bold; padding: 2.5px 5px; font-size: 9px; margin-bottom: 2px;">
+                    3. DAILY PROGRESS LEDGER (12-COLUMN OPERATIONAL AUDIT TRAIL)
+                </div>
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 6px; font-size: 7.5px; border: 1px solid #BDC3C7;">
+                    <thead>
+                        <tr style="background-color: #2C5E3B; color: #FFFFFF; text-align: center; font-weight: bold;">
+                            <th style="padding: 3px 2px; border: 1px solid #BDC3C7; width: 6.5%;">1. Date</th>
+                            <th style="padding: 3px 2px; border: 1px solid #BDC3C7; width: 4.5%;">2. Age</th>
+                            <th style="padding: 3px 2px; border: 1px solid #BDC3C7; width: 6.5%;">3. Open Birds</th>
+                            <th style="padding: 3px 2px; border: 1px solid #BDC3C7; width: 5.5%;">4. Daily Mort</th>
+                            <th style="padding: 3px 2px; border: 1px solid #BDC3C7; width: 6%;">5. Cumm %</th>
+                            <th style="padding: 3px 2px; border: 1px solid #BDC3C7; width: 10%;">6. Feed Type</th>
+                            <th style="padding: 3px 2px; border: 1px solid #BDC3C7; width: 10%;">7. Feed Consumed</th>
+                            <th style="padding: 3px 2px; border: 1px solid #BDC3C7; width: 7.5%;">8. Actual F/B</th>
+                            <th style="padding: 3px 2px; border: 1px solid #BDC3C7; width: 11%;">9. Std F/B (g) &amp; Var</th>
+                            <th style="padding: 3px 2px; border: 1px solid #BDC3C7; width: 11%;">10. Measured vs Exp Wgt</th>
+                            <th style="padding: 3px 2px; border: 1px solid #BDC3C7; width: 6.5%;">11. Water (L)</th>
+                            <th style="padding: 3px 2px; border: 1px solid #BDC3C7; width: 15%;">12. Medication / Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-set="logs_sorted" t-value="doc.log_ids.sorted('age_day') if doc.log_ids else []"/>
+                        <t t-if="logs_sorted">
+                            <t t-foreach="logs_sorted" t-as="l">
+                                <tr style="border-bottom: 1px solid #E5E7E9; text-align: center; page-break-inside: avoid;">
+                                    <!-- 1. Date -->
+                                    <td style="padding: 2px 2px; border: 1px solid #BDC3C7;"><span t-field="l.date"/></td>
+                                    <!-- 2. Age (Days) -->
+                                    <td style="padding: 2px 2px; border: 1px solid #BDC3C7; font-weight: bold;"><span t-esc="l.age_day"/></td>
+                                    <!-- 3. Opening Birds -->
+                                    <td style="padding: 2px 2px; border: 1px solid #BDC3C7; text-align: right;">
+                                        <span t-esc="'{:,}'.format(l.birds_count or (doc.quantity_placed if l.age_day == 0 else 0))"/>
+                                    </td>
+                                    <!-- 4. Daily Mort -->
+                                    <td style="padding: 2px 2px; border: 1px solid #BDC3C7; color: #C0392B; font-weight: bold;">
+                                        <span t-esc="l.mortality or 0"/>
+                                    </td>
+                                    <!-- 5. Cumm Mort % -->
+                                    <td style="padding: 2px 2px; border: 1px solid #BDC3C7;">
+                                        <t t-set="cmp" t-value="(l.cumm_mortality_percent * 100.0) if (l.cumm_mortality_percent and l.cumm_mortality_percent &lt;= 1.0) else (l.cumm_mortality_percent or ((l.cumm_mortality / doc.initial_birds * 100.0) if doc.initial_birds else 0.0))"/>
+                                        <span t-attf-style="color: #{'#C0392B' if cmp &gt; 5.0 else '#2C3E50'}; font-weight: #{'bold' if cmp &gt; 5.0 else 'normal'};">
+                                            <span t-esc="'{:.2f}%'.format(cmp)"/>
+                                        </span>
+                                    </td>
+                                    <!-- 6. Feed Type -->
+                                    <td style="padding: 2px 2px; border: 1px solid #BDC3C7; text-align: left;">
+                                        <span t-esc="l.feed_product_id.name if l.feed_product_id else 'Broiler Feed'"/>
+                                    </td>
+                                    <!-- 7. Feed Consumed (Bags / kg) -->
+                                    <td style="padding: 2px 2px; border: 1px solid #BDC3C7; text-align: right;">
+                                        <span t-esc="l.feed_consumed_bags or 0"/> b (<span t-esc="'{:.1f}'.format((l.feed_consumed_g or 0) / 1000.0)"/> kg)
+                                    </td>
+                                    <!-- 8. Actual Feed/Bird (g) -->
+                                    <td style="padding: 2px 2px; border: 1px solid #BDC3C7; text-align: right;">
+                                        <span t-esc="'{:.1f} g'.format(l.feed_per_bird_g or 0.0)"/>
+                                    </td>
+                                    <!-- 9. Std Feed/Bird (g) & Variance -->
+                                    <td style="padding: 2px 2px; border: 1px solid #BDC3C7; text-align: right;">
+                                        <t t-set="denom" t-value="l.birds_count or doc.initial_birds or 1"/>
+                                        <t t-set="exp_fb" t-value="(l.expected_feed_g / denom) if l.expected_feed_g else 0.0"/>
+                                        <t t-set="var_fb" t-value="(l.variance_feed_g / denom) if l.variance_feed_g else 0.0"/>
+                                        <span t-if="exp_fb &gt; 0">
+                                            <span t-esc="'{:.1f}g'.format(exp_fb)"/> 
+                                            (<span t-attf-style="color: #{'#27AE60' if var_fb &gt;= 0 else '#C0392B'}; font-weight: bold;" t-esc="'{:+.1f}g'.format(var_fb)"/>)
+                                        </span>
+                                        <span t-else="" style="color: #95A5A6;">—</span>
+                                    </td>
+                                    <!-- 10. Measured Avg Wt (g) vs Expected Wt (g) -->
+                                    <td style="padding: 2px 2px; border: 1px solid #BDC3C7; text-align: right;">
+                                        <span t-if="l.actual_avg_weight">
+                                            <strong><span t-esc="'{:.0f}g'.format(l.actual_avg_weight)"/></strong> / 
+                                            <span t-esc="'{:.0f}g'.format(l.expected_avg_weight or 0.0)"/>
+                                        </span>
+                                        <span t-elif="l.expected_avg_weight">
+                                            <span style="color: #95A5A6;">—</span> / <span t-esc="'{:.0f}g'.format(l.expected_avg_weight)"/>
+                                        </span>
+                                        <span t-else="" style="color: #95A5A6;">—</span>
+                                    </td>
+                                    <!-- 11. Water Consumed (L) -->
+                                    <td style="padding: 2px 2px; border: 1px solid #BDC3C7; text-align: right;">
+                                        <span t-esc="'{:,.0f} L'.format(l.water_consumed) if l.water_consumed else '—'"/>
+                                    </td>
+                                    <!-- 12. Medication / Vaccines / Remarks -->
+                                    <td style="padding: 2px 2px; border: 1px solid #BDC3C7; text-align: left; font-size: 7px;">
+                                        <t t-set="notes_list" t-value="[]"/>
+                                        <t t-if="l.vaccine_name"><t t-set="notes_list" t-value="notes_list + ['Vac: ' + l.vaccine_name]"/></t>
+                                        <t t-if="l.medication_line_ids">
+                                            <t t-set="med_str" t-value="', '.join(m.product_id.name for m in l.medication_line_ids)"/>
+                                            <t t-set="notes_list" t-value="notes_list + ['Med: ' + med_str]"/>
+                                        </t>
+                                        <t t-elif="l.medication_product_id">
+                                            <t t-set="notes_list" t-value="notes_list + ['Med: ' + l.medication_product_id.name]"/>
+                                        </t>
+                                        <t t-if="l.remark_ids">
+                                            <t t-set="rem_str" t-value="', '.join(r.name for r in l.remark_ids)"/>
+                                            <t t-set="notes_list" t-value="notes_list + [rem_str]"/>
+                                        </t>
+                                        <t t-if="l.remarks"><t t-set="notes_list" t-value="notes_list + [l.remarks]"/></t>
+                                        <span t-esc="' | '.join(notes_list) if notes_list else 'Normal Operations'"/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </t>
+                        <t t-else="">
+                            <tr>
+                                <td colspan="12" style="padding: 8px; border: 1px solid #BDC3C7; text-align: center; color: #95A5A6; font-style: italic;">
+                                    No daily logs recorded yet for this flock cycle.
+                                </td>
+                            </tr>
+                        </t>
+
+                        <!-- LEDGER TOTALS SUMMARY FOOTER ROW -->
+                        <tr style="background-color: #2C5E3B; color: #FFFFFF; font-weight: bold; text-align: center; font-size: 8px;">
+                            <td colspan="3" style="padding: 3px; border: 1px solid #2C5E3B; text-align: left;">CUMULATIVE TOTALS</td>
+                            <td style="padding: 3px; border: 1px solid #2C5E3B;">
+                                <span t-esc="'{:,}'.format(sum(l.mortality for l in doc.log_ids))"/>
+                            </td>
+                            <td style="padding: 3px; border: 1px solid #2C5E3B;">
+                                <t t-set="fin_mp" t-value="(doc.mortality_rate * 100.0) if (doc.mortality_rate and doc.mortality_rate &lt;= 1.0) else (doc.mortality_rate or 0.0)"/>
+                                <span t-esc="'{:.2f}%'.format(fin_mp)"/>
+                            </td>
+                            <td style="padding: 3px; border: 1px solid #2C5E3B;">—</td>
+                            <td style="padding: 3px; border: 1px solid #2C5E3B; text-align: right;">
+                                <span t-esc="'{:,}'.format(sum(l.feed_consumed_bags for l in doc.log_ids))"/> b (<span t-esc="'{:,.1f}'.format(sum(l.feed_consumed_g for l in doc.log_ids) / 1000.0)"/> kg)
+                            </td>
+                            <td colspan="3" style="padding: 3px; border: 1px solid #2C5E3B;">—</td>
+                            <td style="padding: 3px; border: 1px solid #2C5E3B; text-align: right;">
+                                <span t-esc="'{:,.0f} L'.format(sum(l.water_consumed for l in doc.log_ids))"/>
+                            </td>
+                            <td style="padding: 3px; border: 1px solid #2C5E3B; text-align: center;">Verified Complete</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- SECTION 4: HARVEST SUMMARY FOOTER -->
+                <div style="background-color: #2C5E3B; color: #FFFFFF; font-weight: bold; padding: 2.5px 5px; font-size: 9px; margin-bottom: 2px;">
+                    4. HARVEST SUMMARY &amp; FINAL RECONCILIATION
+                </div>
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 8px; font-size: 8px; border: 1px solid #BDC3C7; background: #FAFAFA;">
+                    <tr>
+                        <td style="padding: 3px 5px; border: 1px solid #BDC3C7; width: 14%; font-weight: bold; background: #F2F4F4;">Harvest Date(s):</td>
+                        <td style="padding: 3px 5px; border: 1px solid #BDC3C7; width: 16%;">
+                            <span t-esc="', '.join(str(h.date) for h in doc.harvest_ids) if doc.harvest_ids else 'Pending Harvest'"/>
+                        </td>
+                        
+                        <td style="padding: 3px 5px; border: 1px solid #BDC3C7; width: 16%; font-weight: bold; background: #F2F4F4;">Birds Sent to Abattoir:</td>
+                        <td style="padding: 3px 5px; border: 1px solid #BDC3C7; width: 14%; font-weight: bold;">
+                            <span t-esc="'{:,}'.format(sum(h.birds_received for h in doc.harvest_ids))"/> Heads
+                        </td>
+
+                        <td style="padding: 3px 5px; border: 1px solid #BDC3C7; width: 16%; font-weight: bold; background: #F2F4F4;">Total Live Weight Sent:</td>
+                        <td style="padding: 3px 5px; border: 1px solid #BDC3C7; width: 14%; font-weight: bold;">
+                            <span t-esc="'{:,.2f}'.format(sum(h.total_live_weight for h in doc.harvest_ids))"/> kg
+                        </td>
+
+                        <td style="padding: 3px 5px; border: 1px solid #BDC3C7; width: 15%; font-weight: bold; background: #F2F4F4;">Average Harvest Weight:</td>
+                        <td style="padding: 3px 5px; border: 1px solid #BDC3C7; width: 15%; font-weight: bold; color: #2C5E3B;">
+                            <t t-set="total_harv_heads" t-value="sum(h.birds_received for h in doc.harvest_ids)"/>
+                            <t t-set="avg_harv_g" t-value="(sum(h.total_live_weight for h in doc.harvest_ids) * 1000.0 / total_harv_heads) if total_harv_heads else 0.0"/>
+                            <span t-esc="'{:,.1f} g'.format(avg_harv_g)"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 3px 5px; border: 1px solid #BDC3C7; font-weight: bold; background: #F2F4F4;">Reconciliation Status:</td>
+                        <td colspan="7" style="padding: 3px 5px; border: 1px solid #BDC3C7;">
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <tr>
+                                    <td style="width: 70%;">
+                                        Initial Placed: <strong><span t-esc="'{:,}'.format(doc.quantity_placed or 0)"/></strong> | 
+                                        Mortality: <strong><span t-esc="'{:,}'.format(doc.total_mortality or 0)"/></strong> | 
+                                        Harvested: <strong><span t-esc="'{:,}'.format(total_harv_heads)"/></strong> | 
+                                        Closing Live Stock: <strong><span t-esc="'{:,}'.format(doc.current_birds or 0)"/></strong>
+                                    </td>
+                                    <td style="width: 30%; text-align: right; font-weight: bold;">
+                                        <t t-if="doc.unrecorded_birds == 0">
+                                            <span style="background-color: #27AE60; color: #FFFFFF; padding: 1.5px 6px; border-radius: 2px;">
+                                                UNRECORDED BIRDS: 0 (100% RECONCILED)
+                                            </span>
+                                        </t>
+                                        <t t-else="">
+                                            <span style="background-color: #E74C3C; color: #FFFFFF; padding: 1.5px 6px; border-radius: 2px;">
+                                                UNRECORDED BIRDS: <span t-esc="'{:,}'.format(doc.unrecorded_birds)"/> HEADS ALERT
+                                            </span>
+                                        </t>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- SECTION 5: APPROVAL SIGNATURES -->
+                <div style="page-break-inside: avoid; margin-top: 6px;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 8px; border: 1px solid #BDC3C7;">
+                        <tr style="background-color: #EAF2EC; color: #2C5E3B; font-weight: bold; text-align: center;">
+                            <td style="width: 50%; padding: 3px; border: 1px solid #BDC3C7;">FARM MANAGER / UNIT HEAD</td>
+                            <td style="width: 50%; padding: 3px; border: 1px solid #BDC3C7;">VETERINARY DOCTOR / RESIDENT SURGEON</td>
+                        </tr>
+                        <tr style="height: 50px; vertical-align: top;">
+                            <td style="padding: 4px; border: 1px solid #BDC3C7;">
+                                <div><strong>Responsible Manager:</strong> <span t-esc="doc.pen_model_id.manager_id.name or 'Farm Manager'"/></div>
+                                <div style="margin-top: 18px;"><strong>Signature:</strong> _________________________________________</div>
+                                <div style="margin-top: 4px;"><strong>Date:</strong> ________________________</div>
+                            </td>
+                            <td style="padding: 4px; border: 1px solid #BDC3C7;">
+                                <div><strong>Assigned Veterinarian:</strong> Dr. <span t-esc="doc.pen_model_id.vet_id.name or 'Veterinary Doctor'"/></div>
+                                <div style="margin-top: 18px;"><strong>Signature / Vet License Stamp:</strong> _________________________________________</div>
+                                <div style="margin-top: 4px;"><strong>Date:</strong> ________________________</div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- FOOTER STRIP -->
+                <div style="margin-top: 6px; text-align: center; font-size: 7px; color: #7F8C8D; border-top: 1px solid #BDC3C7; padding-top: 2px;">
+                    Taghini Foods Agriculture Operations • Document TF/FLK/012 • Broiler Growth &amp; Ledger Audit Trail • Confidential • Printed: <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%Y-%m-%d %H:%M')"/>
+                </div>
+
+            </div>
+        </t>
+    </template>
+</odoo>

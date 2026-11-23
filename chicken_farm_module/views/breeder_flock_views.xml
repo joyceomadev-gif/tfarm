@@ -1,0 +1,170 @@
+<odoo>
+    <!-- Breeder Pen Series Form View -->
+    <record id="view_taghini_breeder_flock_form" model="ir.ui.view">
+        <field name="name">taghini.breeder.flock.form</field>
+        <field name="model">taghini.breeder.flock</field>
+        <field name="arch" type="xml">
+            <form string="Breeder Pen Series">
+                <header>
+                    <button name="action_create_daily_log" string="Log Daily Operations" type="object" class="btn-primary" invisible="state != 'active'"/>
+                    <button name="action_export_111_col_excel" string="Export 111-Col Ledger (Excel)" type="object" class="btn-secondary" icon="fa-file-excel-o" invisible="pen_log_count == 0"/>
+                    <button name="action_activate" string="Activate Flock" type="object" class="btn-success" invisible="state != 'draft'"/>
+                    <button name="action_close" string="Close / Depopulate" type="object" class="btn-secondary" invisible="state != 'active'"/>
+                    <button name="action_reset_draft" string="Reset to Draft" type="object" invisible="state not in ('closed', 'cancelled')"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,active,closed"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_pen_logs" type="object" class="oe_stat_button" icon="fa-pencil-square-o">
+                            <field name="pen_log_count" widget="statinfo" string="Daily Logs"/>
+                        </button>
+                    </div>
+
+                    <div class="oe_title">
+                        <span class="text-muted fs-5"><field name="name" readonly="1"/></span>
+                        <h1><field name="pen_id" placeholder="Select Pen / House" domain="[('farm_id', '=', batch_farm_id)] if batch_farm_id else []" readonly="state != 'draft'"/></h1>
+                    </div>
+                    <group>
+                        <group string="Source Batch &amp; Location">
+                            <field name="batch_id" domain="[('state', 'not in', ('closed', 'cancelled'))]" readonly="state != 'draft'"/>
+                            <field name="batch_farm_id" invisible="1"/>
+                            <field name="available_batch_females" invisible="not batch_id or state != 'draft'"/>
+                            <field name="available_batch_males" invisible="not batch_id or state != 'draft'"/>
+                            <field name="farm_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="start_date" readonly="state != 'draft'"/>
+                            <field name="lifecycle_phase" widget="badge"/>
+                            <field name="laying_started" widget="boolean_toggle"/>
+                        </group>
+                        <group string="Bird Placement &amp; Population">
+                            <field name="pen_capacity"/>
+                            <field name="total_initial_placed" class="fw-bold fs-5" decoration-danger="pen_capacity &gt; 0 and total_initial_placed &gt; pen_capacity"/>
+                            <field name="initial_females" readonly="state != 'draft'"/>
+                            <field name="initial_males" readonly="state != 'draft'"/>
+                            <field name="current_females"/>
+                            <field name="current_males"/>
+                            <field name="males_per_100_females" decoration-bf="1" decoration-danger="males_per_100_females &lt; 10.0 or males_per_100_females &gt; 12.0"/>
+                        </group>
+                    </group>
+
+                    <group string="Cumulative Production &amp; Mortality" invisible="pen_log_count == 0">
+                        <group>
+                            <field name="total_mortality_female"/>
+                            <field name="total_mortality_male"/>
+                            <field name="total_mortality" class="fw-bold"/>
+                        </group>
+                        <group>
+                            <field name="total_eggs_collected" class="fw-bold"/>
+                            <field name="total_hatching_eggs"/>
+                            <field name="hatching_egg_pct" widget="percentage"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Daily Operations Ledger (111-Col)">
+                            <field name="pen_log_ids" readonly="1">
+                                <list decoration-info="state == 'draft'" decoration-success="state == 'posted'">
+                                    <field name="name" string="Log ID" class="fw-bold"/>
+                                    <field name="date"/>
+                                    <field name="age_week" string="Wk"/>
+                                    <field name="age_day" string="Day"/>
+                                    <field name="opening_females" string="Females"/>
+                                    <field name="female_mortality" string="F. Mort"/>
+                                    <field name="male_mortality" string="M. Mort"/>
+                                    <field name="female_feed_kg" string="F. Feed (kg)"/>
+                                    <field name="male_feed_kg" string="M. Feed (kg)"/>
+                                    <field name="total_eggs_collected" string="Eggs"/>
+                                    <field name="hatching_eggs" string="Hatching"/>
+                                    <field name="hatching_egg_pct" widget="percentage" string="Hatch %"/>
+                                    <field name="row_status" widget="badge" decoration-success="row_status == 'ok'" decoration-danger="row_status == 'danger'" decoration-warning="row_status == 'fix_errors'"/>
+                                    <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-success="state == 'posted'"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="House &amp; Equipment Specifications">
+                            <group>
+                                <group string="Housing Geometry">
+                                    <field name="housing_system"/>
+                                    <field name="floor_area_m2"/>
+                                    <field name="female_feeder_space_cm"/>
+                                </group>
+                                <group string="Equipment Capacity">
+                                    <field name="male_feeder_count"/>
+                                    <field name="drinker_count"/>
+                                    <field name="nest_holes"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Breeder Pen Series List View -->
+    <record id="view_taghini_breeder_flock_tree" model="ir.ui.view">
+        <field name="name">taghini.breeder.flock.tree</field>
+        <field name="model">taghini.breeder.flock</field>
+        <field name="arch" type="xml">
+            <list string="Breeder Pen Series">
+                <field name="name" class="fw-bold"/>
+                <field name="batch_id"/>
+                <field name="pen_id"/>
+                <field name="pen_capacity" optional="show"/>
+                <field name="total_initial_placed" optional="show" decoration-danger="pen_capacity &gt; 0 and total_initial_placed &gt; pen_capacity"/>
+                <field name="farm_id"/>
+                <field name="start_date"/>
+                <field name="initial_females"/>
+                <field name="current_females"/>
+                <field name="initial_males"/>
+                <field name="current_males"/>
+                <field name="males_per_100_females"/>
+                <field name="total_mortality" optional="show"/>
+                <field name="total_eggs_collected" optional="show"/>
+                <field name="hatching_egg_pct" widget="percentage" optional="show"/>
+                <field name="lifecycle_phase" widget="badge"/>
+                <field name="state" widget="badge" decoration-success="state == 'active'" decoration-info="state == 'draft'" decoration-muted="state == 'closed'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Breeder Pen Series Search View -->
+    <record id="view_taghini_breeder_flock_search" model="ir.ui.view">
+        <field name="name">taghini.breeder.flock.search</field>
+        <field name="model">taghini.breeder.flock</field>
+        <field name="arch" type="xml">
+            <search string="Breeder Pen Series">
+                <field name="name"/>
+                <field name="batch_id"/>
+                <field name="pen_id"/>
+                <field name="farm_id"/>
+                <filter name="filter_active" string="Active" domain="[('state', '=', 'active')]"/>
+                <filter name="filter_laying" string="Laying Phase" domain="[('lifecycle_phase', '=', 'lay')]"/>
+                <filter name="filter_rearing" string="Rearing Phase" domain="[('lifecycle_phase', '=', 'rearing')]"/>
+                <separator/>
+                <filter name="group_batch" string="Mother Batch" context="{'group_by': 'batch_id'}"/>
+                <filter name="group_farm" string="Farm Site" context="{'group_by': 'farm_id'}"/>
+                <filter name="group_pen" string="Pen / House" context="{'group_by': 'pen_id'}"/>
+                <filter name="group_phase" string="Lifecycle Phase" context="{'group_by': 'lifecycle_phase'}"/>
+                <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- Breeder Flocks Action -->
+    <record id="action_taghini_breeder_flock" model="ir.actions.act_window">
+        <field name="name">Breeder Flocks</field>
+        <field name="res_model">taghini.breeder.flock</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_taghini_breeder_flock_search"/>
+        <field name="context">{'search_default_filter_active': 1}</field>
+    </record>
+
+    <!-- Menuitem under Flocks Root -->
+    <menuitem id="menu_taghini_breeder_flock"
+              name="Breeder Flocks"
+              parent="menu_taghini_flock_root"
+              action="action_taghini_breeder_flock"
+              sequence="2"/>
+</odoo>

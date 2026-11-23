@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_purchase_approval_reject_wizard_form" model="ir.ui.view">
+        <field name="name">purchase.approval.reject.wizard.form</field>
+        <field name="model">purchase.approval.reject.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Reject Purchase Order Approval">
+                <sheet>
+                    <p class="text-muted">
+                        Please provide a reason for rejecting this purchase order. The requester will be notified and the order will be returned to RFQ Draft status.
+                    </p>
+                    <group>
+                        <field name="order_id" readonly="1"/>
+                        <field name="reason" placeholder="e.g. Unit prices exceed budgeted threshold; please renegotiate with supplier."/>
+                    </group>
+                </sheet>
+                <footer>
+                    <button name="action_reject" string="Reject Order" type="object" class="btn-danger"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

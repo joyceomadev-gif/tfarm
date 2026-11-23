@@ -3,9 +3,8 @@
         <field name="name">taghini.log.graph.mortality</field>
         <field name="model">taghini.daily.log</field>
         <field name="arch" type="xml">
-            <graph string="Mortality Trend" type="line" sample="1">
-                <field name="date" interval="day"/>
-                <field name="flock_id"/>
+            <graph string="Mortality Rate per Each Farm (%)" type="bar" sample="1">
+                <field name="farm_id"/>
                 <field name="daily_mortality_percent" type="measure"/>
             </graph>
         </field>
@@ -15,10 +14,9 @@
         <field name="name">taghini.log.graph.feed</field>
         <field name="model">taghini.daily.log</field>
         <field name="arch" type="xml">
-            <graph string="Feed Consumption (g)" type="bar" stacked="0" sample="1">
-                <field name="flock_id"/>
-                <field name="feed_consumed_g" type="measure"/>
-                <field name="expected_feed_g" type="measure"/>
+            <graph string="Farm Feed Consumption (Bags)" type="bar" stacked="0" sample="1">
+                <field name="farm_id"/>
+                <field name="feed_consumed_bags" type="measure"/>
             </graph>
         </field>
     </record>
@@ -27,8 +25,8 @@
         <field name="name">taghini.log.graph.weight</field>
         <field name="model">taghini.daily.log</field>
         <field name="arch" type="xml">
-            <graph string="Weight Variance (Avg g)" type="line" sample="1">
-                <field name="age_day"/>
+            <graph string="Weight Variance per Farm (g)" type="bar" sample="1">
+                <field name="farm_id"/>
                 <field name="variance_weight" type="measure"/>
             </graph>
         </field>
@@ -40,23 +38,25 @@
         <field name="arch" type="xml">
             <pivot string="Farm Analysis" sample="1">
                 <field name="date" interval="week" type="row"/>
+                <field name="farm_id" type="row"/>
                 <field name="flock_id" type="row"/>
                 <field name="mortality" type="measure"/>
-                <field name="feed_consumed_g" type="measure"/>
-                <field name="actual_avg_weight" type="measure"/>
+                <field name="daily_mortality_percent" type="measure"/>
+                <field name="feed_consumed_bags" type="measure"/>
+                <field name="variance_weight" type="measure"/>
             </pivot>
         </field>
     </record>
 
     <record id="act_farm_analysis_mortality" model="ir.actions.act_window">
-        <field name="name">Mortality Analysis</field>
+        <field name="name">Mortality Rate per Each Farm</field>
         <field name="res_model">taghini.daily.log</field>
         <field name="view_mode">graph</field>
         <field name="view_id" ref="view_taghini_log_graph_mortality"/>
     </record>
 
     <record id="act_farm_analysis_feed" model="ir.actions.act_window">
-        <field name="name">Feed Analysis</field>
+        <field name="name">Farm Feed Consumption</field>
         <field name="res_model">taghini.daily.log</field>
         <field name="view_mode">graph</field>
         <field name="view_id" ref="view_taghini_log_graph_feed"/>
@@ -73,8 +73,8 @@
         <field name="name">taghini.abattoir.graph.yield</field>
         <field name="model">taghini.abattoir.batch</field>
         <field name="arch" type="xml">
-            <graph string="Yield %" type="line" sample="1">
-                <field name="date" interval="day"/>
+            <graph string="Abattoir Yield % per Each Farm" type="bar" sample="1">
+                <field name="farm_id"/>
                 <field name="yield_percentage" type="measure"/>
             </graph>
         </field>
@@ -84,10 +84,9 @@
         <field name="name">taghini.abattoir.graph.volume</field>
         <field name="model">taghini.abattoir.batch</field>
         <field name="arch" type="xml">
-            <graph string="Production Volume (Kg)" type="bar" sample="1">
-                <field name="date" interval="week"/>
+            <graph string="Abattoir Production Volume (Kg)" type="bar" sample="1">
+                <field name="farm_id"/>
                 <field name="total_output_weight_kg" type="measure"/>
-                <field name="processing_loss_kg" type="measure"/>
             </graph>
         </field>
     </record>
@@ -96,69 +95,269 @@
         <field name="name">taghini.abattoir.graph.qc</field>
         <field name="model">taghini.abattoir.batch</field>
         <field name="arch" type="xml">
-            <graph string="Quality Defects" type="pie" sample="1">
-                <field name="harvest_id"/>
-                <field name="defects_count" type="measure"/>
+            <graph string="Abattoir Defect Breakdown" type="pie" sample="1">
+                <field name="farm_id"/>
+                <field name="defected_birds" type="measure"/>
             </graph>
         </field>
     </record>
 
     <record id="act_abattoir_analysis_yield" model="ir.actions.act_window">
-        <field name="name">Yield Analysis</field>
+        <field name="name">Abattoir Yield % per Each Farm</field>
         <field name="res_model">taghini.abattoir.batch</field>
         <field name="view_mode">graph</field>
         <field name="view_id" ref="view_taghini_abattoir_graph_yield"/>
     </record>
 
     <record id="act_abattoir_analysis_volume" model="ir.actions.act_window">
-        <field name="name">Volume Analysis</field>
+        <field name="name">Abattoir Production Volume</field>
         <field name="res_model">taghini.abattoir.batch</field>
         <field name="view_mode">graph</field>
         <field name="view_id" ref="view_taghini_abattoir_graph_volume"/>
     </record>
 
     <record id="act_abattoir_analysis_qc" model="ir.actions.act_window">
-        <field name="name">QC Defects</field>
+        <field name="name">Abattoir Defect Breakdown</field>
         <field name="res_model">taghini.abattoir.batch</field>
         <field name="view_mode">graph</field>
         <field name="view_id" ref="view_taghini_abattoir_graph_qc"/>
     </record>
 
+    <!-- SEARCH VIEW FOR DAILY LOG -->
+    <record id="view_taghini_log_search" model="ir.ui.view">
+        <field name="name">taghini.daily.log.search</field>
+        <field name="model">taghini.daily.log</field>
+        <field name="arch" type="xml">
+            <search string="Daily Logs">
+                <field name="flock_id"/>
+                <field name="farm_id" string="Farm"/>
+                <field name="warehouse_id" string="Warehouse"/>
+                <field name="date"/>
+                <!-- Quick filters -->
+                <filter name="filter_draft" string="Draft" domain="[('state','=','draft')]"/>
+                <filter name="filter_posted" string="Posted" domain="[('state','=','done')]"/>
+                <separator/>
+                <filter name="farm_iif" string="ILE-IGBON Farm" domain="[('farm_id.code', '=', 'IIF')]"/>
+                <filter name="farm_orcb" string="ORISIUNBARE Farm" domain="[('farm_id.code', '=', 'ORCB')]"/>
+                <filter name="farm_ogcbf" string="OGUNWOLE Farm" domain="[('farm_id.code', '=', 'OGCBF')]"/>
+                <filter name="farm_dacbf" string="DARE Farm" domain="[('farm_id.code', '=', 'DACBF')]"/>
+                <filter name="farm_kubf" string="KUGBA Farm" domain="[('farm_id.code', '=', 'KUBF')]"/>
+                <separator/>
+                <!-- Group By -->
+                <filter name="group_farm" string="Farm" context="{'group_by': 'farm_id'}"/>
+                <filter name="group_warehouse" string="Warehouse" context="{'group_by': 'warehouse_id'}"/>
+                <filter name="group_flock" string="Flock" context="{'group_by': 'flock_id'}"/>
+                <filter name="group_date_week" string="Week" context="{'group_by': 'date:week'}"/>
+                <filter name="group_date_month" string="Month" context="{'group_by': 'date:month'}"/>
+                <!-- Interactive Dynamic Sidebar Farm Filter -->
+                <searchpanel>
+                    <field name="farm_id" icon="fa-home" enable_counters="1" select="multi"/>
+                </searchpanel>
+            </search>
+        </field>
+    </record>
 
+    <!-- SEARCH VIEW FOR FLOCK -->
+    <record id="view_taghini_flock_search" model="ir.ui.view">
+        <field name="name">taghini.flock.search</field>
+        <field name="model">taghini.flock</field>
+        <field name="arch" type="xml">
+            <search string="Flocks">
+                <field name="name"/>
+                <field name="farm_id" string="Farm"/>
+                <field name="warehouse_id" string="Warehouse"/>
+                <field name="pen_model_id"/>
+                <field name="batch_id"/>
+                <filter name="filter_active" string="In Progress" domain="[('state','=','active')]"/>
+                <filter name="filter_draft" string="Draft" domain="[('state','=','draft')]"/>
+                <filter name="filter_closed" string="Closed" domain="[('state','=','closed')]"/>
+                <separator/>
+                <filter name="farm_iif" string="ILE-IGBON Farm" domain="[('farm_id.code', '=', 'IIF')]"/>
+                <filter name="farm_orcb" string="ORISIUNBARE Farm" domain="[('farm_id.code', '=', 'ORCB')]"/>
+                <filter name="farm_ogcbf" string="OGUNWOLE Farm" domain="[('farm_id.code', '=', 'OGCBF')]"/>
+                <filter name="farm_dacbf" string="DARE Farm" domain="[('farm_id.code', '=', 'DACBF')]"/>
+                <filter name="farm_kubf" string="KUGBA Farm" domain="[('farm_id.code', '=', 'KUBF')]"/>
+                <separator/>
+                <filter name="group_farm" string="Farm" context="{'group_by': 'farm_id'}"/>
+                <filter name="group_warehouse" string="Warehouse" context="{'group_by': 'warehouse_id'}"/>
+                <filter name="group_pen" string="Pen" context="{'group_by': 'pen_model_id'}"/>
+                <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                <searchpanel>
+                    <field name="farm_id" icon="fa-home" enable_counters="1" select="multi"/>
+                </searchpanel>
+            </search>
+        </field>
+    </record>
+
+    <!-- SEARCH VIEW FOR HARVEST -->
+    <record id="view_taghini_harvest_search" model="ir.ui.view">
+        <field name="name">taghini.harvest.search</field>
+        <field name="model">taghini.harvest</field>
+        <field name="arch" type="xml">
+            <search string="Harvests">
+                <field name="name"/>
+                <field name="farm_id" string="Farm"/>
+                <field name="flock_id"/>
+                <separator/>
+                <filter name="filter_draft" string="Draft" domain="[('state','=','draft')]"/>
+                <filter name="filter_done" string="Done" domain="[('state','=','done')]"/>
+                <separator/>
+                <filter name="farm_iif" string="ILE-IGBON Farm" domain="[('farm_id.code', '=', 'IIF')]"/>
+                <filter name="farm_orcb" string="ORISIUNBARE Farm" domain="[('farm_id.code', '=', 'ORCB')]"/>
+                <filter name="farm_ogcbf" string="OGUNWOLE Farm" domain="[('farm_id.code', '=', 'OGCBF')]"/>
+                <filter name="farm_dacbf" string="DARE Farm" domain="[('farm_id.code', '=', 'DACBF')]"/>
+                <filter name="farm_kubf" string="KUGBA Farm" domain="[('farm_id.code', '=', 'KUBF')]"/>
+                <separator/>
+                <filter name="group_farm" string="Farm" context="{'group_by': 'farm_id'}"/>
+                <filter name="group_flock" string="Flock" context="{'group_by': 'flock_id'}"/>
+                <filter name="group_date" string="Month" context="{'group_by': 'date:month'}"/>
+                <searchpanel>
+                    <field name="farm_id" icon="fa-home" enable_counters="1" select="multi"/>
+                </searchpanel>
+            </search>
+        </field>
+    </record>
+
+    <!-- SEARCH VIEW FOR ABATTOIR -->
+    <record id="view_taghini_abattoir_search" model="ir.ui.view">
+        <field name="name">taghini.abattoir.search</field>
+        <field name="model">taghini.abattoir.batch</field>
+        <field name="arch" type="xml">
+            <search string="Abattoir Batches">
+                <field name="name"/>
+                <field name="farm_id" string="Farm"/>
+                <field name="harvest_id"/>
+                <separator/>
+                <filter name="filter_reception" string="Reception" domain="[('state','=','reception')]"/>
+                <filter name="filter_slaughtering" string="Slaughtering" domain="[('state','=','slaughtering')]"/>
+                <filter name="filter_done" string="Done" domain="[('state','=','done')]"/>
+                <separator/>
+                <filter name="farm_iif" string="ILE-IGBON Farm" domain="[('farm_id.code', '=', 'IIF')]"/>
+                <filter name="farm_orcb" string="ORISIUNBARE Farm" domain="[('farm_id.code', '=', 'ORCB')]"/>
+                <filter name="farm_ogcbf" string="OGUNWOLE Farm" domain="[('farm_id.code', '=', 'OGCBF')]"/>
+                <filter name="farm_dacbf" string="DARE Farm" domain="[('farm_id.code', '=', 'DACBF')]"/>
+                <filter name="farm_kubf" string="KUGBA Farm" domain="[('farm_id.code', '=', 'KUBF')]"/>
+                <separator/>
+                <filter name="group_farm" string="Farm" context="{'group_by': 'farm_id'}"/>
+                <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                <filter name="group_date" string="Month" context="{'group_by': 'date:month'}"/>
+                <searchpanel>
+                    <field name="farm_id" icon="fa-home" enable_counters="1" select="multi"/>
+                </searchpanel>
+            </search>
+        </field>
+    </record>
+
+    <!-- CLASSIC BOARD DASHBOARD VIEW -->
     <record id="board_taghini_dashboard" model="ir.ui.view">
         <field name="name">taghini.dashboard</field>
         <field name="model">board.board</field>
         <field name="arch" type="xml">
-            <form string="Farm &amp; Abattoir Dashboard">
+            <form string="Farm &amp; Abattoir Operations Dashboard">
                 <board style="1-1">
                     <column>
-                        <action name="%(act_farm_analysis_mortality)d" string="Farm: Mortality Rate (%)" view_mode="graph"/>
-                        <action name="%(act_farm_analysis_feed)d" string="Farm: Feed Consumption (Actual vs Exp)" view_mode="graph"/>
-                        <action name="%(act_farm_analysis_weight)d" string="Farm: Weight Variance" view_mode="graph"/>
+                        <action name="%(act_farm_analysis_mortality)d" string="Mortality Rate per Each Farm (%)" view_mode="graph"/>
+                        <action name="%(act_farm_analysis_feed)d" string="Farm Feed Consumption (Bags)" view_mode="graph"/>
+                        <action name="%(act_farm_analysis_weight)d" string="Weight Variance (g)" view_mode="graph"/>
                     </column>
-                    
                     <column>
-                        <action name="%(act_abattoir_analysis_yield)d" string="Abattoir: Yield % Trend" view_mode="graph"/>
-                        <action name="%(act_abattoir_analysis_volume)d" string="Abattoir: Production Volume (Kg)" view_mode="graph"/>
-                        <action name="%(act_abattoir_analysis_qc)d" string="Abattoir: Defect Breakdown" view_mode="graph"/>
+                        <action name="%(act_abattoir_analysis_yield)d" string="Abattoir Yield % per Each Farm" view_mode="graph"/>
+                        <action name="%(act_abattoir_analysis_volume)d" string="Abattoir Production Volume (Kg)" view_mode="graph"/>
+                        <action name="%(act_abattoir_analysis_qc)d" string="Abattoir Defect Breakdown" view_mode="graph"/>
                     </column>
                 </board>
             </form>
         </field>
     </record>
 
+    <!-- CLASSIC BOARD DASHBOARD ACTION -->
     <record id="action_taghini_dashboard" model="ir.actions.act_window">
-        <field name="name">Global Dashboard</field>
+        <field name="name">Dashboard</field>
         <field name="res_model">board.board</field>
         <field name="view_mode">form</field>
         <field name="usage">menu</field>
         <field name="view_id" ref="board_taghini_dashboard"/>
     </record>
 
-    <menuitem id="menu_taghini_dashboard" 
-              name="Dashboard" 
-              parent="menu_taghini_root" 
-              action="action_taghini_dashboard" 
+    <!-- DASHBOARD MENU HIERARCHY -->
+    <menuitem id="menu_taghini_dashboard_root"
+              name="Dashboard"
+              parent="menu_taghini_root"
               sequence="0"/>
+
+    <menuitem id="menu_taghini_dashboard"
+              name="Overview Dashboard"
+              parent="menu_taghini_dashboard_root"
+              action="action_taghini_dashboard"
+              sequence="1"/>
+
+    <!-- ============================================================ -->
+    <!-- OWL FARM MONITOR DASHBOARD CLIENT ACTION                     -->
+    <!-- ============================================================ -->
+    <record id="action_taghini_farm_monitor" model="ir.actions.client">
+        <field name="name">Farm Monitor</field>
+        <field name="tag">taghini_farm_monitor</field>
+        <field name="target">main</field>
+    </record>
+
+    <menuitem id="menu_taghini_farm_monitor"
+              name="Farm Monitor"
+              parent="menu_taghini_dashboard_root"
+              action="action_taghini_farm_monitor"
+              groups="chicken_farm_module.group_taghini_farm_manager"
+              sequence="2"/>
+
+    <!-- ============================================================ -->
+    <!-- REPORTING / DYNAMIC ANALYTICS WITH SEARCH PANEL              -->
+    <!-- ============================================================ -->
+    <record id="action_taghini_report_farm" model="ir.actions.act_window">
+        <field name="name">Farm Performance Analytics</field>
+        <field name="res_model">taghini.daily.log</field>
+        <field name="view_mode">graph,pivot,list</field>
+        <field name="view_id" ref="view_taghini_log_graph_mortality"/>
+        <field name="search_view_id" ref="view_taghini_log_search"/>
+        <field name="context">{'search_default_group_farm': 1}</field>
+    </record>
+
+    <record id="action_taghini_report_abattoir" model="ir.actions.act_window">
+        <field name="name">Abattoir Production Analytics</field>
+        <field name="res_model">taghini.abattoir.batch</field>
+        <field name="view_mode">graph,pivot,list</field>
+        <field name="view_id" ref="view_taghini_abattoir_graph_volume"/>
+        <field name="search_view_id" ref="view_taghini_abattoir_search"/>
+        <field name="context">{'search_default_group_farm': 1}</field>
+    </record>
+
+    <record id="action_taghini_report_flock" model="ir.actions.act_window">
+        <field name="name">Flock Performance</field>
+        <field name="res_model">taghini.flock</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_taghini_flock_search"/>
+        <field name="context">{'search_default_filter_active': 1, 'search_default_group_farm': 1}</field>
+    </record>
+
+    <!-- Reporting Menu Sections -->
+    <menuitem id="menu_taghini_report_analytics_section"
+              name="Performance &amp; Analytics"
+              parent="menu_taghini_reporting_root"
+              sequence="1"/>
+
+    <menuitem id="menu_taghini_report_farm"
+              name="Farm Analytics"
+              parent="menu_taghini_report_analytics_section"
+              action="action_taghini_report_farm"
+              sequence="1"/>
+
+    <menuitem id="menu_taghini_report_abattoir"
+              name="Abattoir Analytics"
+              parent="menu_taghini_report_analytics_section"
+              action="action_taghini_report_abattoir"
+              sequence="2"/>
+
+    <menuitem id="menu_taghini_report_flock"
+              name="Flocks by Farm"
+              parent="menu_taghini_report_analytics_section"
+              action="action_taghini_report_flock"
+              sequence="3"/>
 
 </odoo>

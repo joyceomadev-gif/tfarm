@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- ============================================================ -->
+        <!-- REMARKS THAT NEED ATTENTION / ESCALATION                     -->
+        <!-- ============================================================ -->
+        <record id="remark_resp_distress" model="taghini.farm.remark">
+            <field name="name">Severe Sneezing / Gasping (Respiratory Distress)</field>
+            <field name="code">HLT-RESP-01</field>
+            <field name="category">health</field>
+            <field name="need_escalation" eval="True"/>
+            <field name="description">Audible rales, coughing, or head shaking detected. Potential Newcastle, IB, or CRD outbreak. Immediate veterinary inspection and isolation required.</field>
+        </record>
+
+        <record id="remark_cocci_blood" model="taghini.farm.remark">
+            <field name="name">Bloody Droppings (Suspected Coccidiosis)</field>
+            <field name="code">HLT-COCCI-01</field>
+            <field name="category">health</field>
+            <field name="need_escalation" eval="True"/>
+            <field name="description">Blood visible in droppings across multiple pen areas. Requires immediate Amprolium/Ampronor administration and post-mortem evaluation.</field>
+        </record>
+
+        <record id="remark_mort_spike" model="taghini.farm.remark">
+            <field name="name">Sudden Mortality Spike (>0.5% in 24h)</field>
+            <field name="code">MORT-SPIKE-01</field>
+            <field name="category">mortality</field>
+            <field name="need_escalation" eval="True"/>
+            <field name="description">Abnormal spike in daily dead birds exceeding standard threshold. Post-mortem and farm quarantine protocol activated.</field>
+        </record>
+
+        <record id="remark_leg_lameness" model="taghini.farm.remark">
+            <field name="name">Leg Paralysis / Inability to Stand (Lameness)</field>
+            <field name="code">BEH-LAME-01</field>
+            <field name="category">behavior</field>
+            <field name="need_escalation" eval="True"/>
+            <field name="description">Cluster of birds sitting on hocks unable to reach drinkers or feeders. Vet check for rickets, spondylitis or synovitis required.</field>
+        </record>
+
+        <record id="remark_feed_drop" model="taghini.farm.remark">
+            <field name="name">Feed Refusal / Sharp Intake Drop (>20%)</field>
+            <field name="code">FEED-DROP-01</field>
+            <field name="category">feed_water</field>
+            <field name="need_escalation" eval="True"/>
+            <field name="description">Feed consumed dropped more than 20% compared to expected standard. Check for feed spoilage, mycotoxins, or systemic disease.</field>
+        </record>
+
+        <record id="remark_water_failure" model="taghini.farm.remark">
+            <field name="name">Water Line Failure / Severe Deprivation</field>
+            <field name="code">WAT-FAIL-01</field>
+            <field name="category">feed_water</field>
+            <field name="need_escalation" eval="True"/>
+            <field name="description">Nipple line blockage, pump breakdown, or zero water intake recorded. Risk of acute dehydration; emergency maintenance and vet alert.</field>
+        </record>
+
+        <record id="remark_heat_stress" model="taghini.farm.remark">
+            <field name="name">Heat Stress &amp; Panting (High House Temp >35°C)</field>
+            <field name="code">ENV-HEAT-01</field>
+            <field name="category">environment</field>
+            <field name="need_escalation" eval="True"/>
+            <field name="description">House ambient temperature exceeding 35°C with wing spreading, severe panting, and prostration. Activate foggers and fans immediately.</field>
+        </record>
+
+        <record id="remark_ammonia_odor" model="taghini.farm.remark">
+            <field name="name">Wet Litter with Strong Ammonia Odor (>25 ppm)</field>
+            <field name="code">ENV-AMMO-01</field>
+            <field name="category">environment</field>
+            <field name="need_escalation" eval="True"/>
+            <field name="description">Caked or soaked litter causing eye irritation and severe ammonia release. Immediate top-dressing/replacement and ventilation adjustment required.</field>
+        </record>
+
+        <!-- ============================================================ -->
+        <!-- REMARKS THAT DO NOT NEED ATTENTION                           -->
+        <!-- ============================================================ -->
+        <record id="remark_normal_activity" model="taghini.farm.remark">
+            <field name="name">Normal Activity &amp; Active Feeding</field>
+            <field name="code">BEH-NORM-01</field>
+            <field name="category">behavior</field>
+            <field name="need_escalation" eval="False"/>
+            <field name="description">Flock uniformly dispersed, active, curious, and feeding evenly across all pans. Normal flock behavior.</field>
+        </record>
+
+        <record id="remark_good_litter" model="taghini.farm.remark">
+            <field name="name">Good Litter Condition (Dry &amp; Friable)</field>
+            <field name="code">ENV-LITT-01</field>
+            <field name="category">environment</field>
+            <field name="need_escalation" eval="False"/>
+            <field name="description">Litter is dry, soft, and friable. No caking or excessive moisture observed around drinker lines.</field>
+        </record>
+
+        <record id="remark_feed_on_target" model="taghini.farm.remark">
+            <field name="name">Uniform Water &amp; Feed Consumption on Target</field>
+            <field name="code">FEED-NORM-01</field>
+            <field name="category">feed_water</field>
+            <field name="need_escalation" eval="False"/>
+            <field name="description">Daily feed and water intake exactly match breed standard curves (+/- 3%).</field>
+        </record>
+
+        <record id="remark_vax_reaction" model="taghini.farm.remark">
+            <field name="name">Post-Vaccination Mild Droopiness (Expected Reaction)</field>
+            <field name="code">HLT-VAX-01</field>
+            <field name="category">health</field>
+            <field name="need_escalation" eval="False"/>
+            <field name="description">Mild transient lethargy observed within 24 hours of routine Gumboro/Newcastle vaccine administration. Expected immune response; monitor without intervention.</field>
+        </record>
+
+        <record id="remark_bedding_topup" model="taghini.farm.remark">
+            <field name="name">Routine Pen Bedding Top-up Completed</field>
+            <field name="code">ENV-TOPUP-01</field>
+            <field name="category">environment</field>
+            <field name="need_escalation" eval="False"/>
+            <field name="description">Fresh wood shavings spread around brooding area as part of standard sanitation schedule.</field>
+        </record>
+
+        <record id="remark_temp_adjustment" model="taghini.farm.remark">
+            <field name="name">Routine Brooder Temperature Adjustment</field>
+            <field name="code">ENV-TEMP-01</field>
+            <field name="category">environment</field>
+            <field name="need_escalation" eval="False"/>
+            <field name="description">Heaters lowered by 1°C in line with target brooding temperature chart for current age day.</field>
+        </record>
+
+        <record id="remark_normal_feather" model="taghini.farm.remark">
+            <field name="name">Normal Feathering Progression</field>
+            <field name="code">BEH-FEATH-01</field>
+            <field name="category">behavior</field>
+            <field name="need_escalation" eval="False"/>
+            <field name="description">Feather growth progressing uniformly according to breed age milestones.</field>
+        </record>
+
+        <record id="remark_weighing_sampling" model="taghini.farm.remark">
+            <field name="name">Routine Weighing Sampling Completed</field>
+            <field name="code">GEN-WEIGH-01</field>
+            <field name="category">general</field>
+            <field name="need_escalation" eval="False"/>
+            <field name="description">Sample batch weighing of 50 birds performed. Average weight is within normal range of breed standard.</field>
+        </record>
+
+    </data>
+</odoo>

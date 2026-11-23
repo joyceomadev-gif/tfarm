@@ -1,39 +1,114 @@
 <odoo>
+    <!-- FORM VIEW -->
     <record id="view_chicken_batch_form" model="ir.ui.view">
         <field name="name">taghini.chicken.batch.form</field>
         <field name="model">taghini.chicken.batch</field>
         <field name="arch" type="xml">
             <form>
+                <header>
+                    <field name="allocation_status" widget="statusbar" statusbar_visible="unallocated,partial,full"/>
+                </header>
                 <sheet>
                     <div class="oe_title">
-                        <h1><field name="name"/></h1>
+                        <label for="name" string="Batch Reference"/>
+                        <h1><field name="name" placeholder="e.g. BATCH/2026/0001"/></h1>
                     </div>
                     <group>
-                        <group>
+                        <group string="Source &amp; Logistics">
                             <field name="date"/>
                             <field name="supplier_id"/>
+                            <field name="farm_id"/>
+                            <field name="picking_id" invisible="not picking_id"/>
                         </group>
-                        <group>
-                            <field name="total_quantity"/>
-                            <field name="remaining_quantity" decoration-danger="remaining_quantity &lt; 0"/>
+                        <group string="Bird Numbers &amp; Allocation">
+                            <field name="total_quantity" string="Purchased Quantity"/>
+                            <field name="allocated_quantity"/>
+                            <field name="remaining_quantity"
+                                   decoration-warning="remaining_quantity &gt; 0"
+                                   decoration-danger="remaining_quantity &lt; 0"/>
+                            <field name="current_live_birds"/>
+                            <field name="mortality_rate" widget="percentage"/>
                         </group>
                     </group>
                     <notebook>
-                        <page string="Allocated Pens">
-                            <field name="series_ids" readonly="1"/>
+                        <page string="Allocated Flocks / Pens">
+                            <field name="series_ids" readonly="1">
+                                <list>
+                                    <field name="flock_code" string="Flock ID" class="fw-bold"/>
+                                    <field name="pen_model_id" string="Pen"/>
+                                    <field name="current_age" string="Age (Days)"/>
+                                    <field name="quantity_placed" string="Placed" sum="Total Placed"/>
+                                    <field name="current_birds" string="Live" sum="Total Live"/>
+                                    <field name="mortality_rate" widget="percentage"/>
+                                    <field name="state" widget="badge"/>
+                                </list>
+                            </field>
                         </page>
                     </notebook>
                 </sheet>
+                <chatter/>
             </form>
         </field>
     </record>
 
-    <record id="action_chicken_batch" model="ir.actions.act_window">
-        <field name="name">Purchased Batches</field>
-        <field name="res_model">taghini.chicken.batch</field>
-        <field name="view_mode">list,form</field>
+    <!-- LIST / TREE VIEW -->
+    <record id="view_chicken_batch_tree" model="ir.ui.view">
+        <field name="name">taghini.chicken.batch.tree</field>
+        <field name="model">taghini.chicken.batch</field>
+        <field name="arch" type="xml">
+            <list string="Purchased Batches" decoration-muted="allocation_status == 'full'" export_xlsx="1">
+                <field name="name" string="Batch ID" class="fw-bold"/>
+                <field name="date" string="Received Date"/>
+                <field name="supplier_id" string="Supplier"/>
+                <field name="farm_id" string="Farm"/>
+                <field name="total_quantity" string="Purchased Birds" sum="Total Purchased"/>
+                <field name="allocated_quantity" string="Allocated" sum="Total Allocated"/>
+                <field name="remaining_quantity" string="Unallocated" sum="Total Unallocated"
+                       decoration-warning="remaining_quantity &gt; 0"
+                       decoration-danger="remaining_quantity &lt; 0"/>
+                <field name="current_live_birds" string="Live Birds" sum="Total Live" class="fw-bold"/>
+                <field name="flock_count" string="Flocks / Pens"/>
+                <field name="allocation_status" widget="badge"
+                       decoration-muted="allocation_status == 'unallocated'"
+                       decoration-warning="allocation_status == 'partial'"
+                       decoration-success="allocation_status == 'full'"
+                       decoration-danger="allocation_status == 'over'"/>
+            </list>
+        </field>
     </record>
 
+    <!-- SEARCH VIEW -->
+    <record id="view_chicken_batch_search" model="ir.ui.view">
+        <field name="name">taghini.chicken.batch.search</field>
+        <field name="model">taghini.chicken.batch</field>
+        <field name="arch" type="xml">
+            <search string="Search Batches">
+                <field name="name" string="Batch Reference"/>
+                <field name="supplier_id"/>
+                <field name="farm_id"/>
+                <filter name="filter_unallocated" string="Pending Allocation" domain="[('allocation_status', 'in', ['unallocated', 'partial'])]"/>
+                <filter name="filter_full" string="Fully Allocated" domain="[('allocation_status', '=', 'full')]"/>
+                <separator/>
+                <filter name="group_farm" string="Farm" context="{'group_by': 'farm_id'}"/>
+                <filter name="group_supplier" string="Supplier" context="{'group_by': 'supplier_id'}"/>
+                <filter name="group_status" string="Allocation Status" context="{'group_by': 'allocation_status'}"/>
+                <filter name="group_date" string="Received Month" context="{'group_by': 'date:month'}"/>
+                <searchpanel>
+                    <field name="farm_id" icon="fa-home" enable_counters="1" select="multi"/>
+                </searchpanel>
+            </search>
+        </field>
+    </record>
 
-    <menuitem id="menu_taghini_batch" name="Purchased Batches" parent="menu_taghini_root" action="action_chicken_batch" sequence="1"/>
+    <!-- ACTION -->
+    <record id="action_chicken_batch" model="ir.actions.act_window">
+        <field name="name">Broiler Batches</field>
+        <field name="res_model">taghini.chicken.batch</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_chicken_batch_tree"/>
+        <field name="search_view_id" ref="view_chicken_batch_search"/>
+    </record>
+
+    <!-- MENU -->
+    <menuitem id="menu_taghini_batch" name="Broiler Batches" parent="menu_taghini_batch_root" action="action_chicken_batch" sequence="1"/>
 </odoo>

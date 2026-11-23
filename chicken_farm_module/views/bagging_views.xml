@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ============================================================
+         BAGGING FORM VIEW
+    ============================================================ -->
+    <record id="view_taghini_bagging_form" model="ir.ui.view">
+        <field name="name">taghini.abattoir.bagging.form</field>
+        <field name="model">taghini.abattoir.bagging</field>
+        <field name="arch" type="xml">
+            <form string="Bagging &amp; Freezer Transfer">
+                <header>
+                    <button name="action_auto_fill_bags"
+                            string="Auto-Fill Bags from Standard"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="state != 'draft'"
+                            help="Automatically sets bag counts according to the Taghini pieces-per-sack formula."/>
+
+                    <button name="action_confirm_bagging"
+                            string="Confirm Bagging"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'draft'"
+                            help="Mark bags as counted and ready for freezer transfer."/>
+
+                    <button name="action_move_to_freezer"
+                            string="Move to Freezer / Cold Room"
+                            type="object"
+                            class="btn-success"
+                            invisible="state != 'confirmed'"
+                            help="Create stock moves to destination locations."/>
+
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,confirmed,moved"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+
+                    <!-- GRADING COMPLIANCE BANNER -->
+                    <div class="alert alert-danger" role="alert" invisible="has_penalty_risk == False">
+                        <strong>⚠️ TAGHINI GRADING COMPLIANCE WARNING:</strong>
+                        <field name="non_compliant_count" class="oe_inline font-weight-bold"/> line(s) violate the official Taghini Grading Checklist.
+                        <em>NB: The information must be strictly adhered to, failure to do so would attract penalty.</em>
+                    </div>
+                    <div class="alert alert-success" role="alert" invisible="has_penalty_risk == True or not line_ids">
+                        <strong>✔ TAGHINI GRADING COMPLIANCE:</strong>
+                        All bagging lines strictly comply with the Taghini pieces-per-bag and expected weight specifications.
+                    </div>
+
+                    <group>
+                        <group>
+                            <field name="batch_id" options="{'no_create': True}" readonly="state != 'draft'"/>
+                            <field name="farm_id" readonly="1"/>
+                            <field name="date"/>
+                            <field name="checklist_id" options="{'no_create': True}" readonly="state != 'draft'"/>
+                        </group>
+                        <group>
+                            <field name="total_bags" readonly="1"/>
+                            <field name="total_expected_bags" readonly="1"/>
+                            <field name="total_weight_kg" readonly="1"/>
+                            <field name="has_penalty_risk" invisible="1"/>
+                            <field name="compliance_summary" readonly="1"
+                                   decoration-danger="has_penalty_risk == True"
+                                   decoration-success="has_penalty_risk == False"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <!-- BAGGING LINES WITH GRADING CHECKLIST VALIDATION -->
+                        <page string="Bagging &amp; Grading Lines">
+                            <field name="line_ids" readonly="state == 'moved'">
+                                <list editable="bottom">
+                                    <field name="product_id"/>
+                                    <field name="category_type" readonly="1"/>
+                                    <field name="quantity" string="Pieces / Birds" readonly="1"/>
+                                    <field name="weight_kg" string="Total Wgt (Kg)" readonly="1"/>
+                                    <field name="avg_unit_weight" string="Unit Wgt (Kg)" optional="show" readonly="1"/>
+                                    <field name="grading_line_id" string="Grading Series" options="{'no_create': True}"/>
+                                    <field name="pieces_per_bag_spec" string="Spec Pcs/Bag" readonly="1"/>
+                                    <field name="expected_bags" string="Exp Bags" readonly="1"/>
+                                    <field name="no_bags" string="Actual Bags"/>
+                                    <field name="avg_bag_weight" string="Avg Bag Wgt (Kg)" readonly="1"
+                                           decoration-bf="1"/>
+                                    <field name="expected_range_display" string="Expected Range (Kg)" readonly="1"/>
+                                    <field name="compliance_status" widget="badge"
+                                           decoration-success="compliance_status == 'compliant'"
+                                           decoration-danger="compliance_status in ('underweight', 'overweight', 'pieces_mismatch')"
+                                           decoration-muted="compliance_status == 'na'"/>
+                                    <field name="penalty_risk" column_invisible="True"/>
+                                    <field name="compliance_notes" string="Grading Compliance Details" optional="show" readonly="1"/>
+                                    <field name="destination_location_id"
+                                           string="Destination (Cold Room / Freezer)"
+                                           options="{'no_create': True}"/>
+                                </list>
+                            </field>
+                            <group>
+                                <div class="alert alert-info" role="alert" colspan="2">
+                                    <b>Taghini Policy Reminder:</b> Sacks must conform to the target piece count (20 pcs for ≤1.2kg, 15 pcs for 1.3–1.7kg, 12 pcs for ≥1.8kg) and stay within the expected bag weight bounds.
+                                </div>
+                            </group>
+                        </page>
+
+                        <!-- QA TEMPERATURE -->
+                        <page string="QA Temperature Checks">
+                            <field name="qa_temp_line_ids" readonly="state == 'moved'">
+                                <list editable="bottom">
+                                    <field name="product_id"/>
+                                    <field name="temperature_celsius" string="Temperature (°C)"
+                                           decoration-danger="temperature_celsius &gt; 4"
+                                           decoration-success="temperature_celsius &lt;= 4"/>
+                                    <field name="is_within_spec" readonly="1" widget="boolean_toggle"/>
+                                    <field name="recorded_at"/>
+                                    <field name="notes"/>
+                                </list>
+                            </field>
+                            <group>
+                                <div class="alert alert-warning" role="alert" colspan="2">
+                                    <b>Spec:</b> Frozen products ≤ −18°C, Chilled products ≤ 4°C.
+                                    Red rows indicate out-of-spec temperatures.
+                                </div>
+                            </group>
+                        </page>
+
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- LIST VIEW -->
+    <record id="view_taghini_bagging_list" model="ir.ui.view">
+        <field name="name">taghini.abattoir.bagging.list</field>
+        <field name="model">taghini.abattoir.bagging</field>
+        <field name="arch" type="xml">
+            <list string="Bagging Records">
+                <field name="name"/>
+                <field name="date"/>
+                <field name="batch_id"/>
+                <field name="farm_id"/>
+                <field name="total_bags" sum="Total Bags"/>
+                <field name="total_weight_kg" sum="Total Kg"/>
+                <field name="compliance_summary" string="Grading Compliance"
+                       decoration-danger="has_penalty_risk == True"
+                       decoration-success="has_penalty_risk == False"/>
+                <field name="has_penalty_risk" column_invisible="True"/>
+                <field name="state" widget="badge"
+                       decoration-warning="state == 'draft'"
+                       decoration-info="state == 'confirmed'"
+                       decoration-success="state == 'moved'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ACTION -->
+    <record id="action_taghini_bagging" model="ir.actions.act_window">
+        <field name="name">Bagging &amp; Freezer</field>
+        <field name="res_model">taghini.abattoir.bagging</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{}</field>
+    </record>
+
+    <!-- MENU under Abattoir -->
+    <menuitem id="menu_taghini_bagging"
+              name="Bagging &amp; Freezer"
+              parent="menu_taghini_abattoir_root"
+              action="action_taghini_bagging"
+              sequence="3"/>
+
+</odoo>

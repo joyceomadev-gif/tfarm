@@ -5,7 +5,9 @@
         <field name="arch" type="xml">
             <form string="Breeder Stock Batch">
                 <header>
-                    <button name="action_mark_received" string="Mark Received" type="object" class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_create_flock" string="Allocate Pen Series" type="object" class="btn-primary" invisible="state in ('closed', 'cancelled') or (remaining_female_qty &lt;= 0 and remaining_male_qty &lt;= 0)"/>
+                    <button name="action_export_111_col_excel" string="Export 111-Col Ledger (Excel)" type="object" class="btn-secondary" icon="fa-file-excel-o" invisible="pen_log_count == 0"/>
+                    <button name="action_mark_received" string="Mark Received" type="object" class="btn-secondary" invisible="state != 'draft'"/>
                     <button name="action_mark_sorted" string="Mark Sorted" type="object" class="btn-primary" invisible="state != 'received'"/>
                     <button name="action_mark_mating" string="Mark Mating" type="object" class="btn-primary" invisible="state != 'sorted'"/>
                     <button name="action_mark_laying" string="Mark Laying" type="object" class="btn-primary" invisible="state != 'mating'"/>
@@ -15,22 +17,37 @@
                     <field name="state" widget="statusbar" statusbar_visible="draft,received,sorted,mating,laying,harvested,closed"/>
                 </header>
                 <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_flocks" type="object" class="oe_stat_button" icon="fa-th-large">
+                            <field name="flock_count" widget="statinfo" string="Pen Series"/>
+                        </button>
+                        <button name="action_view_pen_logs" type="object" class="oe_stat_button" icon="fa-pencil-square-o">
+                            <field name="pen_log_count" widget="statinfo" string="Daily Pen Logs"/>
+                        </button>
+                    </div>
+
+                    <div class="alert alert-warning mb-3" role="alert" invisible="remaining_female_qty == 0 and remaining_male_qty == 0">
+                        <strong><i class="fa fa-info-circle me-1"/> Allocation Pending:</strong> This Mother Batch has unallocated parent stock. Allocate birds into Pen Series below before recording daily field operations.
+                    </div>
+
                     <div class="oe_title">
                         <h1><field name="name"/></h1>
                     </div>
                     <group>
-                        <group string="Source">
+                        <group string="Source &amp; Logistics">
                             <field name="date"/>
+                            <field name="farm_id"/>
+                            <field name="picking_id"/>
                             <field name="source_type"/>
                             <field name="source_partner_id"/>
                             <field name="source_reference"/>
                             <field name="company_id" groups="base.group_multi_company"/>
                         </group>
-                        <group string="Bird Variant">
+                        <group string="Bird Variant &amp; Performance Profile">
                             <field name="bird_variant_id" domain="[('bird_variant', '=', True)]"/>
                             <field name="standard_id"/>
-                            <field name="female_order_qty"/>
-                            <field name="male_order_qty" readonly="1"/>
+                            <field name="female_order_qty" readonly="state not in ('draft', 'received')"/>
+                            <field name="male_order_qty" readonly="state not in ('draft', 'received')"/>
                             <field name="gift_total_qty" readonly="1"/>
                             <field name="gift_male_qty"/>
                             <field name="gift_female_qty"/>
@@ -50,37 +67,105 @@
                         </group>
                     </group>
 
-                    <group string="Final Day-One Stock">
+                    <group string="Final Day-One Stock &amp; Allocation Status">
                         <group>
-                            <field name="stocked_male_qty" readonly="1"/>
                             <field name="stocked_female_qty" readonly="1"/>
+                            <field name="allocated_female_qty" readonly="1"/>
+                            <field name="remaining_female_qty" readonly="1" decoration-warning="remaining_female_qty &gt; 0" decoration-danger="remaining_female_qty &lt; 0"/>
                         </group>
                         <group>
+                            <field name="stocked_male_qty" readonly="1"/>
+                            <field name="allocated_male_qty" readonly="1"/>
+                            <field name="remaining_male_qty" readonly="1" decoration-warning="remaining_male_qty &gt; 0" decoration-danger="remaining_male_qty &lt; 0"/>
                             <field name="stocked_total_qty" readonly="1"/>
-                            <field name="male_section_qty"/>
-                            <field name="female_section_qty"/>
-                            <field name="introduced_male_qty"/>
-                            <field name="introduced_female_qty"/>
+                        </group>
+                    </group>
+
+                    <group string="Current Farm Population &amp; Performance (All Pens)" invisible="flock_count == 0">
+                        <group>
+                            <field name="total_current_females" readonly="1"/>
+                            <field name="total_current_males" readonly="1"/>
+                            <field name="total_current_birds" readonly="1" class="fw-bold"/>
+                        </group>
+                        <group>
+                            <field name="total_mortality_birds" readonly="1"/>
+                            <field name="mortality_rate" widget="percentage" readonly="1"/>
+                            <field name="total_eggs_collected" readonly="1" class="fw-bold"/>
                         </group>
                     </group>
 
                     <notebook>
-                        <page string="Daily Farm Activities">
-                            <field name="log_ids">
-                                <list editable="bottom">
-                                    <field name="date"/>
-                                    <field name="activity_type"/>
-                                    <field name="store_items_received" optional="show"/>
-                                    <field name="observations" optional="show"/>
-                                    <field name="activities" optional="show"/>
-                                    <field name="eggs_collected"/>
-                                    <field name="eggs_sent_to_hatchery"/>
-                                    <field name="state"/>
+                        <page string="Pen Housing Allocations (Flocks)">
+                            <div class="mb-2">
+                                <button name="action_create_flock" string="Allocate Pen Series" type="object" class="btn btn-outline-primary" icon="fa-plus" invisible="state in ('closed', 'cancelled')"/>
+                            </div>
+                            <field name="flock_ids" readonly="1">
+                                <list decoration-success="state == 'active'" decoration-info="state == 'draft'" decoration-muted="state == 'closed'">
+                                    <field name="name" string="Pen Series ID" class="fw-bold"/>
+                                    <field name="pen_id"/>
+                                    <field name="start_date"/>
+                                    <field name="initial_females"/>
+                                    <field name="initial_males"/>
+                                    <field name="current_females" optional="show"/>
+                                    <field name="current_males" optional="show"/>
+                                    <field name="males_per_100_females" optional="show"/>
+                                    <field name="lifecycle_phase"/>
+                                    <field name="state" widget="badge" decoration-success="state == 'active'" decoration-info="state == 'draft'" decoration-muted="state == 'closed'"/>
                                 </list>
                             </field>
                         </page>
+
+                        <page string="Batch Setup &amp; Staff">
+                            <group>
+                                <group string="Housing &amp; Destination">
+                                    <field name="housing_system"/>
+                                    <field name="hatchery_partner_id"/>
+                                    <field name="photostim_week"/>
+                                </group>
+                                <group string="Supervisory Personnel &amp; Packaging">
+                                    <field name="senior_farm_officer"/>
+                                    <field name="vet_id" widget="many2one_avatar_user"/>
+                                    <field name="feed_bag_weight_kg"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <page string="Alert Thresholds (19 Standards)">
+                            <group>
+                                <group string="Mortality Thresholds">
+                                    <field name="t_mf_db" widget="percentage"/>
+                                    <field name="t_mf_d" widget="percentage"/>
+                                    <field name="t_mm_db" widget="percentage"/>
+                                    <field name="t_mm_d" widget="percentage"/>
+                                    <field name="t_mm_min"/>
+                                </group>
+                                <group string="Feeding &amp; Water Balance">
+                                    <field name="t_feedvar" widget="percentage"/>
+                                    <field name="t_wf_lo"/>
+                                    <field name="t_wf_hi"/>
+                                    <field name="t_wdrop" widget="percentage"/>
+                                </group>
+                            </group>
+                            <group>
+                                <group string="House Climate &amp; Lighting">
+                                    <field name="t_tmax"/>
+                                    <field name="t_tmin_brood"/>
+                                    <field name="t_litter"/>
+                                    <field name="t_light_tol"/>
+                                </group>
+                                <group string="Mating &amp; Production Controls">
+                                    <field name="t_mating_lo"/>
+                                    <field name="t_mating_hi"/>
+                                    <field name="t_bw_dev" widget="percentage"/>
+                                    <field name="t_uniformity_min"/>
+                                    <field name="t_egg_wt_dev"/>
+                                    <field name="t_dispatch_interval"/>
+                                </group>
+                            </group>
+                        </page>
                     </notebook>
                 </sheet>
+                <chatter/>
             </form>
         </field>
     </record>
@@ -95,18 +180,21 @@
                 <field name="source_type"/>
                 <field name="source_partner_id"/>
                 <field name="bird_variant_id"/>
+                <field name="stocked_female_qty"/>
+                <field name="allocated_female_qty"/>
+                <field name="stocked_male_qty"/>
+                <field name="allocated_male_qty"/>
                 <field name="stocked_total_qty"/>
-                <field name="state"/>
+                <field name="state" widget="badge"/>
             </list>
         </field>
     </record>
 
     <record id="action_taghini_breeder_batch" model="ir.actions.act_window">
-        <field name="name">Breeder Stock</field>
+        <field name="name">Breeder Batches</field>
         <field name="res_model">taghini.breeder.batch</field>
         <field name="view_mode">list,form</field>
     </record>
 
-    <menuitem id="menu_taghini_breeder_root" name="Breeder Stock" parent="menu_taghini_root" sequence="20"/>
-    <menuitem id="menu_taghini_breeder_batch" name="Breeder Batches" parent="menu_taghini_breeder_root" action="action_taghini_breeder_batch" sequence="1"/>
+    <menuitem id="menu_taghini_breeder_batch" name="Breeder Batches" parent="menu_taghini_batch_root" action="action_taghini_breeder_batch" sequence="2"/>
 </odoo>

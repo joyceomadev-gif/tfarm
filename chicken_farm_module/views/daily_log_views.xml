@@ -1,57 +1,49 @@
 <odoo>
-
     <record id="view_taghini_log_form" model="ir.ui.view">
         <field name="name">taghini.log.form</field>
         <field name="model">taghini.daily.log</field>
         <field name="arch" type="xml">
-            <form string="Daily Log">
+            <form string="Daily Operations Log">
                 <header>
-                    <button name="action_post_log" string="Post Stock Moves" type="object" class="btn-primary" invisible="state == 'done'"/>
+                    <button name="action_post_log" string="Post to Stock" type="object" class="oe_highlight" invisible="state == 'done'"/>
+                    <button name="%(chicken_farm_module.action_taghini_daily_log_import_export_wizard)d" string="Import / Export Logs" type="action" class="btn-secondary" icon="fa-exchange"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,done"/>
                 </header>
                 <sheet>
                     <div class="oe_title">
-                        <h1>
-                            <field name="flock_id" readonly="1" options="{'no_open': True}"/>
-                            <span> - </span>
-                            <field name="date" readonly="1"/>
-                        </h1>
+                        <span class="text-muted fs-5"><field name="name" readonly="1"/></span>
+                        <label for="flock_id" string="Flock"/>
+                        <h1><field name="flock_id" placeholder="Select Flock..." readonly="state == 'done'"/></h1>
                     </div>
+                    
                     <group>
-                        <group>
-                            <field name="flock_id" readonly="state == 'done'"/>
+                        <group string="Identity &amp; Birds">
                             <field name="date" readonly="state == 'done'"/>
-                            <field name="pen_id"/>
+                            <field name="birds_count"/>
+                            <field name="age_day" string="Age (Days)"/>
+                            <field name="standard_id" readonly="1" force_save="1"/>
                         </group>
-                        <group>
-                            <field name="age_day"/>
-                            <field name="birds_count" string="Birds Alive (Start of Day)"/>
+                        <group string="Mortality &amp; Health">
+                            <field name="mortality" readonly="state == 'done'"/>
+                            <field name="daily_mortality_percent" widget="percentage"/>
+                            <field name="cumm_mortality"/>
+                            <field name="cumm_mortality_percent" widget="percentage" decoration-danger="cumm_mortality_percent > 5"/>
                         </group>
                     </group>
 
                     <notebook>
-                        <page string="Feed &amp; Mortality">
+                        <page string="Feed &amp; Water">
                             <group>
-                                <group string="Mortality">
-                                    <field name="mortality" readonly="state == 'done'"/>
-                                    <field name="daily_mortality_percent" widget="percentage"/>
-                                    <field name="cumm_mortality"/>
-                                    <field name="cumm_mortality_percent" widget="percentage" decoration-danger="cumm_mortality_percent > 5"/>
-                                </group>
-                                <group string="Feed Consumption">
-                                    <field name="feed_product_id" readonly="state == 'done'"/>
+                                <group string="Feed Data">
+                                    <field name="feed_product_id"/>
                                     <field name="feed_consumed_bags" readonly="state == 'done'"/>
                                     <field name="feed_consumed_g"/>
-                                    <field name="water_consumed"/>
-                                </group>
-                            </group>
-                            <group string="Feed Analysis">
-                                <group>
                                     <field name="feed_per_bird_g"/>
                                     <field name="expected_feed_g"/>
                                     <field name="variance_feed_g" decoration-danger="variance_feed_g &lt; -1000"/>
                                 </group>
-                                <group>
+                                <group string="Water &amp; Cumulative">
+                                    <field name="water_consumed" readonly="state == 'done'"/>
                                     <field name="cumm_actual_feed_g"/>
                                     <field name="cumm_expected_feed_g"/>
                                 </group>
@@ -72,19 +64,22 @@
                             </group>
                         </page>
 
+                        <!-- REQUIREMENT 8: Multiple Medications -->
                         <page string="Vet &amp; Health">
-                            <group>
-                                <group string="Medication (Auto-Recommended)">
-                                    <field name="medication_product_id"/>
-                                    <label for="medication_qty" string="Dose Quantity"/>
-                                    <div class="o_row">
-                                        <field name="medication_qty"/>
-                                        <field name="medication_uom_id"/>
-                                    </div>
-                                </group>
-                                <group string="Other">
-                                    <field name="vaccine_name"/>
-                                </group>
+                            <group string="Vaccination &amp; Biologicals">
+                                <field name="vaccine_name" placeholder="e.g. Gumboro, Lasota, Newcastle..."/>
+                            </group>
+                            <group string="Medications Administered (Multiple)">
+                                <field name="medication_line_ids" readonly="state == 'done'">
+                                    <list editable="bottom">
+                                        <field name="product_id" domain="[('purchase_ok', '=', True)]"/>
+                                        <field name="quantity"/>
+                                        <field name="uom_id"/>
+                                        <field name="administration_route"/>
+                                        <field name="notes" placeholder="Indication/dosage notes"/>
+                                        <field name="move_id" readonly="1" optional="hide"/>
+                                    </list>
+                                </field>
                             </group>
                         </page>
 
@@ -100,51 +95,62 @@
                             <field name="farm_activities" placeholder="Daily tasks, movements, cleaning, sorting, vaccination, feeding, and similar activities."/>
                         </page>
 
-                        <page string="Remarks">
-                            <field name="remarks" placeholder="Enter notes about bird behavior, weather, or health issues..."/>
+                        <!-- REQUIREMENT 9 & 10: Standard Remarks with Escalation -->
+                        <page string="Remarks &amp; Conditions">
+                            <div class="alert alert-warning mb-3" role="alert" invisible="not has_escalated_remarks">
+                                <strong>⚠️ Alert:</strong> One or more selected conditions require Veterinary attention. An automatic notification will be sent to the vet upon saving/posting.
+                            </div>
+                            <group string="Standard Symptoms / Observations">
+                                <field name="has_escalated_remarks" invisible="1"/>
+                                <field name="remark_ids" widget="many2many_tags"
+                                       options="{'color_field': 'color', 'no_create_edit': False}"
+                                       placeholder="Select symptoms or observed conditions..."/>
+                            </group>
+                            <group string="Detailed Shift Remarks / Clinical Notes">
+                                <field name="remarks" nolabel="1" placeholder="Enter full details about bird behavior, symptoms, weather, or incident reports..."/>
+                            </group>
                         </page>
 
                         <page string="System Info" groups="base.group_no_one">
                             <group>
                                 <field name="move_id" readonly="1"/>
-                                <field name="medication_move_id" readonly="1"/>
                                 <field name="scrap_id" readonly="1"/>
                             </group>
                         </page>
                     </notebook>
                 </sheet>
-                <footer>
-                    <button string="Save &amp; Close" special="save" class="btn-primary"/>
-                    <button string="Discard" special="cancel" class="btn-secondary"/>
-                </footer>
+                <chatter/>
             </form>
         </field>
     </record>
+
     <record id="view_log_tree_mortality" model="ir.ui.view">
         <field name="name">taghini.log.tree.mortality</field>
         <field name="model">taghini.daily.log</field>
         <field name="arch" type="xml">
-            <list string="Mortality &amp; Feed" create="0" editable="bottom" decoration-muted="state == 'done'">
+            <list string="Mortality &amp; Feed" create="0" editable="bottom" decoration-muted="state == 'done'" export_xlsx="1">
+                <field name="name" string="Log ID" readonly="1" class="fw-bold"/>
                 <field name="flock_id" readonly="1" optional="show"/>
                 <field name="date" readonly="state == 'done'"/>
                 <field name="birds_count" string="Birds Start"/> 
                 <field name="age_day" string="Birds Age"/> 
-                                    
                 <field name="mortality" sum="Total Dead"/>
                 <field name="daily_mortality_percent" widget="percentage" optional="show"/>
                 <field name="cumm_mortality" optional="hide"/>
                 <field name="cumm_mortality_percent" widget="percentage" decoration-danger="cumm_mortality_percent > 5"/>
+                <field name="remark_ids" widget="many2many_tags" options="{'color_field': 'color'}" optional="show"/>
             </list>
         </field>
     </record>
+
     <record id="view_log_tree_feed" model="ir.ui.view">
         <field name="name">taghini.log.tree.feed</field>
         <field name="model">taghini.daily.log</field>
         <field name="arch" type="xml">
-            <list string="Mortality &amp; Feed"  create="0" editable="bottom" decoration-muted="state == 'done'">
+            <list string="Mortality &amp; Feed" create="0" editable="bottom" decoration-muted="state == 'done'" export_xlsx="1">
+                <field name="name" string="Log ID" readonly="1" class="fw-bold"/>
                 <field name="flock_id" readonly="1" optional="show"/>
                 <field name="date" readonly="state == 'done'"/>
-                <field name="flock_id" readonly="1" optional="show"/>
                 <field name="birds_count" string="Birds Start"/> 
                 <field name="age_day" string="Birds Age"/> 
                                     
@@ -160,7 +166,6 @@
                 <field name="cumm_expected_feed_g" optional="hide"/>
                 <field name="cumm_actual_feed_g" optional="hide"/>
                                     
-                                    
                 <field name="water_consumed"/>
                 <field name="state"/>
                 <button name="action_post_log" type="object" icon="fa-check" title="Post Stock" invisible="state == 'done'"/>
@@ -172,7 +177,8 @@
         <field name="name">taghini.log.tree.weight</field>
         <field name="model">taghini.daily.log</field>
         <field name="arch" type="xml">
-            <list string="Weight &amp; Light" create="0" editable="bottom">
+            <list string="Weight &amp; Light" create="0" editable="bottom" export_xlsx="1">
+                <field name="name" string="Log ID" readonly="1" class="fw-bold"/>
                 <field name="flock_id" readonly="1" optional="show"/>
                 <field name="date" readonly="1"/>
                 <field name="birds_count"/>
@@ -195,18 +201,16 @@
         <field name="name">taghini.log.tree.meds</field>
         <field name="model">taghini.daily.log</field>
         <field name="arch" type="xml">
-            <list string="Medications" create="0" editable="bottom">
+            <list string="Medications" create="0" editable="bottom" export_xlsx="1">
+                <field name="name" string="Log ID" readonly="1" class="fw-bold"/>
                 <field name="flock_id" readonly="1" optional="show"/>
                 <field name="date" readonly="1"/>
-                
                 <field name="birds_count"/>
                 <field name="age_day" string="Birds Age"/>  
-                <field name="medication_product_id"/>
-                <field name="medication_qty"/>
-                <field name="medication_uom_id" optional="show"/>
-                
+                <field name="medication_line_ids" widget="many2many_tags" optional="show"/>
                 <field name="vaccine_name"/>
-                <field name="remarks"/>
+                <field name="remark_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                <field name="vet_notified" widget="boolean_toggle" readonly="1"/>
             </list>
         </field>
     </record>
@@ -215,7 +219,8 @@
         <field name="name">taghini.log.tree.harvest</field>
         <field name="model">taghini.daily.log</field>
         <field name="arch" type="xml">
-            <list string="Harvest" create="0" editable="bottom">
+            <list string="Harvest" create="0" editable="bottom" export_xlsx="1">
+                <field name="name" string="Log ID" readonly="1" class="fw-bold"/>
                 <field name="date" readonly="1"/>
                 <field name="flock_id" readonly="1" optional="show"/>
                 <field name="birds_count"/> 
@@ -244,7 +249,6 @@
     <record id="action_taghini_log_bio" model="ir.actions.act_window">
         <field name="name">Biometrics (Weight)</field>
         <field name="res_model">taghini.daily.log</field>
-        
         <field name="view_mode">list,form</field>
         <field name="view_id" ref="view_log_tree_weight"/>
         <field name="context">{'search_default_group_location': 1, 'search_default_group_batch': 1}</field>
@@ -273,12 +277,23 @@
         <field name="view_id" ref="view_taghini_log_form"/>
     </record>
 
-    <menuitem id="menu_taghini_logs_root" name="Daily Logs" parent="menu_taghini_root" sequence="3"/>
+    <menuitem id="menu_taghini_logs_root" name="Daily Logs" parent="menu_taghini_reporting_root" sequence="10"/>
 
     <menuitem id="menu_log_ops_mort" name="Operations (Mortality)" parent="menu_taghini_logs_root" action="action_taghini_log_ops_mort" sequence="1"/>
     <menuitem id="menu_log_ops_feed" name="Operations (Feed)" parent="menu_taghini_logs_root" action="action_taghini_log_ops_feed" sequence="2"/>
     <menuitem id="menu_log_bio" name="Biometrics (Weight)" parent="menu_taghini_logs_root" action="action_taghini_log_bio" sequence="3"/>
     <menuitem id="menu_log_meds" name="Vet &amp; Health" parent="menu_taghini_logs_root" action="action_taghini_log_meds" sequence="4"/>
     <menuitem id="menu_log_harvest" name="Harvesting" parent="menu_taghini_logs_root" action="action_taghini_log_harvest" sequence="5"/>
+    <menuitem id="menu_taghini_log_import_export" name="Import / Export Daily Logs" parent="menu_taghini_logs_root" action="action_taghini_daily_log_import_export_wizard" sequence="6"/>
+
+    <!-- Action Menu Binding for taghini.daily.log (available in Action gear dropdown on list and form views) -->
+    <record id="action_taghini_daily_log_import_export_binding" model="ir.actions.act_window">
+        <field name="name">Import / Export Daily Logs</field>
+        <field name="res_model">taghini.daily.log.import.export.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="chicken_farm_module.model_taghini_daily_log"/>
+        <field name="binding_view_types">list,form</field>
+    </record>
 
 </odoo>

@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- Default Master Grading Checklist -->
+        <record id="taghini_default_grading_checklist" model="taghini.grading.checklist">
+            <field name="name">TAGHINI FOODS UPDATED GRADING CHECKLIST</field>
+            <field name="code">TF-GRADE-STD</field>
+            <field name="is_default">True</field>
+            <field name="notice">NB: The above information must be strictly adhered to, failure to do so would attract penalty.</field>
+        </record>
+
+        <!-- 1. Underweight -->
+        <record id="grading_line_underweight" model="taghini.grading.checklist.line">
+            <field name="checklist_id" ref="taghini_default_grading_checklist"/>
+            <field name="sequence">5</field>
+            <field name="name">underweight</field>
+            <field name="code">SERIES_UNDERWEIGHT</field>
+            <field name="unit_weight_min">0.000</field>
+            <field name="unit_weight_max">0.899</field>
+            <field name="pieces_per_bag">20</field>
+            <field name="expected_bag_weight_min">0.00</field>
+            <field name="expected_bag_weight_max">0.00</field>
+            <field name="display_range">Vary (ies)</field>
+            <field name="is_underweight">True</field>
+        </record>
+
+        <!-- 2. 0.9 Series -->
+        <record id="grading_line_0_9" model="taghini.grading.checklist.line">
+            <field name="checklist_id" ref="taghini_default_grading_checklist"/>
+            <field name="sequence">10</field>
+            <field name="name">0.9</field>
+            <field name="code">SERIES_0_9</field>
+            <field name="unit_weight_min">0.900</field>
+            <field name="unit_weight_max">0.990</field>
+            <field name="pieces_per_bag">20</field>
+            <field name="expected_bag_weight_min">18.00</field>
+            <field name="expected_bag_weight_max">19.80</field>
+            <field name="display_range">18-19 (18.00-19.80)</field>
+        </record>
+
+        <!-- 3. 1.0 Series -->
+        <record id="grading_line_1_0" model="taghini.grading.checklist.line">
+            <field name="checklist_id" ref="taghini_default_grading_checklist"/>
+            <field name="sequence">20</field>
+            <field name="name">1.0</field>
+            <field name="code">SERIES_1_0</field>
+            <field name="unit_weight_min">1.000</field>
+            <field name="unit_weight_max">1.090</field>
+            <field name="pieces_per_bag">20</field>
+            <field name="expected_bag_weight_min">20.00</field>
+            <field name="expected_bag_weight_max">21.80</field>
+            <field name="display_range">20-21 (20.00-21.80)</field>
+        </record>
+
+        <!-- 4. 1.1 Series -->
+        <record id="grading_line_1_1" model="taghini.grading.checklist.line">
+            <field name="checklist_id" ref="taghini_default_grading_checklist"/>
+            <field name="sequence">30</field>
+            <field name="name">1.1</field>
+            <field name="code">SERIES_1_1</field>
+            <field name="unit_weight_min">1.100</field>
+            <field name="unit_weight_max">1.190</field>
+            <field name="pieces_per_bag">20</field>
+            <field name="expected_bag_weight_min">22.00</field>
+            <field name="expected_bag_weight_max">23.80</field>
+            <field name="display_range">22-23 (22.00-23.80)</field>
+        </record>
+
+        <!-- 5. 1.2 & 1.2CUT4 Series -->
+        <record id="grading_line_1_2" model="taghini.grading.checklist.line">
+            <field name="checklist_id" ref="taghini_default_grading_checklist"/>
+            <field name="sequence">40</field>
+            <field name="name">1.2 / 1.2CUT4</field>
+            <field name="code">SERIES_1_2</field>
+            <field name="unit_weight_min">1.200</field>
+            <field name="unit_weight_max">1.290</field>
+            <field name="pieces_per_bag">20</field>
+            <field name="expected_bag_weight_min">24.00</field>
+            <field name="expected_bag_weight_max">25.80</field>
+            <field name="display_range">24-25 (24.00-25.80)</field>
+            <field name="notes">Includes 1.2 Whole and 1.2CUT4</field>
+        </record>
+
+        <!-- 6. 1.3 Series -->
+        <record id="grading_line_1_3" model="taghini.grading.checklist.line">
+            <field name="checklist_id" ref="taghini_default_grading_checklist"/>
+            <field name="sequence">50</field>
+            <field name="name">1.3</field>
+            <field name="code">SERIES_1_3</field>
+            <field name="unit_weight_min">1.300</field>
+            <field name="unit_weight_max">1.390</field>
+            <field name="pieces_per_bag">15</field>
+            <field name="expected_bag_weight_min">19.50</field>
+            <field name="expected_bag_weight_max">20.35</field>
+            <field name="display_range">19-20 (19.50-20.35)</field>
+        </record>
+
+        <!-- 7. 1.4 & 1.4CUT9 & 1.4CUT4 Series -->
+        <record id="grading_line_1_4" model="taghini.grading.checklist.line">
+            <field name="checklist_id" ref="taghini_default_grading_checklist"/>
+            <field name="sequence">60</field>
+            <field name="name">1.4 / 1.4CUT9 / 1.4CUT4</field>
+            <field name="code">SERIES_1_4</field>
+            <field name="unit_weight_min">1.400</field>
+            <field name="unit_weight_max">1.490</field>
+            <field name="pieces_per_bag">15</field>
+            <field name="expected_bag_weight_min">21.00</field>
+            <field name="expected_bag_weight_max">22.35</field>
+            <field name="display_range">21-22 (21.00-22.35)</field>
+            <field name="notes">Includes 1.4 Whole, 1.4CUT9, and 1.4CUT4</field>
+        </record>
+
+        <!-- 8. 1.5 Series -->
+        <record id="grading_line_1_5" model="taghini.grading.checklist.line">
+            <field name="checklist_id" ref="taghini_default_grading_checklist"/>
+            <field name="sequence">70</field>
+            <field name="name">1.5</field>
+            <field name="code">SERIES_1_5</field>
+            <field name="unit_weight_min">1.500</field>
+            <field name="unit_weight_max">1.590</field>
+            <field name="pieces_per_bag">15</field>
+            <field name="expected_bag_weight_min">22.50</field>
+            <field name="expected_bag_weight_max">23.85</field>
+            <field name="display_range">22-23 (22.50-23.85)</field>
+        </record>
+
+        <!-- 9. 1.6 Series -->
+        <record id="grading_line_1_6" model="taghini.grading.checklist.line">
+            <field name="checklist_id" ref="taghini_default_grading_checklist"/>
+            <field name="sequence">80</field>
+            <field name="name">1.6</field>
+            <field name="code">SERIES_1_6</field>
+            <field name="unit_weight_min">1.600</field>
+            <field name="unit_weight_max">1.690</field>
+            <field name="pieces_per_bag">15</field>
+            <field name="expected_bag_weight_min">24.00</field>
+            <field name="expected_bag_weight_max">25.35</field>
+            <field name="display_range">24-25 (24.00-25.35)</field>
+        </record>
+
+        <!-- 10. 1.7 Series -->
+        <record id="grading_line_1_7" model="taghini.grading.checklist.line">
+            <field name="checklist_id" ref="taghini_default_grading_checklist"/>
+            <field name="sequence">90</field>
+            <field name="name">1.7</field>
+            <field name="code">SERIES_1_7</field>
+            <field name="unit_weight_min">1.700</field>
+            <field name="unit_weight_max">1.790</field>
+            <field name="pieces_per_bag">15</field>
+            <field name="expected_bag_weight_min">25.50</field>
+            <field name="expected_bag_weight_max">26.85</field>
+            <field name="display_range">25-26 (25.5-26.85)</field>
+        </record>
+
+        <!-- 11. 1.8 Series -->
+        <record id="grading_line_1_8" model="taghini.grading.checklist.line">
+            <field name="checklist_id" ref="taghini_default_grading_checklist"/>
+            <field name="sequence">100</field>
+            <field name="name">1.8</field>
+            <field name="code">SERIES_1_8</field>
+            <field name="unit_weight_min">1.800</field>
+            <field name="unit_weight_max">1.890</field>
+            <field name="pieces_per_bag">12</field>
+            <field name="expected_bag_weight_min">21.60</field>
+            <field name="expected_bag_weight_max">22.68</field>
+            <field name="display_range">21-22 (21.60-22.68)</field>
+        </record>
+
+        <!-- 12. 1.9 Series -->
+        <record id="grading_line_1_9" model="taghini.grading.checklist.line">
+            <field name="checklist_id" ref="taghini_default_grading_checklist"/>
+            <field name="sequence">110</field>
+            <field name="name">1.9</field>
+            <field name="code">SERIES_1_9</field>
+            <field name="unit_weight_min">1.900</field>
+            <field name="unit_weight_max">1.990</field>
+            <field name="pieces_per_bag">12</field>
+            <field name="expected_bag_weight_min">22.80</field>
+            <field name="expected_bag_weight_max">23.88</field>
+            <field name="display_range">22-23 (22.8-23.88)</field>
+        </record>
+
+        <!-- 13. 2.0 Series (2.00 and above) -->
+        <record id="grading_line_2_0" model="taghini.grading.checklist.line">
+            <field name="checklist_id" ref="taghini_default_grading_checklist"/>
+            <field name="sequence">120</field>
+            <field name="name">2.0 (2.00 and above)</field>
+            <field name="code">SERIES_2_0</field>
+            <field name="unit_weight_min">2.000</field>
+            <field name="unit_weight_max">99.000</field>
+            <field name="pieces_per_bag">12</field>
+            <field name="expected_bag_weight_min">24.00</field>
+            <field name="expected_bag_weight_max">999.00</field>
+            <field name="display_range">24 and above</field>
+        </record>
+
+        <!-- 14. Head and Leg -->
+        <record id="grading_line_head_and_leg" model="taghini.grading.checklist.line">
+            <field name="checklist_id" ref="taghini_default_grading_checklist"/>
+            <field name="sequence">130</field>
+            <field name="name">Head and Leg</field>
+            <field name="code">HEAD_AND_LEG</field>
+            <field name="unit_weight_min">0.000</field>
+            <field name="unit_weight_max">0.000</field>
+            <field name="pieces_per_bag">0</field>
+            <field name="expected_bag_weight_min">20.00</field>
+            <field name="expected_bag_weight_max">20.00</field>
+            <field name="display_range">20kg (Head 18kg + Leg 12kg)</field>
+            <field name="is_head_and_leg">True</field>
+            <field name="notes">Head 18kg + Leg 12kg specification</field>
+        </record>
+
+    </data>
+</odoo>

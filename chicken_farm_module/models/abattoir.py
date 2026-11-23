@@ -10,6 +10,10 @@ class AbattoirBatch(models.Model):
     name = fields.Char(string='Batch Reference', required=True, copy=False, readonly=True, default='New')
     date = fields.Date(string='Production Date', default=fields.Date.context_today, required=True)
     company_id = fields.Many2one('res.company', default=lambda self: self.env.company)
+    farm_id = fields.Many2one(
+        'taghini.farm', string='Farm',
+        related='harvest_id.farm_id', store=True, readonly=True
+    )
 
     # --- TIMING (From Excel) ---
     start_time = fields.Float(string='Start Time')
@@ -52,11 +56,39 @@ class AbattoirBatch(models.Model):
     # --- STAFF & QC ---
     manager_id = fields.Many2one('res.users', string='Abattoir Manager', default=lambda self: self.env.user)
     attendants_present_percent = fields.Float(string='Attendants Present %')
-    
+
+    # === SECTION SUPERVISORS (Task D) ===
+    dirty_section_supervisor_id = fields.Many2one('res.users', string='Dirty Section Supervisor')
+    grading_supervisor_id = fields.Many2one('res.users', string='Grading Unit Supervisor')
+    packaging_supervisor_id = fields.Many2one('res.users', string='Packaging/Cold Room Supervisor')
+    qa_shopfloor_id = fields.Many2one('res.users', string='QA on Shopfloor')
+    maintenance_count = fields.Integer(string='Maintenance Count on Shopfloor')
+    production_manager_id = fields.Many2one('res.users', string='Production Manager')
+
     # QC FAULTS (From Excel)
     defects_count = fields.Integer(string='Defected/Rejected')
     dirty_section_score = fields.Integer(string='Dirty Section Score (%)')
     cold_room_score = fields.Integer(string='Cold Room Score (%)')
+
+    # === INSPECTOR / QC RATINGS (Task E) ===
+    inspector_rating = fields.Selection([
+        ('1', '1 - Very Poor'),
+        ('2', '2 - Poor'),
+        ('3', '3 - Acceptable'),
+        ('4', '4 - Good'),
+        ('5', '5 - Excellent'),
+    ], string='Inspector Rating', help="Rating given by inspector during QC visit.")
+    qc_rating = fields.Selection([
+        ('1', '1 - Very Poor'),
+        ('2', '2 - Poor'),
+        ('3', '3 - Acceptable'),
+        ('4', '4 - Good'),
+        ('5', '5 - Excellent'),
+    ], string='QC Department Rating', help="Rating given by QC department — used to evaluate farm managers.")
+
+    # Bagging link
+    bagging_id = fields.Many2one('taghini.abattoir.bagging', string='Bagging Record', readonly=True)
+    bagging_state = fields.Selection(related='bagging_id.state', string='Bagging Status', store=True)
 
     # storage_location_id = fields.Many2one(
     #     'stock.location', 
@@ -221,6 +253,19 @@ class AbattoirBatch(models.Model):
                 raise UserError(_("You cannot delete a Production Batch that has already been posted to stock."))
         return super().unlink()
 
+    def action_view_bagging(self):
+        """Task A: Smart button to open the linked Bagging record."""
+        self.ensure_one()
+        if not self.bagging_id:
+            return {}
+        return {
+            'name': _('Bagging & Freezer'),
+            'type': 'ir.actions.act_window',
+            'res_model': 'taghini.abattoir.bagging',
+            'view_mode': 'form',
+            'res_id': self.bagging_id.id,
+        }
+
     def action_post_inventory(self):
         """ 
         Performs the 'Reverse Manufacturing':
@@ -233,11 +278,22 @@ class AbattoirBatch(models.Model):
             raise UserError(_("You cannot post an empty batch. Please add production lines."))
         
         # 1. Define Locations
-        source_location = self.harvest_id.flock_id.standard_id.abattoir_location_id
+        # Prefer farm-level locations; fall back to standard profile
+        farm = self.harvest_id.flock_id.pen_model_id.farm_id
+        source_location = (
+            farm.abattoir_location_id
+            or self.harvest_id.flock_id.standard_id.abattoir_location_id
+        )
         if not source_location:
-            raise UserError(_("The Source Pen does not have an Abattoir Location defined."))
+            raise UserError(_(
+                "No Abattoir Location defined. Set it on the Farm (Configuration > Farms) "
+                "or on the Growth Standard."
+            ))
 
-        dest_location = self.harvest_id.flock_id.standard_id.storage_location_id
+        dest_location = (
+            farm.storage_location_id
+            or self.harvest_id.flock_id.standard_id.storage_location_id
+        )
         
         # Search for Virtual Production Location
         production_loc_record = self.env['stock.location'].search([
@@ -363,17 +419,99 @@ class AbattoirBatch(models.Model):
 
         # Lock the Batch
         self.state = 'done'
-        
+
+        # === TASK C4: Alert MD if bird count discrepancy ===
+        self._check_and_alert_md_abattoir()
+
+        # === TASK A5: Auto-create Bagging record from production output ===
+        bagging = self._create_bagging_from_output()
+        self.bagging_id = bagging.id
+
         return {
             'type': 'ir.actions.client',
             'tag': 'display_notification',
             'params': {
-                'title': _('Stock Updated'),
-                'message': f'Inventory moved to {self.harvest_id.flock_id.standard_id.storage_location_id.name}. Live birds consumed.',
+                'title': _('Stock Updated — Bagging Created'),
+                'message': (
+                    f'Inventory posted. Bagging record {bagging.name} created. '
+                    f'Live birds consumed from abattoir location.'
+                ),
                 'type': 'success',
                 'sticky': False,
             }
         }
+
+    def _check_and_alert_md_abattoir(self):
+        """
+        Task C4: If produced bird count ≠ input birds − abattoir mortality,
+        send an immediate chatter alert to the MD.
+        """
+        self.ensure_one()
+        input_birds = self.input_birds
+        abattoir_mortality = self.mortality_arrived or 0
+        expected_output = input_birds - abattoir_mortality
+        actual_output = self.total_output_qty
+
+        if actual_output != expected_output:
+            diff = expected_output - actual_output
+            md_users = self._get_md_users()
+            if md_users:
+                partners = md_users.mapped('partner_id')
+                body = _(
+                    "<b>⚠️ Abattoir Bird Count Discrepancy — Immediate Alert</b><br/>"
+                    "Batch: <b>%(batch)s</b><br/>"
+                    "Birds Sent: <b>%(sent)d</b><br/>"
+                    "Abattoir Mortality: <b>%(mort)d</b><br/>"
+                    "Expected Produced: <b>%(expected)d</b><br/>"
+                    "Actual Produced: <b>%(actual)d</b><br/>"
+                    "<b style='color:red;'>Unaccounted: %(diff)d birds</b>"
+                ) % {
+                    'batch': self.name,
+                    'sent': input_birds,
+                    'mort': abattoir_mortality,
+                    'expected': expected_output,
+                    'actual': actual_output,
+                    'diff': abs(diff),
+                }
+                self.message_post(
+                    body=body,
+                    message_type='comment',
+                    subtype_xmlid='mail.mt_comment',
+                    partner_ids=partners.ids,
+                )
+
+    def _create_bagging_from_output(self):
+        """
+        Task A: Create a Bagging record auto-populated from production lines.
+        """
+        self.ensure_one()
+        bagging = self.env['taghini.abattoir.bagging'].create({
+            'batch_id': self.id,
+            'date': self.date,
+        })
+        lines_to_create = []
+        for line in self.line_ids:
+            lines_to_create.append({
+                'bagging_id': bagging.id,
+                'product_id': line.product_id.id,
+                'no_bags': 0,          # To be filled by bagging staff
+                'quantity': line.quantity,
+                'weight_kg': line.weight_kg,
+            })
+        if lines_to_create:
+            self.env['taghini.abattoir.bagging.line'].create(lines_to_create)
+        return bagging
+
+    def _get_md_users(self):
+        """Return MD users from farm or fallback to system param."""
+        farm = self.harvest_id.flock_id.pen_model_id.farm_id
+        if farm and farm.md_user_id:
+            return farm.md_user_id
+        # Fallback: return all users in group_taghini_farm_manager
+        manager_group = self.env.ref('chicken_farm_module.group_taghini_farm_manager', raise_if_not_found=False)
+        if manager_group:
+            return manager_group.users
+        return self.env['res.users']
 
 
 

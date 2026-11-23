@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_daily_log_import_export_wizard_form" model="ir.ui.view">
+        <field name="name">taghini.daily.log.import.export.wizard.form</field>
+        <field name="model">taghini.daily.log.import.export.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Import &amp; Export Daily Farm Logs">
+                <field name="step" invisible="1"/>
+                <field name="selected_log_count" invisible="1"/>
+
+                <!-- STEP 1: CONFIGURATION -->
+                <div invisible="step != 'config'">
+                    <div class="mb-3">
+                        <field name="mode" widget="radio" options="{'horizontal': true}"/>
+                    </div>
+
+                    <!-- EXPORT SECTION -->
+                    <div invisible="mode != 'export'">
+                        <div class="alert alert-info py-2" role="alert" invisible="selected_log_count == 0">
+                            <i class="fa fa-info-circle me-1" title="Info"/> 
+                            <strong>Exporting Selection:</strong> <field name="selected_log_count" class="fw-bold"/> record(s) currently selected from the list view will be exported.
+                        </div>
+
+                        <group>
+                            <group string="Flock &amp; Location Filters" invisible="selected_log_count &gt; 0">
+                                <field name="flock_id" options="{'no_create': True}" placeholder="All Flocks (or select specific flock)"/>
+                                <field name="farm_id" options="{'no_create': True}" placeholder="All Farm Locations"/>
+                            </group>
+                            <group string="Date &amp; Status Filters" invisible="selected_log_count &gt; 0">
+                                <field name="date_from"/>
+                                <field name="date_to"/>
+                                <field name="state_filter"/>
+                            </group>
+                        </group>
+
+                        <group string="File Format Options">
+                            <field name="export_format" widget="radio"/>
+                        </group>
+                    </div>
+
+                    <!-- IMPORT SECTION -->
+                    <div invisible="mode != 'import'">
+                        <div class="alert alert-light border mb-3" role="alert">
+                            <i class="fa fa-lightbulb-o text-warning me-1" title="Tip"/>
+                            <strong>Need an import template?</strong> Switch to the <em>Download Import Template</em> option above to get a pre-formatted spreadsheet with instructions and columns.
+                        </div>
+
+                        <group string="Upload Daily Log Spreadsheet">
+                            <field name="import_file" filename="import_filename" required="mode == 'import'"/>
+                            <field name="import_filename" invisible="1"/>
+                        </group>
+
+                        <group string="Import Configuration">
+                            <group>
+                                <field name="target_flock_id" options="{'no_create': True}" placeholder="Auto-detect from spreadsheet rows or choose default flock"/>
+                                <field name="on_existing"/>
+                            </group>
+                            <group>
+                                <field name="auto_post"/>
+                            </group>
+                        </group>
+                    </div>
+
+                    <!-- TEMPLATE SECTION -->
+                    <div invisible="mode != 'template'">
+                        <div class="alert alert-info py-2 mb-3" role="alert">
+                            <i class="fa fa-info-circle me-1" title="Info"/>
+                            <strong>Spreadsheet Template:</strong> Generates a clean Excel (.xlsx) or CSV (.csv) file with all operational columns (Date, Mortality, Feed Bags, Water, Average Weight, Light, Vaccine, Medications, Remarks, and Notes) along with an embedded Field Guide.
+                        </div>
+
+                        <group>
+                            <field name="template_flock_id" options="{'no_create': True}" placeholder="Select flock to pre-populate sample data (optional)"/>
+                            <field name="template_format" widget="radio"/>
+                        </group>
+                    </div>
+                </div>
+
+                <!-- STEP 2: RESULT SUMMARY & DOWNLOAD -->
+                <div invisible="step != 'result'">
+                    <div class="alert alert-success" role="alert" invisible="not result_summary">
+                        <field name="result_summary" style="white-space: pre-wrap;"/>
+                    </div>
+
+                    <div invisible="not file_output" class="text-center my-4 p-4 border rounded bg-light">
+                        <p class="fs-5 mb-3 text-secondary">
+                            <i class="fa fa-file-excel-o fa-2x text-success align-middle me-2" title="Excel File" invisible="file_name and not file_name.endswith('.xlsx')"/>
+                            <i class="fa fa-file-text-o fa-2x text-primary align-middle me-2" title="CSV / Text File" invisible="file_name and file_name.endswith('.xlsx')"/>
+                            <field name="file_name" readonly="1" class="fw-bold"/>
+                        </p>
+                        <div class="btn-group">
+                            <field name="file_output" filename="file_name" widget="binary" string="Download Generated File"/>
+                        </div>
+                    </div>
+
+                    <div invisible="not error_details" class="alert alert-warning mt-3" role="alert">
+                        <strong>⚠️ Diagnostics &amp; Row Messages:</strong>
+                        <field name="error_details" widget="ace" readonly="1" style="height: 180px; width: 100%; font-family: monospace; font-size: 12px;"/>
+                    </div>
+                </div>
+
+                <!-- FOOTER -->
+                <footer>
+                    <!-- Config Step Buttons -->
+                    <div invisible="step != 'config'">
+                        <button name="action_export"
+                                string="Export Daily Logs"
+                                type="object"
+                                class="btn-primary"
+                                icon="fa-download"
+                                invisible="mode != 'export'"/>
+
+                        <button name="action_import"
+                                string="Import Daily Logs"
+                                type="object"
+                                class="btn-primary"
+                                icon="fa-upload"
+                                invisible="mode != 'import'"/>
+
+                        <button name="action_download_template"
+                                string="Download Template"
+                                type="object"
+                                class="btn-primary"
+                                icon="fa-file-excel-o"
+                                invisible="mode != 'template'"/>
+
+                        <button string="Cancel" class="btn-secondary" special="cancel"/>
+                    </div>
+
+                    <!-- Result Step Buttons -->
+                    <div invisible="step != 'result'">
+                        <button name="action_reset"
+                                string="Run Another Action"
+                                type="object"
+                                class="btn-secondary"
+                                icon="fa-refresh"/>
+                        <button string="Close" class="btn-primary" special="cancel"/>
+                    </div>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- ACTION DEFINITION -->
+    <record id="action_taghini_daily_log_import_export_wizard" model="ir.actions.act_window">
+        <field name="name">Import &amp; Export Daily Logs</field>
+        <field name="res_model">taghini.daily.log.import.export.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="view_id" ref="view_daily_log_import_export_wizard_form"/>
+    </record>
+</odoo>

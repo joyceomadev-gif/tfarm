@@ -1,0 +1,414 @@
+/* ============================================================
+   Taghini Farm Operations Dashboard — OWL Theme
+   Faithfully inspired by modern executive milestone dashboards
+   ============================================================ */
+
+.o_taghini_dashboard {
+    --tf-bg: #f8fafc;
+    --tf-card-bg: #ffffff;
+    --tf-ink: #0f172a;
+    --tf-ink-soft: #334155;
+    --tf-muted: #64748b;
+    --tf-faint: #94a3b8;
+    --tf-line: #e2e8f0;
+    --tf-line-soft: #f1f5f9;
+    --tf-teal: #14b8a6;
+    --tf-red: #ef4444;
+    --tf-orange: #f59e0b;
+    --tf-blue: #3b82f6;
+    --tf-radius: 8px;
+    --tf-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+
+    background-color: var(--tf-bg);
+    min-height: 100%;
+    height: 100%;
+    overflow-y: auto;
+    color: var(--tf-ink);
+    font-size: 13px;
+    line-height: 1.5;
+    position: relative;
+    padding: 24px;
+}
+
+/* 1. Header */
+.o_tf_header {
+    margin-bottom: 16px;
+}
+
+.o_tf_title {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    margin: 0;
+    color: var(--tf-ink);
+}
+
+.o_tf_subtitle {
+    font-size: 13px;
+    color: var(--tf-muted);
+    margin: 4px 0 0;
+}
+
+/* Top Tab Buttons */
+.o_tf_tab_group {
+    background: #f1f5f9;
+    border: 1px solid var(--tf-line);
+    border-radius: var(--tf-radius);
+    padding: 3px;
+    display: inline-flex;
+    gap: 3px;
+}
+
+.o_tf_tab_btn {
+    border: none;
+    background: transparent;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--tf-muted);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.o_tf_tab_btn:hover {
+    color: var(--tf-ink);
+}
+
+.o_tf_tab_btn.active {
+    background: #ffffff;
+    color: var(--tf-ink);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.o_tf_btn_secondary {
+    background: #ffffff;
+    border: 1px solid var(--tf-line);
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--tf-ink-soft);
+    box-shadow: var(--tf-shadow);
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.o_tf_btn_secondary:hover {
+    background: var(--tf-line-soft);
+    color: var(--tf-ink);
+}
+
+/* 2. Filter Bar */
+.o_tf_filter_bar {
+    background: transparent;
+}
+
+.o_tf_preset_group {
+    background: #ffffff;
+    border: 1px solid var(--tf-line);
+    border-radius: 6px;
+    padding: 2px;
+    display: inline-flex;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.o_tf_preset_btn {
+    border: none;
+    background: transparent;
+    padding: 5px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--tf-muted);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.o_tf_preset_btn:hover {
+    color: var(--tf-ink);
+}
+
+.o_tf_preset_btn.active {
+    background: #f1f5f9;
+    color: var(--tf-ink);
+    font-weight: 600;
+}
+
+.o_tf_date_picker_box {
+    background: #ffffff;
+    border: 1px solid var(--tf-line);
+    border-radius: 6px;
+    padding: 4px 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.o_tf_date_input {
+    border: none;
+    background: transparent;
+    font-size: 12px;
+    color: var(--tf-ink-soft);
+    outline: none;
+    cursor: pointer;
+    max-width: 120px;
+}
+
+.o_tf_dropdown_pill {
+    background: #ffffff;
+    border: 1px solid var(--tf-line);
+    border-radius: 6px;
+    padding: 4px 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.o_tf_pill_label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--tf-muted);
+    letter-spacing: 0.04em;
+}
+
+.o_tf_select_clean {
+    border: none;
+    background: transparent;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--tf-ink);
+    outline: none;
+    cursor: pointer;
+    padding: 2px 4px;
+}
+
+/* 3. Contiguous KPI Metric Strip */
+.o_tf_kpi_strip {
+    background: #ffffff;
+    border: 1px solid var(--tf-line);
+    border-radius: var(--tf-radius);
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    box-shadow: var(--tf-shadow);
+    overflow: hidden;
+}
+
+@media (max-width: 1200px) {
+    .o_tf_kpi_strip {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .o_tf_kpi_strip {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.o_tf_kpi_cell {
+    padding: 16px 20px;
+    border-right: 1px solid var(--tf-line-soft);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.o_tf_kpi_cell:last-child {
+    border-right: none;
+}
+
+.o_tf_kpi_num_row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.o_tf_kpi_val {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--tf-ink);
+    line-height: 1.1;
+}
+
+.o_tf_dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.dot_blue { background-color: var(--tf-blue); }
+.dot_red { background-color: var(--tf-red); }
+.dot_orange { background-color: var(--tf-orange); }
+.dot_green { background-color: #10b981; }
+.dot_purple { background-color: #8b5cf6; }
+.dot_teal { background-color: #14b8a6; }
+.text-teal { color: #14b8a6 !important; }
+
+.o_tf_kpi_caption {
+    margin-top: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--tf-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+/* 4. Chart Cards */
+.o_tf_chart_card {
+    background: #ffffff;
+    border: 1px solid var(--tf-line);
+    border-radius: var(--tf-radius);
+    box-shadow: var(--tf-shadow);
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+}
+
+.o_tf_chart_header {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--tf-ink);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+}
+
+.o_tf_chart_title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--tf-ink);
+}
+
+.o_tf_canvas_box {
+    position: relative;
+    height: 250px;
+    width: 100%;
+}
+
+/* 5. Tables */
+.o_tf_table_card {
+    background: #ffffff;
+    border: 1px solid var(--tf-line);
+    border-radius: var(--tf-radius);
+    box-shadow: var(--tf-shadow);
+    padding: 18px 20px;
+}
+
+.o_tf_card_header {
+    margin-bottom: 14px;
+}
+
+.o_tf_card_title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--tf-ink);
+}
+
+.o_tf_table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.o_tf_table th {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--tf-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--tf-line);
+}
+
+.o_tf_table td {
+    font-size: 12.5px;
+    color: var(--tf-ink-soft);
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--tf-line-soft);
+    vertical-align: middle;
+}
+
+.o_tf_table tbody tr:hover td {
+    background-color: #fafbfc;
+}
+
+.o_tf_badge {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 9999px;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1;
+}
+
+.o_tf_badge.success {
+    background-color: #dcfce7;
+    color: #15803d;
+}
+
+.o_tf_badge.warning {
+    background-color: #fef3c7;
+    color: #b45309;
+}
+
+.o_tf_badge.danger {
+    background-color: #fee2e2;
+    color: #b91c1c;
+}
+
+.o_tf_badge.info {
+    background-color: #e0f2fe;
+    color: #0369a1;
+}
+
+.o_tf_btn_sm {
+    background: #ffffff;
+    border: 1px solid var(--tf-line);
+    border-radius: 4px;
+    padding: 3px 9px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--tf-ink-soft);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.o_tf_btn_sm:hover {
+    background: var(--tf-line-soft);
+    color: var(--tf-ink);
+}
+
+/* Biosecurity & Operational Alerts */
+.o_tf_alert_card {
+    background: #ffffff;
+    border: 1px solid var(--tf-line);
+    border-radius: var(--tf-radius);
+    padding: 14px 18px;
+    box-shadow: var(--tf-shadow);
+}
+
+.o_tf_alert_header {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--tf-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+}
+
+.o_tf_alert_content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12.5px;
+    color: var(--tf-ink-soft);
+}
+
+.o_tf_alert_icon {
+    font-size: 15px;
+}

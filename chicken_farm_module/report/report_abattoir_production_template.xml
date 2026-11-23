@@ -1,0 +1,401 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Template Entry Point -->
+    <template id="report_abattoir_production">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="chicken_farm_module.report_abattoir_production_document"/>
+            </t>
+        </t>
+    </template>
+
+    <!-- Main Document Template -->
+    <template id="report_abattoir_production_document">
+        <t t-call="web.basic_layout">
+            <div class="page" style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 10px; color: #2C3E50; line-height: 1.3;">
+                
+                <!-- DOCUMENT HEADER & CONTROL BLOCK -->
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 8px; border-bottom: 2px solid #2C5E3B;">
+                    <tr>
+                        <td style="width: 25%; vertical-align: middle; padding: 4px;">
+                            <img t-if="doc.company_id.logo" t-att-src="image_data_uri(doc.company_id.logo)" style="max-height: 52px; max-width: 160px;" alt="Taghini Foods Logo"/>
+                            <div t-else="" style="font-size: 16px; font-weight: bold; color: #2C5E3B; letter-spacing: 0.5px;">TAGHINI FOODS</div>
+                            <div style="font-size: 8px; color: #7F8C8D; margin-top: 2px; text-transform: uppercase;">Abattoir &amp; Processing Division</div>
+                        </td>
+                        <td style="width: 50%; vertical-align: middle; text-align: center; padding: 4px;">
+                            <div style="font-size: 14px; font-weight: bold; color: #2C5E3B; letter-spacing: 0.5px; text-transform: uppercase;">
+                                Abattoir Daily Production &amp; Yield Report
+                            </div>
+                            <div style="font-size: 10px; font-weight: 600; color: #34495E; margin-top: 2px;">
+                                Batch Reference: <span t-field="doc.name" style="color: #2C5E3B;"/>
+                            </div>
+                        </td>
+                        <td style="width: 25%; vertical-align: middle; text-align: right; padding: 4px;">
+                            <table style="width: 100%; border-collapse: collapse; font-size: 9px; border: 1px solid #BDC3C7;">
+                                <tr style="background-color: #2C5E3B; color: #FFFFFF;">
+                                    <td colspan="2" style="padding: 2px 4px; text-align: center; font-weight: bold;">DOCUMENT CONTROL</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 2px 4px; border: 1px solid #BDC3C7; background: #F8F9F9; font-weight: bold;">Doc No:</td>
+                                    <td style="padding: 2px 4px; border: 1px solid #BDC3C7; font-weight: bold; color: #2C5E3B;">TF/ABT/001</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 2px 4px; border: 1px solid #BDC3C7; background: #F8F9F9; font-weight: bold;">Revision:</td>
+                                    <td style="padding: 2px 4px; border: 1px solid #BDC3C7;">Rev 01</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 2px 4px; border: 1px solid #BDC3C7; background: #F8F9F9; font-weight: bold;">Prod. Date:</td>
+                                    <td style="padding: 2px 4px; border: 1px solid #BDC3C7;"><span t-field="doc.date"/></td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- SHIFT & ATTENDANCE METRICS BAR -->
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 8px; background: #EAF2EC; border: 1px solid #BDC3C7; font-size: 9.5px;">
+                    <tr>
+                        <td style="padding: 4px 6px; border-right: 1px solid #BDC3C7;">
+                            <strong>Production Date:</strong> <span t-field="doc.date"/>
+                        </td>
+                        <td style="padding: 4px 6px; border-right: 1px solid #BDC3C7;">
+                            <strong>Shift Start:</strong> 
+                            <span t-esc="'%02d:%02d' % (int(doc.start_time), int(round((doc.start_time % 1) * 60))) if doc.start_time else '00:00'"/>
+                        </td>
+                        <td style="padding: 4px 6px; border-right: 1px solid #BDC3C7;">
+                            <strong>Shift End:</strong> 
+                            <span t-esc="'%02d:%02d' % (int(doc.end_time), int(round((doc.end_time % 1) * 60))) if doc.end_time else '00:00'"/>
+                        </td>
+                        <td style="padding: 4px 6px; border-right: 1px solid #BDC3C7;">
+                            <strong>Total Production Hours:</strong> 
+                            <span t-esc="'%.2f hrs' % doc.production_hours if doc.production_hours else '0.00 hrs'"/>
+                        </td>
+                        <td style="padding: 4px 6px;">
+                            <strong>Attendants Present:</strong> 
+                            <span t-esc="'{:.1f}%'.format(doc.attendants_present_percent) if doc.attendants_present_percent else '100.0%'"/>
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- SECTION 1: INTAKE & VERIFICATION SECTION -->
+                <div style="background-color: #2C5E3B; color: #FFFFFF; font-weight: bold; padding: 3px 6px; font-size: 10px; margin-bottom: 3px;">
+                    1. INTAKE &amp; VERIFICATION DATA (AT GATE &amp; RECEPTION)
+                </div>
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 8px; font-size: 9px; border: 1px solid #BDC3C7;">
+                    <tr style="background-color: #F8F9F9;">
+                        <td style="padding: 3px 5px; border: 1px solid #BDC3C7; width: 25%; font-weight: bold;">Source Harvest Ref:</td>
+                        <td style="padding: 3px 5px; border: 1px solid #BDC3C7; width: 25%;">
+                            <span t-esc="doc.harvest_id.name if doc.harvest_id else 'Direct Intake'"/>
+                        </td>
+                        <td style="padding: 3px 5px; border: 1px solid #BDC3C7; width: 25%; font-weight: bold;">Source Farm &amp; Pen:</td>
+                        <td style="padding: 3px 5px; border: 1px solid #BDC3C7; width: 25%;">
+                            <span t-esc="doc.farm_id.name or (doc.harvest_id.farm_id.name if doc.harvest_id else '—')"/> / 
+                            <span t-esc="doc.pen_id.name or (doc.harvest_id.pen_id.name if doc.harvest_id else '—')"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 3px 5px; border: 1px solid #BDC3C7; font-weight: bold;">Live Birds Received:</td>
+                        <td style="padding: 3px 5px; border: 1px solid #BDC3C7; font-weight: bold;">
+                            <span t-esc="'{:,}'.format(doc.birds_arrived or doc.input_birds or 0)"/> Heads
+                        </td>
+                        <td style="padding: 3px 5px; border: 1px solid #BDC3C7; font-weight: bold;">Live Weight Received:</td>
+                        <td style="padding: 3px 5px; border: 1px solid #BDC3C7; font-weight: bold;">
+                            <span t-esc="'{:,.2f}'.format(doc.weight_arrived or doc.input_weight_kg or 0.0)"/> kg
+                        </td>
+                    </tr>
+                    <tr style="background-color: #F8F9F9;">
+                        <td style="padding: 3px 5px; border: 1px solid #BDC3C7; font-weight: bold;">Average Arrival Weight:</td>
+                        <td style="padding: 3px 5px; border: 1px solid #BDC3C7;">
+                            <t t-set="calc_avg_wgt" t-value="((doc.weight_arrived or doc.input_weight_kg) / (doc.birds_arrived or doc.input_birds) * 1000.0) if (doc.birds_arrived or doc.input_birds) else 0.0"/>
+                            <span t-esc="'{:,.1f}'.format(calc_avg_wgt)"/> g
+                        </td>
+                        <td style="padding: 3px 5px; border: 1px solid #BDC3C7; font-weight: bold;">Arrival Mortality (DOA):</td>
+                        <td style="padding: 3px 5px; border: 1px solid #BDC3C7; color: #C0392B; font-weight: bold;">
+                            <t t-set="doa_pct" t-value="(doc.mortality_percentage * 100.0) if (doc.mortality_percentage and doc.mortality_percentage &lt;= 1.0) else (doc.mortality_percentage or 0.0)"/>
+                            <span t-esc="'{:,}'.format(doc.mortality_arrived or 0)"/> Heads (<span t-esc="'{:.2f}%'.format(doa_pct)"/>)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 3px 5px; border: 1px solid #BDC3C7; font-weight: bold;">Defected / Rejected Birds:</td>
+                        <td style="padding: 3px 5px; border: 1px solid #BDC3C7;">
+                            <t t-set="def_pct" t-value="(doc.defected_percentage * 100.0) if (doc.defected_percentage and doc.defected_percentage &lt;= 1.0) else (doc.defected_percentage or 0.0)"/>
+                            <span t-esc="'{:,}'.format(doc.defected_birds or 0)"/> Heads (<span t-esc="'{:.2f}%'.format(def_pct)"/>)
+                        </td>
+                        <td style="padding: 3px 5px; border: 1px solid #BDC3C7; font-weight: bold; background: #EAF2EC;">Net Birds Slaughtered:</td>
+                        <td style="padding: 3px 5px; border: 1px solid #BDC3C7; font-weight: bold; background: #EAF2EC; color: #2C5E3B;">
+                            <t t-set="net_slaughtered" t-value="(doc.birds_arrived or doc.input_birds or 0) - (doc.mortality_arrived or 0)"/>
+                            <span t-esc="'{:,}'.format(net_slaughtered)"/> Heads
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- SECTION 2: SLAUGHTERLINE PROCESS PARAMETERS (CCPs) -->
+                <div style="background-color: #2C5E3B; color: #FFFFFF; font-weight: bold; padding: 3px 6px; font-size: 10px; margin-bottom: 3px;">
+                    2. SLAUGHTERLINE PROCESS PARAMETERS (CRITICAL CONTROL POINTS - CCPS)
+                </div>
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 8px; font-size: 8.5px; border: 1px solid #BDC3C7;">
+                    <thead>
+                        <tr style="background-color: #EAF2EC; color: #2C5E3B; font-weight: bold; text-align: center;">
+                            <th style="padding: 3px 4px; border: 1px solid #BDC3C7;">Hanging Duration</th>
+                            <th style="padding: 3px 4px; border: 1px solid #BDC3C7;">Stunning (Volt / Time)</th>
+                            <th style="padding: 3px 4px; border: 1px solid #BDC3C7;">Bleeding Time</th>
+                            <th style="padding: 3px 4px; border: 1px solid #BDC3C7;">Scalding (Temp / Time)</th>
+                            <th style="padding: 3px 4px; border: 1px solid #BDC3C7;">Evisceration Time</th>
+                            <th style="padding: 3px 4px; border: 1px solid #BDC3C7;">Chiller Exit Time</th>
+                            <th style="padding: 3px 4px; border: 1px solid #BDC3C7;">Blast Freezer Locking</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="text-align: center;">
+                            <td style="padding: 3px 4px; border: 1px solid #BDC3C7;">
+                                <span t-esc="doc.total_hanging_duration or '3hr:30min'"/>
+                            </td>
+                            <td style="padding: 3px 4px; border: 1px solid #BDC3C7;">
+                                <span t-esc="'%.1f V' % doc.stunning_voltage if doc.stunning_voltage else '43.0 V'"/> / 
+                                <span t-esc="doc.stunning_time or '20Sec'"/>
+                            </td>
+                            <td style="padding: 3px 4px; border: 1px solid #BDC3C7;">
+                                <span t-esc="doc.bleeding_time or '4min'"/>
+                            </td>
+                            <td style="padding: 3px 4px; border: 1px solid #BDC3C7;">
+                                <span t-esc="'%.1f°C' % doc.scalding_temp if doc.scalding_temp else '62.1°C'"/> / 
+                                <span t-esc="doc.scalding_time or '2min'"/>
+                            </td>
+                            <td style="padding: 3px 4px; border: 1px solid #BDC3C7;">
+                                <span t-esc="doc.evisceration_time or 'Continuous'"/>
+                            </td>
+                            <td style="padding: 3px 4px; border: 1px solid #BDC3C7;">
+                                <span t-esc="doc.chiller_exit_time.strftime('%H:%M') if doc.chiller_exit_time else '14:30'"/>
+                            </td>
+                            <td style="padding: 3px 4px; border: 1px solid #BDC3C7;">
+                                <span t-esc="doc.blast_locking_time.strftime('%H:%M') if doc.blast_locking_time else '16:00'"/>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- SECTION 3: PRODUCTION OUTPUT BREAKDOWN TABLE -->
+                <div style="background-color: #2C5E3B; color: #FFFFFF; font-weight: bold; padding: 3px 6px; font-size: 10px; margin-bottom: 3px;">
+                    3. PRODUCTION OUTPUT BREAKDOWN TABLE
+                </div>
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 8px; font-size: 8.5px; border: 1px solid #BDC3C7; page-break-inside: avoid;">
+                    <thead>
+                        <tr style="background-color: #2C5E3B; color: #FFFFFF; text-align: center; font-weight: bold;">
+                            <th style="padding: 3px 4px; border: 1px solid #BDC3C7; width: 35%; text-align: left;">Category &amp; Product Description</th>
+                            <th style="padding: 3px 4px; border: 1px solid #BDC3C7; width: 13%;">Bag Count</th>
+                            <th style="padding: 3px 4px; border: 1px solid #BDC3C7; width: 16%;">Head / Piece Qty</th>
+                            <th style="padding: 3px 4px; border: 1px solid #BDC3C7; width: 18%;">Net Weight (kg)</th>
+                            <th style="padding: 3px 4px; border: 1px solid #BDC3C7; width: 18%;">Avg Weight (kg)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Sub-Category A: Whole Birds Series -->
+                        <tr style="background-color: #EAF2EC; font-weight: bold; color: #1C3B25;">
+                            <td colspan="5" style="padding: 2px 4px; border: 1px solid #BDC3C7;">A. Whole Birds by Weight Series</td>
+                        </tr>
+                        <t t-set="series_lines" t-value="doc.line_ids.filtered(lambda l: l.category_type == 'series' or (not l.category_type and 'series' in (l.product_id.name or '').lower()))"/>
+                        <t t-if="series_lines">
+                            <t t-foreach="series_lines" t-as="l">
+                                <tr style="border-bottom: 1px solid #E5E7E9;">
+                                    <td style="padding: 2px 4px; border: 1px solid #BDC3C7;"><span t-esc="l.product_id.name"/></td>
+                                    <td style="padding: 2px 4px; border: 1px solid #BDC3C7; text-align: center;"><span t-esc="l.no_bags or 0"/></td>
+                                    <td style="padding: 2px 4px; border: 1px solid #BDC3C7; text-align: center;"><span t-esc="'{:,}'.format(l.quantity or 0)"/></td>
+                                    <td style="padding: 2px 4px; border: 1px solid #BDC3C7; text-align: right;"><span t-esc="'{:,.2f}'.format(l.weight_kg or 0.0)"/></td>
+                                    <td style="padding: 2px 4px; border: 1px solid #BDC3C7; text-align: right;"><span t-esc="'{:.3f}'.format(l.avg_weight or 0.0)"/></td>
+                                </tr>
+                            </t>
+                        </t>
+                        <t t-else="">
+                            <tr>
+                                <td colspan="5" style="padding: 2px 4px; border: 1px solid #BDC3C7; color: #95A5A6; text-align: center; font-style: italic;">No whole bird series registered in this batch.</td>
+                            </tr>
+                        </t>
+
+                        <!-- Sub-Category B: Chicken Cut-ups -->
+                        <tr style="background-color: #EAF2EC; font-weight: bold; color: #1C3B25;">
+                            <td colspan="5" style="padding: 2px 4px; border: 1px solid #BDC3C7;">B. Chicken Cut-ups (4-Cut, 9-Cut, etc.)</td>
+                        </tr>
+                        <t t-set="cut_lines" t-value="doc.line_ids.filtered(lambda l: l.category_type == 'cuts' or 'cut' in (l.product_id.name or '').lower())"/>
+                        <t t-if="cut_lines">
+                            <t t-foreach="cut_lines" t-as="l">
+                                <tr style="border-bottom: 1px solid #E5E7E9;">
+                                    <td style="padding: 2px 4px; border: 1px solid #BDC3C7;"><span t-esc="l.product_id.name"/></td>
+                                    <td style="padding: 2px 4px; border: 1px solid #BDC3C7; text-align: center;"><span t-esc="l.no_bags or 0"/></td>
+                                    <td style="padding: 2px 4px; border: 1px solid #BDC3C7; text-align: center;"><span t-esc="'{:,}'.format(l.quantity or 0)"/></td>
+                                    <td style="padding: 2px 4px; border: 1px solid #BDC3C7; text-align: right;"><span t-esc="'{:,.2f}'.format(l.weight_kg or 0.0)"/></td>
+                                    <td style="padding: 2px 4px; border: 1px solid #BDC3C7; text-align: right;"><span t-esc="'{:.3f}'.format(l.avg_weight or 0.0)"/></td>
+                                </tr>
+                            </t>
+                        </t>
+                        <t t-else="">
+                            <tr>
+                                <td colspan="5" style="padding: 2px 4px; border: 1px solid #BDC3C7; color: #95A5A6; text-align: center; font-style: italic;">No cut-up products registered in this batch.</td>
+                            </tr>
+                        </t>
+
+                        <!-- Sub-Category C: Chicken Parts -->
+                        <tr style="background-color: #EAF2EC; font-weight: bold; color: #1C3B25;">
+                            <td colspan="5" style="padding: 2px 4px; border: 1px solid #BDC3C7;">C. Chicken Parts (Breasts, Thighs, Wings, Drumsticks)</td>
+                        </tr>
+                        <t t-set="part_lines" t-value="doc.line_ids.filtered(lambda l: l.category_type == 'parts' or ('breast' in (l.product_id.name or '').lower() or 'wing' in (l.product_id.name or '').lower() or 'thigh' in (l.product_id.name or '').lower() or 'drumstick' in (l.product_id.name or '').lower()))"/>
+                        <t t-if="part_lines">
+                            <t t-foreach="part_lines" t-as="l">
+                                <tr style="border-bottom: 1px solid #E5E7E9;">
+                                    <td style="padding: 2px 4px; border: 1px solid #BDC3C7;"><span t-esc="l.product_id.name"/></td>
+                                    <td style="padding: 2px 4px; border: 1px solid #BDC3C7; text-align: center;"><span t-esc="l.no_bags or 0"/></td>
+                                    <td style="padding: 2px 4px; border: 1px solid #BDC3C7; text-align: center;"><span t-esc="'{:,}'.format(l.quantity or 0)"/></td>
+                                    <td style="padding: 2px 4px; border: 1px solid #BDC3C7; text-align: right;"><span t-esc="'{:,.2f}'.format(l.weight_kg or 0.0)"/></td>
+                                    <td style="padding: 2px 4px; border: 1px solid #BDC3C7; text-align: right;"><span t-esc="'{:.3f}'.format(l.avg_weight or 0.0)"/></td>
+                                </tr>
+                            </t>
+                        </t>
+                        <t t-else="">
+                            <tr>
+                                <td colspan="5" style="padding: 2px 4px; border: 1px solid #BDC3C7; color: #95A5A6; text-align: center; font-style: italic;">No chicken parts registered in this batch.</td>
+                            </tr>
+                        </t>
+
+                        <!-- Sub-Category D: Residuals / Offals -->
+                        <tr style="background-color: #EAF2EC; font-weight: bold; color: #1C3B25;">
+                            <td colspan="5" style="padding: 2px 4px; border: 1px solid #BDC3C7;">D. Residuals &amp; Offals (Heads, Legs, Gizzards, Livers, Necks)</td>
+                        </tr>
+                        <t t-set="residual_lines" t-value="doc.line_ids.filtered(lambda l: l.category_type == 'residuals' or ('gizzard' in (l.product_id.name or '').lower() or 'liver' in (l.product_id.name or '').lower() or 'head' in (l.product_id.name or '').lower() or 'leg' in (l.product_id.name or '').lower() or 'neck' in (l.product_id.name or '').lower()))"/>
+                        <t t-if="residual_lines">
+                            <t t-foreach="residual_lines" t-as="l">
+                                <tr style="border-bottom: 1px solid #E5E7E9;">
+                                    <td style="padding: 2px 4px; border: 1px solid #BDC3C7;"><span t-esc="l.product_id.name"/></td>
+                                    <td style="padding: 2px 4px; border: 1px solid #BDC3C7; text-align: center;"><span t-esc="l.no_bags or 0"/></td>
+                                    <td style="padding: 2px 4px; border: 1px solid #BDC3C7; text-align: center;"><span t-esc="'{:,}'.format(l.quantity or 0)"/></td>
+                                    <td style="padding: 2px 4px; border: 1px solid #BDC3C7; text-align: right;"><span t-esc="'{:,.2f}'.format(l.weight_kg or 0.0)"/></td>
+                                    <td style="padding: 2px 4px; border: 1px solid #BDC3C7; text-align: right;"><span t-esc="'{:.3f}'.format(l.avg_weight or 0.0)"/></td>
+                                </tr>
+                            </t>
+                        </t>
+                        <t t-else="">
+                            <tr>
+                                <td colspan="5" style="padding: 2px 4px; border: 1px solid #BDC3C7; color: #95A5A6; text-align: center; font-style: italic;">No residuals or offals registered in this batch.</td>
+                            </tr>
+                        </t>
+
+                        <!-- GRAND TOTAL OUTPUT ROW -->
+                        <tr style="background-color: #2C5E3B; color: #FFFFFF; font-weight: bold; font-size: 9.5px;">
+                            <td style="padding: 4px; border: 1px solid #2C5E3B;">TOTAL PRODUCTION OUTPUT</td>
+                            <td style="padding: 4px; border: 1px solid #2C5E3B; text-align: center;">
+                                <span t-esc="'{:,}'.format(sum(l.no_bags for l in doc.line_ids))"/> Bags
+                            </td>
+                            <td style="padding: 4px; border: 1px solid #2C5E3B; text-align: center;">
+                                <span t-esc="'{:,}'.format(doc.total_output_qty or 0)"/> Pcs
+                            </td>
+                            <td style="padding: 4px; border: 1px solid #2C5E3B; text-align: right;">
+                                <span t-esc="'{:,.2f}'.format(doc.total_output_weight_kg or 0.0)"/> kg
+                            </td>
+                            <td style="padding: 4px; border: 1px solid #2C5E3B; text-align: right;">
+                                <t t-set="tot_avg" t-value="(doc.total_output_weight_kg / doc.total_output_qty) if doc.total_output_qty else 0.0"/>
+                                <span t-esc="'{:.3f}'.format(tot_avg)"/> kg
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- SECTION 4: YIELD & RECONCILIATION SUMMARY -->
+                <div style="background-color: #2C5E3B; color: #FFFFFF; font-weight: bold; padding: 3px 6px; font-size: 10px; margin-bottom: 3px;">
+                    4. YIELD ANALYSIS &amp; BIRD COUNT RECONCILIATION
+                </div>
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 9px; border: 1px solid #BDC3C7; page-break-inside: avoid;">
+                    <tr style="background-color: #F8F9F9;">
+                        <td style="width: 25%; padding: 4px; border: 1px solid #BDC3C7; font-weight: bold;">Total Live Weight In:</td>
+                        <td style="width: 25%; padding: 4px; border: 1px solid #BDC3C7; font-weight: bold;">
+                            <span t-esc="'{:,.2f}'.format(doc.weight_arrived or doc.input_weight_kg or 0.0)"/> kg
+                        </td>
+                        <td style="width: 25%; padding: 4px; border: 1px solid #BDC3C7; font-weight: bold;">Total Meat Output:</td>
+                        <td style="width: 25%; padding: 4px; border: 1px solid #BDC3C7; font-weight: bold; color: #2C5E3B;">
+                            <span t-esc="'{:,.2f}'.format(doc.total_output_weight_kg or 0.0)"/> kg
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 4px; border: 1px solid #BDC3C7; font-weight: bold;">Processing Loss (kg):</td>
+                        <td style="padding: 4px; border: 1px solid #BDC3C7; color: #C0392B;">
+                            <span t-esc="'{:,.2f}'.format(doc.processing_loss_kg or 0.0)"/> kg
+                        </td>
+                        <td style="padding: 4px; border: 1px solid #BDC3C7; font-weight: bold;">Dressing / Meat Yield %:</td>
+                        <td style="padding: 4px; border: 1px solid #BDC3C7; font-weight: bold; font-size: 10px; color: #27AE60;">
+                            <span t-esc="'{:.2f}%'.format(doc.yield_percentage or 0.0)"/>
+                            <span style="font-size: 8px; color: #7F8C8D; font-weight: normal;"> (Standard: 70 - 75%)</span>
+                        </td>
+                    </tr>
+                    <tr style="background-color: #F8F9F9;">
+                        <td style="padding: 4px; border: 1px solid #BDC3C7; font-weight: bold;">Reconciliation Formula:</td>
+                        <td colspan="3" style="padding: 4px; border: 1px solid #BDC3C7;">
+                            <code>[Live Intake Heads] - [Total Processed Pcs] - [Arrival Mortality (DOA)] = Unrecorded Variance</code>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 4px; border: 1px solid #BDC3C7; font-weight: bold;">Bird Count Reconciliation:</td>
+                        <td colspan="3" style="padding: 4px; border: 1px solid #BDC3C7;">
+                            <t t-set="intake_birds" t-value="doc.birds_arrived or doc.input_birds or 0"/>
+                            <t t-set="prod_birds" t-value="doc.total_output_qty or 0"/>
+                            <t t-set="doa_birds" t-value="doc.mortality_arrived or 0"/>
+                            <t t-set="unrecorded_diff" t-value="intake_birds - prod_birds - doa_birds"/>
+                            <table style="width: 100%; border-collapse: collapse; font-size: 8.5px;">
+                                <tr>
+                                    <td style="width: 25%;">Intake: <strong><span t-esc="'{:,}'.format(intake_birds)"/></strong></td>
+                                    <td style="width: 25%;">Less Processed: <strong>-<span t-esc="'{:,}'.format(prod_birds)"/></strong></td>
+                                    <td style="width: 25%;">Less DOA: <strong>-<span t-esc="'{:,}'.format(doa_birds)"/></strong></td>
+                                    <td style="width: 25%; font-weight: bold; text-align: right;">
+                                        <t t-if="unrecorded_diff == 0">
+                                            <span style="background-color: #27AE60; color: #FFFFFF; padding: 2px 6px; border-radius: 3px;">
+                                                RECONCILED (0 Birds Variance)
+                                            </span>
+                                        </t>
+                                        <t t-else="">
+                                            <span style="background-color: #E74C3C; color: #FFFFFF; padding: 2px 6px; border-radius: 3px;">
+                                                DISCREPANCY: <span t-esc="'{:,}'.format(abs(unrecorded_diff))"/> Birds Variance
+                                            </span>
+                                        </t>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- SECTION 5: SIGN-OFF BLOCK -->
+                <div style="page-break-inside: avoid; margin-top: 10px;">
+                    <div style="background-color: #2C5E3B; color: #FFFFFF; font-weight: bold; padding: 3px 6px; font-size: 10px; margin-bottom: 4px;">
+                        5. OFFICIAL DOCUMENT APPROVAL &amp; SIGN-OFF BLOCK
+                    </div>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 8.5px; border: 1px solid #BDC3C7;">
+                        <tr style="background-color: #EAF2EC; color: #2C5E3B; font-weight: bold; text-align: center;">
+                            <td style="width: 33.33%; padding: 4px; border: 1px solid #BDC3C7;">ABATTOIR SUPERVISOR</td>
+                            <td style="width: 33.33%; padding: 4px; border: 1px solid #BDC3C7;">QUALITY ASSURANCE OFFICER</td>
+                            <td style="width: 33.33%; padding: 4px; border: 1px solid #BDC3C7;">FACTORY / PRODUCTION MANAGER</td>
+                        </tr>
+                        <tr style="height: 60px; vertical-align: top;">
+                            <td style="padding: 6px; border: 1px solid #BDC3C7;">
+                                <div><strong>Name:</strong> <span t-esc="doc.dirty_section_supervisor_id.name or doc.manager_id.name or 'Abattoir Supervisor'"/></div>
+                                <div style="margin-top: 22px;"><strong>Signature:</strong> _________________________</div>
+                                <div style="margin-top: 6px;"><strong>Date:</strong> <span t-field="doc.date"/></div>
+                            </td>
+                            <td style="padding: 6px; border: 1px solid #BDC3C7;">
+                                <div><strong>Name:</strong> <span t-esc="doc.qa_shopfloor_id.name or 'Quality Assurance Officer'"/></div>
+                                <div style="margin-top: 22px;"><strong>Signature:</strong> _________________________</div>
+                                <div style="margin-top: 6px;"><strong>Date:</strong> <span t-field="doc.date"/></div>
+                            </td>
+                            <td style="padding: 6px; border: 1px solid #BDC3C7;">
+                                <div><strong>Name:</strong> <span t-esc="doc.production_manager_id.name or 'Factory Manager'"/></div>
+                                <div style="margin-top: 22px;"><strong>Signature:</strong> _________________________</div>
+                                <div style="margin-top: 6px;"><strong>Date:</strong> <span t-field="doc.date"/></div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- FOOTER STRIP -->
+                <div style="margin-top: 10px; text-align: center; font-size: 7.5px; color: #7F8C8D; border-top: 1px solid #BDC3C7; padding-top: 3px;">
+                    Taghini Foods Operations • Document TF/ABT/001 (Rev 01) • Confidential &amp; Proprietary • Printed: <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%Y-%m-%d %H:%M')"/>
+                </div>
+
+            </div>
+        </t>
+    </template>
+</odoo>

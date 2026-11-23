@@ -1,0 +1,1157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="standard_arbor_acres_plus_ps" model="taghini.farm.standard">
+        <field name="name">Arbor Acres Plus Parent Stock (In-Season 2021)</field>
+        <field name="standard_type">breeder</field>
+        <field name="breed">Arbor Acres Plus (Parent Stock)</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_00" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">0</field>
+        <field name="age_min">0</field>
+        <field name="age_max">6</field>
+        <field name="aa_female_bw_g">40</field>
+        <field name="aa_male_bw_g">40</field>
+        <field name="max_weekly_mort_pct">0.01</field>
+        <field name="cumulative_mort_target_pct">0.01</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_01" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">1</field>
+        <field name="age_min">7</field>
+        <field name="age_max">13</field>
+        <field name="aa_female_bw_g">115</field>
+        <field name="aa_male_bw_g">150</field>
+        <field name="aa_female_feed_g">20</field>
+        <field name="aa_male_feed_g">33</field>
+        <field name="max_weekly_mort_pct">0.005</field>
+        <field name="cumulative_mort_target_pct">0.015</field>
+        <field name="female_weekly_gain_g">75</field>
+        <field name="male_weekly_gain_g">110</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_02" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">2</field>
+        <field name="age_min">14</field>
+        <field name="age_max">20</field>
+        <field name="aa_female_bw_g">215</field>
+        <field name="aa_male_bw_g">320</field>
+        <field name="aa_female_feed_g">26</field>
+        <field name="aa_male_feed_g">42</field>
+        <field name="max_weekly_mort_pct">0.0015</field>
+        <field name="cumulative_mort_target_pct">0.0165</field>
+        <field name="female_weekly_gain_g">100</field>
+        <field name="male_weekly_gain_g">170</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_03" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">3</field>
+        <field name="age_min">21</field>
+        <field name="age_max">27</field>
+        <field name="aa_female_bw_g">345</field>
+        <field name="aa_male_bw_g">525</field>
+        <field name="aa_female_feed_g">31</field>
+        <field name="aa_male_feed_g">49</field>
+        <field name="max_weekly_mort_pct">0.0015</field>
+        <field name="cumulative_mort_target_pct">0.018000000000000002</field>
+        <field name="female_weekly_gain_g">130</field>
+        <field name="male_weekly_gain_g">205</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_04" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">4</field>
+        <field name="age_min">28</field>
+        <field name="age_max">34</field>
+        <field name="aa_female_bw_g">475</field>
+        <field name="aa_male_bw_g">755</field>
+        <field name="aa_female_feed_g">34</field>
+        <field name="aa_male_feed_g">54</field>
+        <field name="max_weekly_mort_pct">0.0015</field>
+        <field name="cumulative_mort_target_pct">0.019500000000000003</field>
+        <field name="female_weekly_gain_g">130</field>
+        <field name="male_weekly_gain_g">230</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_05" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">5</field>
+        <field name="age_min">35</field>
+        <field name="age_max">41</field>
+        <field name="aa_female_bw_g">595</field>
+        <field name="aa_male_bw_g">945</field>
+        <field name="aa_female_feed_g">37</field>
+        <field name="aa_male_feed_g">58</field>
+        <field name="max_weekly_mort_pct">0.0015</field>
+        <field name="cumulative_mort_target_pct">0.021000000000000005</field>
+        <field name="female_weekly_gain_g">120</field>
+        <field name="male_weekly_gain_g">190</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_06" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">6</field>
+        <field name="age_min">42</field>
+        <field name="age_max">48</field>
+        <field name="aa_female_bw_g">705</field>
+        <field name="aa_male_bw_g">1130</field>
+        <field name="aa_female_feed_g">40</field>
+        <field name="aa_male_feed_g">61</field>
+        <field name="max_weekly_mort_pct">0.0015</field>
+        <field name="cumulative_mort_target_pct">0.022500000000000006</field>
+        <field name="female_weekly_gain_g">110</field>
+        <field name="male_weekly_gain_g">185</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_07" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">7</field>
+        <field name="age_min">49</field>
+        <field name="age_max">55</field>
+        <field name="aa_female_bw_g">805</field>
+        <field name="aa_male_bw_g">1280</field>
+        <field name="aa_female_feed_g">43</field>
+        <field name="aa_male_feed_g">63</field>
+        <field name="max_weekly_mort_pct">0.0015</field>
+        <field name="cumulative_mort_target_pct">0.024000000000000007</field>
+        <field name="female_weekly_gain_g">100</field>
+        <field name="male_weekly_gain_g">150</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_08" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">8</field>
+        <field name="age_min">56</field>
+        <field name="age_max">62</field>
+        <field name="aa_female_bw_g">905</field>
+        <field name="aa_male_bw_g">1420</field>
+        <field name="aa_female_feed_g">46</field>
+        <field name="aa_male_feed_g">65</field>
+        <field name="max_weekly_mort_pct">0.0015</field>
+        <field name="cumulative_mort_target_pct">0.02550000000000001</field>
+        <field name="female_weekly_gain_g">100</field>
+        <field name="male_weekly_gain_g">140</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_09" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">9</field>
+        <field name="age_min">63</field>
+        <field name="age_max">69</field>
+        <field name="aa_female_bw_g">1005</field>
+        <field name="aa_male_bw_g">1545</field>
+        <field name="aa_female_feed_g">50</field>
+        <field name="aa_male_feed_g">67</field>
+        <field name="max_weekly_mort_pct">0.0015</field>
+        <field name="cumulative_mort_target_pct">0.02700000000000001</field>
+        <field name="female_weekly_gain_g">100</field>
+        <field name="male_weekly_gain_g">125</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_10" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">10</field>
+        <field name="age_min">70</field>
+        <field name="age_max">76</field>
+        <field name="aa_female_bw_g">1105</field>
+        <field name="aa_male_bw_g">1670</field>
+        <field name="aa_female_feed_g">53</field>
+        <field name="aa_male_feed_g">69</field>
+        <field name="max_weekly_mort_pct">0.0015</field>
+        <field name="cumulative_mort_target_pct">0.02850000000000001</field>
+        <field name="female_weekly_gain_g">100</field>
+        <field name="male_weekly_gain_g">125</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_11" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">11</field>
+        <field name="age_min">77</field>
+        <field name="age_max">83</field>
+        <field name="aa_female_bw_g">1205</field>
+        <field name="aa_male_bw_g">1795</field>
+        <field name="aa_female_feed_g">57</field>
+        <field name="aa_male_feed_g">72</field>
+        <field name="max_weekly_mort_pct">0.0015</field>
+        <field name="cumulative_mort_target_pct">0.030000000000000013</field>
+        <field name="female_weekly_gain_g">100</field>
+        <field name="male_weekly_gain_g">125</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_12" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">12</field>
+        <field name="age_min">84</field>
+        <field name="age_max">90</field>
+        <field name="aa_female_bw_g">1305</field>
+        <field name="aa_male_bw_g">1920</field>
+        <field name="aa_female_feed_g">60</field>
+        <field name="aa_male_feed_g">74</field>
+        <field name="max_weekly_mort_pct">0.0015</field>
+        <field name="cumulative_mort_target_pct">0.031500000000000014</field>
+        <field name="female_weekly_gain_g">100</field>
+        <field name="male_weekly_gain_g">125</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_13" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">13</field>
+        <field name="age_min">91</field>
+        <field name="age_max">97</field>
+        <field name="aa_female_bw_g">1405</field>
+        <field name="aa_male_bw_g">2045</field>
+        <field name="aa_female_feed_g">64</field>
+        <field name="aa_male_feed_g">77</field>
+        <field name="max_weekly_mort_pct">0.0015</field>
+        <field name="cumulative_mort_target_pct">0.033000000000000015</field>
+        <field name="female_weekly_gain_g">100</field>
+        <field name="male_weekly_gain_g">125</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_14" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">14</field>
+        <field name="age_min">98</field>
+        <field name="age_max">104</field>
+        <field name="aa_female_bw_g">1505</field>
+        <field name="aa_male_bw_g">2170</field>
+        <field name="aa_female_feed_g">67</field>
+        <field name="aa_male_feed_g">80</field>
+        <field name="max_weekly_mort_pct">0.0015</field>
+        <field name="cumulative_mort_target_pct">0.03450000000000002</field>
+        <field name="female_weekly_gain_g">100</field>
+        <field name="male_weekly_gain_g">125</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_15" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">15</field>
+        <field name="age_min">105</field>
+        <field name="age_max">111</field>
+        <field name="aa_female_bw_g">1605</field>
+        <field name="aa_male_bw_g">2295</field>
+        <field name="aa_female_feed_g">71</field>
+        <field name="aa_male_feed_g">83</field>
+        <field name="max_weekly_mort_pct">0.0015</field>
+        <field name="cumulative_mort_target_pct">0.03600000000000002</field>
+        <field name="female_weekly_gain_g">100</field>
+        <field name="male_weekly_gain_g">125</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_16" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">16</field>
+        <field name="age_min">112</field>
+        <field name="age_max">118</field>
+        <field name="aa_female_bw_g">1710</field>
+        <field name="aa_male_bw_g">2420</field>
+        <field name="aa_female_feed_g">75</field>
+        <field name="aa_male_feed_g">87</field>
+        <field name="max_weekly_mort_pct">0.0015</field>
+        <field name="cumulative_mort_target_pct">0.03750000000000002</field>
+        <field name="female_weekly_gain_g">105</field>
+        <field name="male_weekly_gain_g">125</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_17" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">17</field>
+        <field name="age_min">119</field>
+        <field name="age_max">125</field>
+        <field name="aa_female_bw_g">1820</field>
+        <field name="aa_male_bw_g">2560</field>
+        <field name="aa_female_feed_g">80</field>
+        <field name="aa_male_feed_g">90</field>
+        <field name="max_weekly_mort_pct">0.0015</field>
+        <field name="cumulative_mort_target_pct">0.03900000000000002</field>
+        <field name="female_weekly_gain_g">110</field>
+        <field name="male_weekly_gain_g">140</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_18" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">18</field>
+        <field name="age_min">126</field>
+        <field name="age_max">132</field>
+        <field name="aa_female_bw_g">1945</field>
+        <field name="aa_male_bw_g">2715</field>
+        <field name="aa_female_feed_g">86</field>
+        <field name="aa_male_feed_g">93</field>
+        <field name="max_weekly_mort_pct">0.0015</field>
+        <field name="cumulative_mort_target_pct">0.04050000000000002</field>
+        <field name="female_weekly_gain_g">125</field>
+        <field name="male_weekly_gain_g">155</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_19" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">19</field>
+        <field name="age_min">133</field>
+        <field name="age_max">139</field>
+        <field name="aa_female_bw_g">2095</field>
+        <field name="aa_male_bw_g">2875</field>
+        <field name="aa_female_feed_g">92</field>
+        <field name="aa_male_feed_g">98</field>
+        <field name="max_weekly_mort_pct">0.0015</field>
+        <field name="cumulative_mort_target_pct">0.04200000000000002</field>
+        <field name="female_weekly_gain_g">150</field>
+        <field name="male_weekly_gain_g">160</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_20" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">20</field>
+        <field name="age_min">140</field>
+        <field name="age_max">146</field>
+        <field name="aa_female_bw_g">2245</field>
+        <field name="aa_male_bw_g">3035</field>
+        <field name="aa_female_feed_g">97</field>
+        <field name="aa_male_feed_g">102</field>
+        <field name="max_weekly_mort_pct">0.0015</field>
+        <field name="cumulative_mort_target_pct">0.043500000000000025</field>
+        <field name="female_weekly_gain_g">150</field>
+        <field name="male_weekly_gain_g">160</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_21" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">21</field>
+        <field name="age_min">147</field>
+        <field name="age_max">153</field>
+        <field name="aa_female_bw_g">2400</field>
+        <field name="aa_male_bw_g">3195</field>
+        <field name="aa_female_feed_g">102</field>
+        <field name="aa_male_feed_g">107</field>
+        <field name="max_weekly_mort_pct">0.0015</field>
+        <field name="cumulative_mort_target_pct">0.045000000000000026</field>
+        <field name="female_weekly_gain_g">155</field>
+        <field name="male_weekly_gain_g">160</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_22" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">22</field>
+        <field name="age_min">154</field>
+        <field name="age_max">160</field>
+        <field name="aa_female_bw_g">2550</field>
+        <field name="aa_male_bw_g">3355</field>
+        <field name="aa_female_feed_g">106</field>
+        <field name="aa_male_feed_g">112</field>
+        <field name="max_weekly_mort_pct">0.0015</field>
+        <field name="cumulative_mort_target_pct">0.04650000000000003</field>
+        <field name="female_weekly_gain_g">150</field>
+        <field name="male_weekly_gain_g">160</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_23" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">23</field>
+        <field name="age_min">161</field>
+        <field name="age_max">167</field>
+        <field name="aa_female_bw_g">2700</field>
+        <field name="aa_male_bw_g">3515</field>
+        <field name="aa_female_feed_g">110</field>
+        <field name="aa_male_feed_g">118</field>
+        <field name="max_weekly_mort_pct">0.0015</field>
+        <field name="cumulative_mort_target_pct">0.04800000000000003</field>
+        <field name="female_weekly_gain_g">150</field>
+        <field name="male_weekly_gain_g">160</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_24" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">24</field>
+        <field name="age_min">168</field>
+        <field name="age_max">174</field>
+        <field name="aa_female_bw_g">2845</field>
+        <field name="aa_male_bw_g">3675</field>
+        <field name="aa_female_feed_g">115</field>
+        <field name="aa_male_feed_g">121</field>
+        <field name="max_weekly_mort_pct">0.0015</field>
+        <field name="cumulative_mort_target_pct">0.04950000000000003</field>
+        <field name="female_weekly_gain_g">145</field>
+        <field name="male_weekly_gain_g">160</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_25" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">25</field>
+        <field name="age_min">175</field>
+        <field name="age_max">181</field>
+        <field name="aa_female_bw_g">2970</field>
+        <field name="aa_male_bw_g">3825</field>
+        <field name="aa_female_feed_g">127</field>
+        <field name="aa_male_feed_g">123</field>
+        <field name="aa_hen_week_pct">0.054</field>
+        <field name="aa_egg_weight_g">49.2</field>
+        <field name="max_weekly_mort_pct">0.002</field>
+        <field name="cumulative_mort_target_pct">0.05150000000000003</field>
+        <field name="female_weekly_gain_g">125</field>
+        <field name="male_weekly_gain_g">150</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_26" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">26</field>
+        <field name="age_min">182</field>
+        <field name="age_max">188</field>
+        <field name="aa_female_bw_g">3080</field>
+        <field name="aa_male_bw_g">3960</field>
+        <field name="aa_female_feed_g">144</field>
+        <field name="aa_male_feed_g">124</field>
+        <field name="aa_hen_week_pct">0.262</field>
+        <field name="aa_hatching_egg_pct">0.702</field>
+        <field name="aa_hatchability_pct">0.792</field>
+        <field name="aa_egg_weight_g">51.1</field>
+        <field name="max_weekly_mort_pct">0.002</field>
+        <field name="cumulative_mort_target_pct">0.053500000000000034</field>
+        <field name="female_weekly_gain_g">110</field>
+        <field name="male_weekly_gain_g">135</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_27" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">27</field>
+        <field name="age_min">189</field>
+        <field name="age_max">195</field>
+        <field name="aa_female_bw_g">3180</field>
+        <field name="aa_male_bw_g">4035</field>
+        <field name="aa_female_feed_g">158</field>
+        <field name="aa_male_feed_g">125</field>
+        <field name="aa_hen_week_pct">0.564</field>
+        <field name="aa_hatching_egg_pct">0.862</field>
+        <field name="aa_hatchability_pct">0.824</field>
+        <field name="aa_egg_weight_g">52.6</field>
+        <field name="max_weekly_mort_pct">0.002</field>
+        <field name="cumulative_mort_target_pct">0.055500000000000035</field>
+        <field name="female_weekly_gain_g">100</field>
+        <field name="male_weekly_gain_g">75</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_28" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">28</field>
+        <field name="age_min">196</field>
+        <field name="age_max">202</field>
+        <field name="aa_female_bw_g">3275</field>
+        <field name="aa_male_bw_g">4090</field>
+        <field name="aa_female_feed_g">167</field>
+        <field name="aa_male_feed_g">126</field>
+        <field name="aa_hen_week_pct">0.781</field>
+        <field name="aa_hatching_egg_pct">0.897</field>
+        <field name="aa_hatchability_pct">0.85</field>
+        <field name="aa_egg_weight_g">53.8</field>
+        <field name="max_weekly_mort_pct">0.002</field>
+        <field name="cumulative_mort_target_pct">0.05750000000000004</field>
+        <field name="female_weekly_gain_g">95</field>
+        <field name="male_weekly_gain_g">55</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_29" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">29</field>
+        <field name="age_min">203</field>
+        <field name="age_max">209</field>
+        <field name="aa_female_bw_g">3365</field>
+        <field name="aa_male_bw_g">4120</field>
+        <field name="aa_female_feed_g">167</field>
+        <field name="aa_male_feed_g">127</field>
+        <field name="aa_hen_week_pct">0.869</field>
+        <field name="aa_hatching_egg_pct">0.921</field>
+        <field name="aa_hatchability_pct">0.87</field>
+        <field name="aa_egg_weight_g">54.9</field>
+        <field name="max_weekly_mort_pct">0.002</field>
+        <field name="cumulative_mort_target_pct">0.05950000000000004</field>
+        <field name="female_weekly_gain_g">90</field>
+        <field name="male_weekly_gain_g">30</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_30" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">30</field>
+        <field name="age_min">210</field>
+        <field name="age_max">216</field>
+        <field name="aa_female_bw_g">3415</field>
+        <field name="aa_male_bw_g">4150</field>
+        <field name="aa_female_feed_g">167</field>
+        <field name="aa_male_feed_g">128</field>
+        <field name="aa_hen_week_pct">0.9</field>
+        <field name="aa_hatching_egg_pct">0.939</field>
+        <field name="aa_hatchability_pct">0.885</field>
+        <field name="aa_egg_weight_g">55.8</field>
+        <field name="max_weekly_mort_pct">0.002</field>
+        <field name="cumulative_mort_target_pct">0.06150000000000004</field>
+        <field name="female_weekly_gain_g">50</field>
+        <field name="male_weekly_gain_g">30</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_31" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">31</field>
+        <field name="age_min">217</field>
+        <field name="age_max">223</field>
+        <field name="aa_female_bw_g">3460</field>
+        <field name="aa_male_bw_g">4180</field>
+        <field name="aa_female_feed_g">167</field>
+        <field name="aa_male_feed_g">128</field>
+        <field name="aa_hen_week_pct">0.909</field>
+        <field name="aa_hatching_egg_pct">0.947</field>
+        <field name="aa_hatchability_pct">0.897</field>
+        <field name="aa_egg_weight_g">56.6</field>
+        <field name="max_weekly_mort_pct">0.002</field>
+        <field name="cumulative_mort_target_pct">0.06350000000000004</field>
+        <field name="female_weekly_gain_g">45</field>
+        <field name="male_weekly_gain_g">30</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_32" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">32</field>
+        <field name="age_min">224</field>
+        <field name="age_max">230</field>
+        <field name="aa_female_bw_g">3500</field>
+        <field name="aa_male_bw_g">4210</field>
+        <field name="aa_female_feed_g">167</field>
+        <field name="aa_male_feed_g">129</field>
+        <field name="aa_hen_week_pct">0.904</field>
+        <field name="aa_hatching_egg_pct">0.954</field>
+        <field name="aa_hatchability_pct">0.905</field>
+        <field name="aa_egg_weight_g">57.3</field>
+        <field name="max_weekly_mort_pct">0.002</field>
+        <field name="cumulative_mort_target_pct">0.06550000000000004</field>
+        <field name="female_weekly_gain_g">40</field>
+        <field name="male_weekly_gain_g">30</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_33" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">33</field>
+        <field name="age_min">231</field>
+        <field name="age_max">237</field>
+        <field name="aa_female_bw_g">3545</field>
+        <field name="aa_male_bw_g">4240</field>
+        <field name="aa_female_feed_g">167</field>
+        <field name="aa_male_feed_g">130</field>
+        <field name="aa_hen_week_pct">0.894</field>
+        <field name="aa_hatching_egg_pct">0.954</field>
+        <field name="aa_hatchability_pct">0.911</field>
+        <field name="aa_egg_weight_g">57.9</field>
+        <field name="max_weekly_mort_pct">0.002</field>
+        <field name="cumulative_mort_target_pct">0.06750000000000005</field>
+        <field name="female_weekly_gain_g">45</field>
+        <field name="male_weekly_gain_g">30</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_34" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">34</field>
+        <field name="age_min">238</field>
+        <field name="age_max">244</field>
+        <field name="aa_female_bw_g">3585</field>
+        <field name="aa_male_bw_g">4270</field>
+        <field name="aa_female_feed_g">167</field>
+        <field name="aa_male_feed_g">131</field>
+        <field name="aa_hen_week_pct">0.884</field>
+        <field name="aa_hatching_egg_pct">0.953</field>
+        <field name="aa_hatchability_pct">0.915</field>
+        <field name="aa_egg_weight_g">58.5</field>
+        <field name="max_weekly_mort_pct">0.002</field>
+        <field name="cumulative_mort_target_pct">0.06950000000000005</field>
+        <field name="female_weekly_gain_g">40</field>
+        <field name="male_weekly_gain_g">30</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_35" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">35</field>
+        <field name="age_min">245</field>
+        <field name="age_max">251</field>
+        <field name="aa_female_bw_g">3615</field>
+        <field name="aa_male_bw_g">4300</field>
+        <field name="aa_female_feed_g">167</field>
+        <field name="aa_male_feed_g">132</field>
+        <field name="aa_hen_week_pct">0.874</field>
+        <field name="aa_hatching_egg_pct">0.953</field>
+        <field name="aa_hatchability_pct">0.917</field>
+        <field name="aa_egg_weight_g">59</field>
+        <field name="max_weekly_mort_pct">0.002</field>
+        <field name="cumulative_mort_target_pct">0.07150000000000005</field>
+        <field name="female_weekly_gain_g">30</field>
+        <field name="male_weekly_gain_g">30</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_36" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">36</field>
+        <field name="age_min">252</field>
+        <field name="age_max">258</field>
+        <field name="aa_female_bw_g">3645</field>
+        <field name="aa_male_bw_g">4330</field>
+        <field name="aa_female_feed_g">166</field>
+        <field name="aa_male_feed_g">133</field>
+        <field name="aa_hen_week_pct">0.864</field>
+        <field name="aa_hatching_egg_pct">0.952</field>
+        <field name="aa_hatchability_pct">0.918</field>
+        <field name="aa_egg_weight_g">59.6</field>
+        <field name="max_weekly_mort_pct">0.002</field>
+        <field name="cumulative_mort_target_pct">0.07350000000000005</field>
+        <field name="female_weekly_gain_g">30</field>
+        <field name="male_weekly_gain_g">30</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_37" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">37</field>
+        <field name="age_min">259</field>
+        <field name="age_max">265</field>
+        <field name="aa_female_bw_g">3670</field>
+        <field name="aa_male_bw_g">4360</field>
+        <field name="aa_female_feed_g">166</field>
+        <field name="aa_male_feed_g">134</field>
+        <field name="aa_hen_week_pct">0.854</field>
+        <field name="aa_hatching_egg_pct">0.951</field>
+        <field name="aa_hatchability_pct">0.917</field>
+        <field name="aa_egg_weight_g">60.1</field>
+        <field name="max_weekly_mort_pct">0.002</field>
+        <field name="cumulative_mort_target_pct">0.07550000000000005</field>
+        <field name="female_weekly_gain_g">25</field>
+        <field name="male_weekly_gain_g">30</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_38" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">38</field>
+        <field name="age_min">266</field>
+        <field name="age_max">272</field>
+        <field name="aa_female_bw_g">3695</field>
+        <field name="aa_male_bw_g">4390</field>
+        <field name="aa_female_feed_g">166</field>
+        <field name="aa_male_feed_g">135</field>
+        <field name="aa_hen_week_pct">0.844</field>
+        <field name="aa_hatching_egg_pct">0.951</field>
+        <field name="aa_hatchability_pct">0.916</field>
+        <field name="aa_egg_weight_g">60.6</field>
+        <field name="max_weekly_mort_pct">0.002</field>
+        <field name="cumulative_mort_target_pct">0.07750000000000005</field>
+        <field name="female_weekly_gain_g">25</field>
+        <field name="male_weekly_gain_g">30</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_39" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">39</field>
+        <field name="age_min">273</field>
+        <field name="age_max">279</field>
+        <field name="aa_female_bw_g">3720</field>
+        <field name="aa_male_bw_g">4420</field>
+        <field name="aa_female_feed_g">166</field>
+        <field name="aa_male_feed_g">136</field>
+        <field name="aa_hen_week_pct">0.834</field>
+        <field name="aa_hatching_egg_pct">0.95</field>
+        <field name="aa_hatchability_pct">0.914</field>
+        <field name="aa_egg_weight_g">61.1</field>
+        <field name="max_weekly_mort_pct">0.002</field>
+        <field name="cumulative_mort_target_pct">0.07950000000000006</field>
+        <field name="female_weekly_gain_g">25</field>
+        <field name="male_weekly_gain_g">30</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_40" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">40</field>
+        <field name="age_min">280</field>
+        <field name="age_max">286</field>
+        <field name="aa_female_bw_g">3740</field>
+        <field name="aa_male_bw_g">4450</field>
+        <field name="aa_female_feed_g">165</field>
+        <field name="aa_male_feed_g">136</field>
+        <field name="aa_hen_week_pct">0.823</field>
+        <field name="aa_hatching_egg_pct">0.949</field>
+        <field name="aa_hatchability_pct">0.911</field>
+        <field name="aa_egg_weight_g">61.6</field>
+        <field name="max_weekly_mort_pct">0.002</field>
+        <field name="cumulative_mort_target_pct">0.08150000000000006</field>
+        <field name="female_weekly_gain_g">20</field>
+        <field name="male_weekly_gain_g">30</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_41" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">41</field>
+        <field name="age_min">287</field>
+        <field name="age_max">293</field>
+        <field name="aa_female_bw_g">3760</field>
+        <field name="aa_male_bw_g">4480</field>
+        <field name="aa_female_feed_g">165</field>
+        <field name="aa_male_feed_g">137</field>
+        <field name="aa_hen_week_pct">0.813</field>
+        <field name="aa_hatching_egg_pct">0.949</field>
+        <field name="aa_hatchability_pct">0.907</field>
+        <field name="aa_egg_weight_g">62.1</field>
+        <field name="max_weekly_mort_pct">0.002</field>
+        <field name="cumulative_mort_target_pct">0.08350000000000006</field>
+        <field name="female_weekly_gain_g">20</field>
+        <field name="male_weekly_gain_g">30</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_42" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">42</field>
+        <field name="age_min">294</field>
+        <field name="age_max">300</field>
+        <field name="aa_female_bw_g">3780</field>
+        <field name="aa_male_bw_g">4510</field>
+        <field name="aa_female_feed_g">165</field>
+        <field name="aa_male_feed_g">138</field>
+        <field name="aa_hen_week_pct">0.802</field>
+        <field name="aa_hatching_egg_pct">0.948</field>
+        <field name="aa_hatchability_pct">0.903</field>
+        <field name="aa_egg_weight_g">62.5</field>
+        <field name="max_weekly_mort_pct">0.002</field>
+        <field name="cumulative_mort_target_pct">0.08550000000000006</field>
+        <field name="female_weekly_gain_g">20</field>
+        <field name="male_weekly_gain_g">30</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_43" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">43</field>
+        <field name="age_min">301</field>
+        <field name="age_max">307</field>
+        <field name="aa_female_bw_g">3800</field>
+        <field name="aa_male_bw_g">4540</field>
+        <field name="aa_female_feed_g">164</field>
+        <field name="aa_male_feed_g">139</field>
+        <field name="aa_hen_week_pct">0.792</field>
+        <field name="aa_hatching_egg_pct">0.948</field>
+        <field name="aa_hatchability_pct">0.898</field>
+        <field name="aa_egg_weight_g">63</field>
+        <field name="max_weekly_mort_pct">0.002</field>
+        <field name="cumulative_mort_target_pct">0.08750000000000006</field>
+        <field name="female_weekly_gain_g">20</field>
+        <field name="male_weekly_gain_g">30</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_44" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">44</field>
+        <field name="age_min">308</field>
+        <field name="age_max">314</field>
+        <field name="aa_female_bw_g">3820</field>
+        <field name="aa_male_bw_g">4570</field>
+        <field name="aa_female_feed_g">164</field>
+        <field name="aa_male_feed_g">140</field>
+        <field name="aa_hen_week_pct">0.782</field>
+        <field name="aa_hatching_egg_pct">0.947</field>
+        <field name="aa_hatchability_pct">0.894</field>
+        <field name="aa_egg_weight_g">63.4</field>
+        <field name="max_weekly_mort_pct">0.002</field>
+        <field name="cumulative_mort_target_pct">0.08950000000000007</field>
+        <field name="female_weekly_gain_g">20</field>
+        <field name="male_weekly_gain_g">30</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_45" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">45</field>
+        <field name="age_min">315</field>
+        <field name="age_max">321</field>
+        <field name="aa_female_bw_g">3840</field>
+        <field name="aa_male_bw_g">4600</field>
+        <field name="aa_female_feed_g">164</field>
+        <field name="aa_male_feed_g">141</field>
+        <field name="aa_hen_week_pct">0.772</field>
+        <field name="aa_hatching_egg_pct">0.946</field>
+        <field name="aa_hatchability_pct">0.888</field>
+        <field name="aa_egg_weight_g">63.9</field>
+        <field name="max_weekly_mort_pct">0.002</field>
+        <field name="cumulative_mort_target_pct">0.09150000000000007</field>
+        <field name="female_weekly_gain_g">20</field>
+        <field name="male_weekly_gain_g">30</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_46" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">46</field>
+        <field name="age_min">322</field>
+        <field name="age_max">328</field>
+        <field name="aa_female_bw_g">3860</field>
+        <field name="aa_male_bw_g">4630</field>
+        <field name="aa_female_feed_g">164</field>
+        <field name="aa_male_feed_g">141</field>
+        <field name="aa_hen_week_pct">0.761</field>
+        <field name="aa_hatching_egg_pct">0.946</field>
+        <field name="aa_hatchability_pct">0.883</field>
+        <field name="aa_egg_weight_g">64.3</field>
+        <field name="max_weekly_mort_pct">0.002</field>
+        <field name="cumulative_mort_target_pct">0.09350000000000007</field>
+        <field name="female_weekly_gain_g">20</field>
+        <field name="male_weekly_gain_g">30</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_47" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">47</field>
+        <field name="age_min">329</field>
+        <field name="age_max">335</field>
+        <field name="aa_female_bw_g">3880</field>
+        <field name="aa_male_bw_g">4660</field>
+        <field name="aa_female_feed_g">163</field>
+        <field name="aa_male_feed_g">142</field>
+        <field name="aa_hen_week_pct">0.751</field>
+        <field name="aa_hatching_egg_pct">0.945</field>
+        <field name="aa_hatchability_pct">0.877</field>
+        <field name="aa_egg_weight_g">64.7</field>
+        <field name="max_weekly_mort_pct">0.002</field>
+        <field name="cumulative_mort_target_pct">0.09550000000000007</field>
+        <field name="female_weekly_gain_g">20</field>
+        <field name="male_weekly_gain_g">30</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_48" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">48</field>
+        <field name="age_min">336</field>
+        <field name="age_max">342</field>
+        <field name="aa_female_bw_g">3900</field>
+        <field name="aa_male_bw_g">4690</field>
+        <field name="aa_female_feed_g">163</field>
+        <field name="aa_male_feed_g">143</field>
+        <field name="aa_hen_week_pct">0.739</field>
+        <field name="aa_hatching_egg_pct">0.945</field>
+        <field name="aa_hatchability_pct">0.871</field>
+        <field name="aa_egg_weight_g">65.1</field>
+        <field name="max_weekly_mort_pct">0.002</field>
+        <field name="cumulative_mort_target_pct">0.09750000000000007</field>
+        <field name="female_weekly_gain_g">20</field>
+        <field name="male_weekly_gain_g">30</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_49" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">49</field>
+        <field name="age_min">343</field>
+        <field name="age_max">349</field>
+        <field name="aa_female_bw_g">3920</field>
+        <field name="aa_male_bw_g">4720</field>
+        <field name="aa_female_feed_g">163</field>
+        <field name="aa_male_feed_g">144</field>
+        <field name="aa_hen_week_pct">0.728</field>
+        <field name="aa_hatching_egg_pct">0.944</field>
+        <field name="aa_hatchability_pct">0.865</field>
+        <field name="aa_egg_weight_g">65.4</field>
+        <field name="max_weekly_mort_pct">0.002</field>
+        <field name="cumulative_mort_target_pct">0.09950000000000007</field>
+        <field name="female_weekly_gain_g">20</field>
+        <field name="male_weekly_gain_g">30</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_50" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">50</field>
+        <field name="age_min">350</field>
+        <field name="age_max">356</field>
+        <field name="aa_female_bw_g">3940</field>
+        <field name="aa_male_bw_g">4750</field>
+        <field name="aa_female_feed_g">162</field>
+        <field name="aa_male_feed_g">145</field>
+        <field name="aa_hen_week_pct">0.718</field>
+        <field name="aa_hatching_egg_pct">0.943</field>
+        <field name="aa_hatchability_pct">0.858</field>
+        <field name="aa_egg_weight_g">65.8</field>
+        <field name="max_weekly_mort_pct">0.002</field>
+        <field name="cumulative_mort_target_pct">0.10150000000000008</field>
+        <field name="female_weekly_gain_g">20</field>
+        <field name="male_weekly_gain_g">30</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_51" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">51</field>
+        <field name="age_min">357</field>
+        <field name="age_max">363</field>
+        <field name="aa_female_bw_g">3960</field>
+        <field name="aa_male_bw_g">4775</field>
+        <field name="aa_female_feed_g">162</field>
+        <field name="aa_male_feed_g">145</field>
+        <field name="aa_hen_week_pct">0.707</field>
+        <field name="aa_hatching_egg_pct">0.943</field>
+        <field name="aa_hatchability_pct">0.852</field>
+        <field name="aa_egg_weight_g">66.1</field>
+        <field name="max_weekly_mort_pct">0.002</field>
+        <field name="cumulative_mort_target_pct">0.10350000000000008</field>
+        <field name="female_weekly_gain_g">20</field>
+        <field name="male_weekly_gain_g">25</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_52" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">52</field>
+        <field name="age_min">364</field>
+        <field name="age_max">370</field>
+        <field name="aa_female_bw_g">3975</field>
+        <field name="aa_male_bw_g">4800</field>
+        <field name="aa_female_feed_g">161</field>
+        <field name="aa_male_feed_g">146</field>
+        <field name="aa_hen_week_pct">0.697</field>
+        <field name="aa_hatching_egg_pct">0.942</field>
+        <field name="aa_hatchability_pct">0.845</field>
+        <field name="aa_egg_weight_g">66.4</field>
+        <field name="max_weekly_mort_pct">0.002</field>
+        <field name="cumulative_mort_target_pct">0.10550000000000008</field>
+        <field name="female_weekly_gain_g">15</field>
+        <field name="male_weekly_gain_g">25</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_53" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">53</field>
+        <field name="age_min">371</field>
+        <field name="age_max">377</field>
+        <field name="aa_female_bw_g">3990</field>
+        <field name="aa_male_bw_g">4825</field>
+        <field name="aa_female_feed_g">160</field>
+        <field name="aa_male_feed_g">147</field>
+        <field name="aa_hen_week_pct">0.686</field>
+        <field name="aa_hatching_egg_pct">0.942</field>
+        <field name="aa_hatchability_pct">0.838</field>
+        <field name="aa_egg_weight_g">66.6</field>
+        <field name="max_weekly_mort_pct">0.002</field>
+        <field name="cumulative_mort_target_pct">0.10750000000000008</field>
+        <field name="female_weekly_gain_g">15</field>
+        <field name="male_weekly_gain_g">25</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_54" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">54</field>
+        <field name="age_min">378</field>
+        <field name="age_max">384</field>
+        <field name="aa_female_bw_g">4000</field>
+        <field name="aa_male_bw_g">4850</field>
+        <field name="aa_female_feed_g">159</field>
+        <field name="aa_male_feed_g">148</field>
+        <field name="aa_hen_week_pct">0.675</field>
+        <field name="aa_hatching_egg_pct">0.941</field>
+        <field name="aa_hatchability_pct">0.831</field>
+        <field name="aa_egg_weight_g">66.9</field>
+        <field name="max_weekly_mort_pct">0.002</field>
+        <field name="cumulative_mort_target_pct">0.10950000000000008</field>
+        <field name="female_weekly_gain_g">10</field>
+        <field name="male_weekly_gain_g">25</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_55" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">55</field>
+        <field name="age_min">385</field>
+        <field name="age_max">391</field>
+        <field name="aa_female_bw_g">4010</field>
+        <field name="aa_male_bw_g">4875</field>
+        <field name="aa_female_feed_g">159</field>
+        <field name="aa_male_feed_g">148</field>
+        <field name="aa_hen_week_pct">0.665</field>
+        <field name="aa_hatching_egg_pct">0.941</field>
+        <field name="aa_hatchability_pct">0.823</field>
+        <field name="aa_egg_weight_g">67.1</field>
+        <field name="max_weekly_mort_pct">0.002</field>
+        <field name="cumulative_mort_target_pct">0.11150000000000009</field>
+        <field name="female_weekly_gain_g">10</field>
+        <field name="male_weekly_gain_g">25</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_56" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">56</field>
+        <field name="age_min">392</field>
+        <field name="age_max">398</field>
+        <field name="aa_female_bw_g">4020</field>
+        <field name="aa_male_bw_g">4900</field>
+        <field name="aa_female_feed_g">158</field>
+        <field name="aa_male_feed_g">149</field>
+        <field name="aa_hen_week_pct">0.652</field>
+        <field name="aa_hatching_egg_pct">0.94</field>
+        <field name="aa_hatchability_pct">0.816</field>
+        <field name="aa_egg_weight_g">67.4</field>
+        <field name="max_weekly_mort_pct">0.002</field>
+        <field name="cumulative_mort_target_pct">0.11350000000000009</field>
+        <field name="female_weekly_gain_g">10</field>
+        <field name="male_weekly_gain_g">25</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_57" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">57</field>
+        <field name="age_min">399</field>
+        <field name="age_max">405</field>
+        <field name="aa_female_bw_g">4030</field>
+        <field name="aa_male_bw_g">4925</field>
+        <field name="aa_female_feed_g">158</field>
+        <field name="aa_male_feed_g">150</field>
+        <field name="aa_hen_week_pct">0.642</field>
+        <field name="aa_hatching_egg_pct">0.939</field>
+        <field name="aa_hatchability_pct">0.808</field>
+        <field name="aa_egg_weight_g">67.6</field>
+        <field name="max_weekly_mort_pct">0.002</field>
+        <field name="cumulative_mort_target_pct">0.11550000000000009</field>
+        <field name="female_weekly_gain_g">10</field>
+        <field name="male_weekly_gain_g">25</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_58" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">58</field>
+        <field name="age_min">406</field>
+        <field name="age_max">412</field>
+        <field name="aa_female_bw_g">4040</field>
+        <field name="aa_male_bw_g">4950</field>
+        <field name="aa_female_feed_g">157</field>
+        <field name="aa_male_feed_g">150</field>
+        <field name="aa_hen_week_pct">0.631</field>
+        <field name="aa_hatching_egg_pct">0.939</field>
+        <field name="aa_hatchability_pct">0.8</field>
+        <field name="aa_egg_weight_g">67.8</field>
+        <field name="max_weekly_mort_pct">0.002</field>
+        <field name="cumulative_mort_target_pct">0.11750000000000009</field>
+        <field name="female_weekly_gain_g">10</field>
+        <field name="male_weekly_gain_g">25</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_59" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">59</field>
+        <field name="age_min">413</field>
+        <field name="age_max">419</field>
+        <field name="aa_female_bw_g">4050</field>
+        <field name="aa_male_bw_g">4975</field>
+        <field name="aa_female_feed_g">157</field>
+        <field name="aa_male_feed_g">151</field>
+        <field name="aa_hen_week_pct">0.62</field>
+        <field name="aa_hatching_egg_pct">0.938</field>
+        <field name="aa_hatchability_pct">0.792</field>
+        <field name="aa_egg_weight_g">68.1</field>
+        <field name="max_weekly_mort_pct">0.002</field>
+        <field name="cumulative_mort_target_pct">0.11950000000000009</field>
+        <field name="female_weekly_gain_g">10</field>
+        <field name="male_weekly_gain_g">25</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_60" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">60</field>
+        <field name="age_min">420</field>
+        <field name="age_max">426</field>
+        <field name="aa_female_bw_g">4060</field>
+        <field name="aa_male_bw_g">5000</field>
+        <field name="aa_female_feed_g">156</field>
+        <field name="aa_male_feed_g">151</field>
+        <field name="aa_hen_week_pct">0.609</field>
+        <field name="aa_hatching_egg_pct">0.937</field>
+        <field name="aa_hatchability_pct">0.784</field>
+        <field name="aa_egg_weight_g">68.3</field>
+        <field name="max_weekly_mort_pct">0.002</field>
+        <field name="cumulative_mort_target_pct">0.1215000000000001</field>
+        <field name="female_weekly_gain_g">10</field>
+        <field name="male_weekly_gain_g">25</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_61" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">61</field>
+        <field name="age_min">427</field>
+        <field name="age_max">433</field>
+        <field name="aa_female_bw_g">4070</field>
+        <field name="aa_male_bw_g">5025</field>
+        <field name="aa_female_feed_g">156</field>
+        <field name="aa_male_feed_g">152</field>
+        <field name="aa_hen_week_pct">0.598</field>
+        <field name="aa_hatching_egg_pct">0.937</field>
+        <field name="aa_hatchability_pct">0.776</field>
+        <field name="aa_egg_weight_g">68.5</field>
+        <field name="max_weekly_mort_pct">0.002</field>
+        <field name="cumulative_mort_target_pct">0.1235000000000001</field>
+        <field name="female_weekly_gain_g">10</field>
+        <field name="male_weekly_gain_g">25</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_62" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">62</field>
+        <field name="age_min">434</field>
+        <field name="age_max">440</field>
+        <field name="aa_female_bw_g">4080</field>
+        <field name="aa_male_bw_g">5050</field>
+        <field name="aa_female_feed_g">156</field>
+        <field name="aa_male_feed_g">153</field>
+        <field name="aa_hen_week_pct">0.587</field>
+        <field name="aa_hatching_egg_pct">0.936</field>
+        <field name="aa_hatchability_pct">0.768</field>
+        <field name="aa_egg_weight_g">68.7</field>
+        <field name="max_weekly_mort_pct">0.002</field>
+        <field name="cumulative_mort_target_pct">0.12550000000000008</field>
+        <field name="female_weekly_gain_g">10</field>
+        <field name="male_weekly_gain_g">25</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_63" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">63</field>
+        <field name="age_min">441</field>
+        <field name="age_max">447</field>
+        <field name="aa_female_bw_g">4090</field>
+        <field name="aa_male_bw_g">5075</field>
+        <field name="aa_female_feed_g">155</field>
+        <field name="aa_male_feed_g">153</field>
+        <field name="aa_hen_week_pct">0.576</field>
+        <field name="aa_hatching_egg_pct">0.935</field>
+        <field name="aa_hatchability_pct">0.759</field>
+        <field name="aa_egg_weight_g">68.9</field>
+        <field name="max_weekly_mort_pct">0.002</field>
+        <field name="cumulative_mort_target_pct">0.12750000000000009</field>
+        <field name="female_weekly_gain_g">10</field>
+        <field name="male_weekly_gain_g">25</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_64" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">64</field>
+        <field name="age_min">448</field>
+        <field name="age_max">454</field>
+        <field name="aa_female_bw_g">4100</field>
+        <field name="aa_male_bw_g">5100</field>
+        <field name="aa_female_feed_g">155</field>
+        <field name="aa_male_feed_g">154</field>
+        <field name="aa_hen_week_pct">0.563</field>
+        <field name="aa_hatching_egg_pct">0.935</field>
+        <field name="aa_hatchability_pct">0.751</field>
+        <field name="aa_egg_weight_g">69.1</field>
+        <field name="max_weekly_mort_pct">0.002</field>
+        <field name="cumulative_mort_target_pct">0.1295000000000001</field>
+        <field name="female_weekly_gain_g">10</field>
+        <field name="male_weekly_gain_g">25</field>
+    </record>
+
+    <record id="standard_line_aa_ps_wk_65" model="taghini.farm.standard.line">
+        <field name="standard_id" ref="standard_arbor_acres_plus_ps"/>
+        <field name="week">65</field>
+        <field name="age_min">455</field>
+        <field name="age_max">461</field>
+        <field name="aa_female_bw_g">4100</field>
+        <field name="aa_male_bw_g">5100</field>
+        <field name="aa_female_feed_g">155</field>
+        <field name="aa_male_feed_g">154</field>
+        <field name="aa_hen_week_pct">0.563</field>
+        <field name="aa_hatching_egg_pct">0.935</field>
+        <field name="aa_hatchability_pct">0.751</field>
+        <field name="aa_egg_weight_g">69.1</field>
+        <field name="max_weekly_mort_pct">0.002</field>
+        <field name="cumulative_mort_target_pct">0.1315000000000001</field>
+        <field name="female_weekly_gain_g">0</field>
+        <field name="male_weekly_gain_g">0</field>
+    </record>
+
+</odoo>

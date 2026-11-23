@@ -13,15 +13,19 @@
                         <h1><field name="name"/></h1>
                     </div>
                     <group>
-                        <group string="Source">
-                            <field name="flock_id" readonly="state != 'draft'"/>
+                        <group string="Source Origin">
+                            <field name="flock_type" widget="radio" options="{'horizontal': true}" readonly="state != 'draft'"/>
+                            <field name="flock_id" readonly="state != 'draft'" invisible="flock_type != 'broiler'" required="flock_type == 'broiler'"/>
+                            <field name="breeder_flock_id" readonly="state != 'draft'" invisible="flock_type != 'breeder'" required="flock_type == 'breeder'"/>
                             <field name="pen_id"/>
+                            <field name="farm_id"/>
                             <field name="date"/>
                         </group>
                         <group string="Abattoir Intake">
                             <field name="birds_received"/>
                             <field name="total_live_weight"/>
                             <field name="avg_harvest_weight_g" decoration-bf="1"/>
+                            <field name="unrecorded_birds" decoration-danger="unrecorded_birds &gt; 0"/>
                         </group>
                     </group>
 
@@ -41,6 +45,7 @@
                     </group>
                     <field name="notes" placeholder="Notes on rejection, specific cuts required, etc..."/>
                 </sheet>
+                <chatter/>
             </form>
         </field>
     </record>
@@ -52,7 +57,9 @@
             <list string="Harvests">
                 <field name="name"/>
                 <field name="date"/>
-                <field name="flock_id"/>
+                <field name="flock_type"/>
+                <field name="flock_id" invisible="flock_type == 'breeder'"/>
+                <field name="breeder_flock_id" invisible="flock_type != 'breeder'"/>
                 <field name="birds_received" sum="Total Birds"/>
                 <field name="total_live_weight" sum="Total Kg"/>
                 <field name="fcr" widget="badge" decoration-success="fcr &lt; 1.6" decoration-warning="fcr &gt; 1.6"/>
@@ -62,12 +69,11 @@
         </field>
     </record>
 
-
     <record id="action_taghini_harvest" model="ir.actions.act_window">
         <field name="name">Abattoir / Harvest</field>
         <field name="res_model">taghini.harvest</field>
         <field name="view_mode">list,form</field>
     </record>
 
-    <menuitem id="menu_taghini_harvest" name="Abattoir Harvest" parent="menu_taghini_root" action="action_taghini_harvest" sequence="30"/>
+    <menuitem id="menu_taghini_harvest" name="Abattoir Harvest" parent="menu_taghini_abattoir_root" action="action_taghini_harvest" sequence="1"/>
 </odoo>

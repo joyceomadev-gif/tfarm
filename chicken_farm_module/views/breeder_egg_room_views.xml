@@ -1,0 +1,123 @@
+<odoo>
+    <!-- Breeder Egg Room Form View -->
+    <record id="view_taghini_breeder_egg_room_form" model="ir.ui.view">
+        <field name="name">taghini.breeder.egg.room.form</field>
+        <field name="model">taghini.breeder.egg.room</field>
+        <field name="arch" type="xml">
+            <form string="Egg Room Daily Stock &amp; Dispatch">
+                <header>
+                    <button name="action_confirm_dispatch"
+                            string="Confirm Dispatch"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,confirmed"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group string="Batch &amp; Harvest Date">
+                            <field name="batch_id" readonly="state != 'draft'"/>
+                            <field name="farm_id"/>
+                            <field name="date" readonly="state != 'draft'"/>
+                            <field name="flock_age_week"/>
+                            <field name="recorded_by"/>
+                        </group>
+                        <group string="Egg Stock Reconciliation">
+                            <field name="opening_stock"/>
+                            <field name="received_from_pens" decoration-bf="1"/>
+                            <field name="rejected_in_room" readonly="state != 'draft'"/>
+                            <field name="dispatched_to_hatchery" readonly="state != 'draft'"/>
+                            <field name="closing_stock" decoration-bf="1"/>
+                            <field name="dispatch_note_no" readonly="state != 'draft'"/>
+                            <field name="confirmed_by_hatchery" readonly="state != 'draft'"/>
+                            <field name="transit_loss_pct" widget="percentage" decoration-danger="transit_loss_pct &gt; 0.005"/>
+                            <field name="days_since_last_dispatch" decoration-warning="days_since_last_dispatch &gt; 7"/>
+                        </group>
+                    </group>
+
+                    <group string="Egg Room Climate &amp; Biosecurity">
+                        <group>
+                            <field name="room_min_temp"/>
+                            <field name="room_max_temp"/>
+                        </group>
+                        <group>
+                            <field name="room_rh"/>
+                            <field name="fumigated" widget="boolean_toggle"/>
+                        </group>
+                    </group>
+
+                    <group string="Automated Quality &amp; Compliance Flags" invisible="not danger_flags and not data_errors">
+                        <field name="danger_flags" widget="text" class="text-danger fw-bold" invisible="not danger_flags" readonly="1"/>
+                        <field name="data_errors" widget="text" class="text-warning fw-bold" invisible="not data_errors" readonly="1"/>
+                        <field name="danger_count" invisible="1"/>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Breeder Egg Room List View -->
+    <record id="view_taghini_breeder_egg_room_tree" model="ir.ui.view">
+        <field name="name">taghini.breeder.egg.room.tree</field>
+        <field name="model">taghini.breeder.egg.room</field>
+        <field name="arch" type="xml">
+            <list string="Egg Room Stock Ledger">
+                <field name="name" class="fw-bold"/>
+                <field name="date"/>
+                <field name="batch_id"/>
+                <field name="flock_age_week"/>
+                <field name="opening_stock" sum="Total Opening"/>
+                <field name="received_from_pens" sum="Total Intake"/>
+                <field name="rejected_in_room" sum="Total Rejects"/>
+                <field name="dispatched_to_hatchery" sum="Total Dispatched"/>
+                <field name="closing_stock"/>
+                <field name="transit_loss_pct" widget="percentage" decoration-danger="transit_loss_pct &gt; 0.005"/>
+                <field name="days_since_last_dispatch" decoration-warning="days_since_last_dispatch &gt; 7"/>
+                <field name="danger_count" widget="badge" decoration-danger="danger_count &gt; 0" decoration-success="danger_count == 0"/>
+                <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-success="state == 'confirmed'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Breeder Egg Room Search View -->
+    <record id="view_taghini_breeder_egg_room_search" model="ir.ui.view">
+        <field name="name">taghini.breeder.egg.room.search</field>
+        <field name="model">taghini.breeder.egg.room</field>
+        <field name="arch" type="xml">
+            <search string="Egg Room Stock Ledger">
+                <field name="name"/>
+                <field name="batch_id"/>
+                <field name="dispatch_note_no"/>
+                <field name="date"/>
+                <separator/>
+                <filter name="filter_draft" string="Draft" domain="[('state', '=', 'draft')]"/>
+                <filter name="filter_confirmed" string="Dispatched" domain="[('state', '=', 'confirmed')]"/>
+                <filter name="filter_danger" string="Alert / Danger" domain="[('danger_count', '&gt;', 0)]"/>
+                <separator/>
+                <filter name="group_batch" string="Breeder Batch" context="{'group_by': 'batch_id'}"/>
+                <filter name="group_date" string="Date" context="{'group_by': 'date:month'}"/>
+                <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- Breeder Egg Room Action -->
+    <record id="action_taghini_breeder_egg_room" model="ir.actions.act_window">
+        <field name="name">Egg Room Operations</field>
+        <field name="res_model">taghini.breeder.egg.room</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_taghini_breeder_egg_room_search"/>
+        <field name="context">{'search_default_filter_draft': 1}</field>
+    </record>
+
+    <!-- Menu Item under Egg Room & Hatchery -->
+    <menuitem id="menu_taghini_breeder_egg_room"
+              name="Egg Room Operations"
+              parent="menu_taghini_reproduction_root"
+              action="action_taghini_breeder_egg_room"
+              sequence="1"/>
+</odoo>

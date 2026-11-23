@@ -1,0 +1,64 @@
+<odoo>
+    <!-- Breeder 111-Col Excel Export Wizard Form View -->
+    <record id="view_taghini_breeder_excel_export_wizard_form" model="ir.ui.view">
+        <field name="name">taghini.breeder.excel.export.wizard.form</field>
+        <field name="model">taghini.breeder.excel.export.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Export 111-Column Breeder Performance Ledger">
+                <sheet>
+                    <div class="oe_title">
+                        <h2>Arbor Acres Plus 111-Column Performance Ledger Export</h2>
+                        <p class="text-muted">
+                            Download the full publication-grade 111-column operational ledger in Microsoft Excel (.xlsx),
+                            featuring sex-separated feed curves, egg grading breakdown, water ratios, and audit flags.
+                        </p>
+                    </div>
+                    <group>
+                        <group string="Scope &amp; Pen Selection">
+                            <field name="flock_id" options="{'no_create': True}"/>
+                            <field name="batch_id" options="{'no_create': True}"/>
+                            <field name="farm_id" options="{'no_create': True}"/>
+                        </group>
+                        <group string="Date &amp; Status Filters">
+                            <field name="date_from"/>
+                            <field name="date_to"/>
+                            <field name="state_filter" widget="radio"/>
+                        </group>
+                    </group>
+                </sheet>
+                <footer>
+                    <button name="action_export_excel" string="Download Excel (.xlsx) Ledger" type="object" class="btn-primary" icon="fa-download"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Wizard Action -->
+    <record id="action_taghini_breeder_excel_export_wizard" model="ir.actions.act_window">
+        <field name="name">Export 111-Col Breeder Ledger</field>
+        <field name="res_model">taghini.breeder.excel.export.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- Multi-record Server Action for taghini.breeder.pen.log list view -->
+    <record id="action_taghini_breeder_pen_log_export_excel" model="ir.actions.server">
+        <field name="name">Export 111-Col Ledger (Excel)</field>
+        <field name="model_id" ref="model_taghini_breeder_pen_log"/>
+        <field name="binding_model_id" ref="model_taghini_breeder_pen_log"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+if records:
+    action = records.action_export_111_col_excel()
+        </field>
+    </record>
+
+    <!-- Menu Item under Reporting -->
+    <menuitem id="menu_taghini_breeder_excel_export"
+              name="Export Breeder 111-Col Ledger (Excel)"
+              parent="menu_taghini_reporting_root"
+              action="action_taghini_breeder_excel_export_wizard"
+              sequence="20"/>
+</odoo>

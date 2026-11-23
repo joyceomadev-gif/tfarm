@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- TOP-LEVEL ROOT MENU -->
+    <menuitem id="menu_taghini_root" name="Taghini Farm" web_icon="chicken_farm_module,static/description/icon.png" sequence="10"/>
+
+    <!-- MAIN SECTION HEADERS -->
+    <menuitem id="menu_taghini_batch_root" name="Batches" parent="menu_taghini_root" sequence="10"/>
+    <menuitem id="menu_taghini_flock_root" name="Flocks" parent="menu_taghini_root" sequence="20"/>
+    <menuitem id="menu_taghini_reproduction_root" name="Egg Room &amp; Hatchery" parent="menu_taghini_root" sequence="30"/>
+    <menuitem id="menu_taghini_abattoir_root" name="Abattoir" parent="menu_taghini_root" sequence="40"/>
+    <menuitem id="menu_taghini_reporting_root" name="Reporting" parent="menu_taghini_root" sequence="50"/>
+    <menuitem id="menu_taghini_config" name="Configuration" parent="menu_taghini_root" sequence="100"/>
+</odoo>

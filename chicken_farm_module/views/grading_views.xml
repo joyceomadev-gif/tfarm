@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- FORM VIEW: GRADING CHECKLIST -->
+    <record id="view_taghini_grading_checklist_form" model="ir.ui.view">
+        <field name="name">taghini.grading.checklist.form</field>
+        <field name="model">taghini.grading.checklist</field>
+        <field name="arch" type="xml">
+            <form string="Grading Checklist Standard">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" string="Checklist Standard Name"/>
+                        <h1><field name="name" placeholder="e.g. Taghini Foods Updated Grading Checklist"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="code"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group>
+                            <field name="is_default"/>
+                            <field name="active" widget="boolean_toggle"/>
+                            <field name="line_count"/>
+                        </group>
+                    </group>
+
+                    <group string="Mandatory Compliance Notice">
+                        <field name="notice" nolabel="1" style="font-weight: bold; color: #b94a48;"/>
+                    </group>
+
+                    <notebook>
+                        <page string="Grading Series &amp; Bagging Rules">
+                            <field name="line_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name" string="Series (KG)"/>
+                                    <field name="unit_weight_min" string="Min Bird Wgt (Kg)"/>
+                                    <field name="unit_weight_max" string="Max Bird Wgt (Kg)"/>
+                                    <field name="pieces_per_bag" string="Pcs in Bag (Sack)"/>
+                                    <field name="display_range" string="Expected Range (Kg)"/>
+                                    <field name="expected_bag_weight_min" string="Exp Min (Kg)"/>
+                                    <field name="expected_bag_weight_max" string="Exp Max (Kg)"/>
+                                    <field name="notes" string="Notes / Cuts"/>
+                                    <field name="is_head_and_leg" column_invisible="True"/>
+                                    <field name="is_underweight" column_invisible="True"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- LIST VIEW: GRADING CHECKLIST -->
+    <record id="view_taghini_grading_checklist_list" model="ir.ui.view">
+        <field name="name">taghini.grading.checklist.list</field>
+        <field name="model">taghini.grading.checklist</field>
+        <field name="arch" type="xml">
+            <list string="Grading Checklist Standards">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="line_count" string="Series Count"/>
+                <field name="is_default" widget="boolean_toggle"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ACTION -->
+    <record id="action_taghini_grading_checklist" model="ir.actions.act_window">
+        <field name="name">Grading Checklists</field>
+        <field name="res_model">taghini.grading.checklist</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a Taghini Grading Checklist standard.
+            </p>
+        </field>
+    </record>
+
+    <!-- MENU ITEM: Under Configuration -->
+    <menuitem id="menu_taghini_grading_checklist"
+              name="Grading Checklists"
+              parent="menu_taghini_config"
+              action="action_taghini_grading_checklist"
+              sequence="35"/>
+
+</odoo>

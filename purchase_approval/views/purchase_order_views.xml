@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ============================================================ -->
+    <!-- PURCHASE ORDER FORM VIEW EXTENSION                            -->
+    <!-- ============================================================ -->
+    <record id="purchase_order_form_approval" model="ir.ui.view">
+        <field name="name">purchase.order.form.approval</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Ensure 'To Approve' status is visible in the statusbar -->
+            <xpath expr="//field[@name='state']" position="attributes">
+                <attribute name="statusbar_visible">draft,sent,to approve,purchase</attribute>
+            </xpath>
+
+            <!-- Restrict direct Confirm buttons to PO Approvers only -->
+            <xpath expr="//button[@id='draft_confirm']" position="attributes">
+                <attribute name="groups">purchase_approval.group_purchase_approver</attribute>
+            </xpath>
+            <xpath expr="//button[@id='bid_confirm']" position="attributes">
+                <attribute name="groups">purchase_approval.group_purchase_approver</attribute>
+            </xpath>
+
+            <!-- Ensure Approve button is accessible to PO Approvers -->
+            <xpath expr="//button[@name='button_approve']" position="attributes">
+                <attribute name="groups">purchase_approval.group_purchase_approver</attribute>
+            </xpath>
+
+            <!-- Add Request Approval and Reject buttons -->
+            <xpath expr="//header" position="inside">
+                <button name="action_request_approval"
+                        string="Request Approval"
+                        type="object"
+                        class="oe_highlight"
+                        invisible="state not in ('draft', 'sent')"/>
+
+                <button name="action_open_reject_wizard"
+                        string="Reject"
+                        type="object"
+                        class="btn-secondary"
+                        groups="purchase_approval.group_purchase_approver"
+                        invisible="state != 'to approve'"/>
+            </xpath>
+
+            <!-- Informational alert banners before sheet content -->
+            <xpath expr="//sheet" position="before">
+                <div class="alert alert-info mb-0" role="alert" invisible="state != 'to approve'">
+                    <i class="fa fa-clock-o me-2" title="Pending Approval"/><strong>Pending Approval:</strong> This order has been submitted for approval and is awaiting review by an authorized PO Approver.
+                </div>
+                <div class="alert alert-warning mb-0" role="alert" invisible="not rejection_reason or state != 'draft'">
+                    <i class="fa fa-exclamation-triangle me-2" title="Rejected"/><strong>Previous Request Rejected:</strong> <field name="rejection_reason" readonly="1" class="d-inline"/>
+                </div>
+            </xpath>
+
+            <!-- Dedicated Approval Details Page -->
+            <xpath expr="//notebook" position="inside">
+                <page string="Approval Details" name="approval_details">
+                    <group>
+                        <group string="Approval Request">
+                            <field name="approval_requester_id"/>
+                            <field name="approval_request_date"/>
+                        </group>
+                        <group string="Approval Status">
+                            <field name="approved_by_id"/>
+                            <field name="approval_date"/>
+                        </group>
+                    </group>
+                    <group string="Rejection Details" invisible="not rejection_reason">
+                        <field name="rejection_reason"/>
+                    </group>
+                </page>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- ============================================================ -->
+    <!-- PURCHASE ORDER SEARCH VIEW EXTENSION                          -->
+    <!-- ============================================================ -->
+    <record id="view_purchase_order_filter_approval" model="ir.ui.view">
+        <field name="name">purchase.order.filter.approval</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.view_purchase_order_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='to_approve']" position="attributes">
+                <attribute name="invisible">0</attribute>
+                <attribute name="string">Waiting Approval</attribute>
+            </xpath>
+            <xpath expr="//filter[@name='to_approve']" position="after">
+                <filter name="my_approval_requests" string="My Approval Requests" domain="[('approval_requester_id', '=', uid), ('state', '=', 'to approve')]"/>
+                <filter name="approved_by_me" string="Approved by Me" domain="[('approved_by_id', '=', uid)]"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

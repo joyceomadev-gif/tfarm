@@ -1,0 +1,210 @@
+<odoo>
+
+    <!-- ========================================================== -->
+    <!-- FARM FORM VIEW                                             -->
+    <!-- ========================================================== -->
+    <record id="view_taghini_farm_form" model="ir.ui.view">
+        <field name="name">taghini.farm.form</field>
+        <field name="model">taghini.farm</field>
+        <field name="arch" type="xml">
+            <form string="Farm">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_pens" type="object"
+                                class="oe_stat_button" icon="fa-home">
+                            <field name="pen_count" widget="statinfo" string="Pens"/>
+                        </button>
+                        <button name="action_view_flocks" type="object"
+                                class="oe_stat_button" icon="fa-cubes">
+                            <field name="active_flock_count" widget="statinfo" string="Active Flocks"/>
+                        </button>
+                        <button name="action_view_flocks" type="object"
+                                class="oe_stat_button" icon="fa-paw">
+                            <field name="total_birds" widget="statinfo" string="Live Birds"/>
+                        </button>
+                    </div>
+
+                    <div class="oe_title">
+                        <h1><field name="code" placeholder="Farm Code / ID"/></h1>
+                    </div>
+
+                    <group>
+                        <group string="Identity">
+                            <field name="name" string="Farm Name" placeholder="e.g. ILE-IGBON Farm"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="farm_type"/>
+                            <field name="warehouse_id"
+                                   options="{'no_create': True}"
+                                   help="The warehouse that IS this farm. All feed and meds stock moves draw from here."/>
+                            <field name="stock_location_id" readonly="1"/>
+                        </group>
+                        <group string="Destination Locations">
+                            <field name="abattoir_location_id"
+                                   help="Where live birds are transferred on harvest."/>
+                            <field name="storage_location_id"
+                                   help="Where finished meat products go after abattoir processing."/>
+                            <!-- Task B2: Cold room / Freezer section locations -->
+                            <field name="cold_room_location_id"
+                                   help="Selling-point cold room location."/>
+                            <field name="freezer_location_id"
+                                   help="Deep freezer location for long-term storage."/>
+                        </group>
+                    </group>
+
+                    <group>
+                        <group string="Staff &amp; Key Contacts">
+                            <field name="manager_id" widget="many2one_avatar_user"/>
+                            <field name="vet_id" widget="many2one_avatar_user"/>
+                            <!-- Task C5: MD for unrecorded bird alerts -->
+                            <field name="md_user_id" widget="many2one_avatar_user"/>
+                        </group>
+                        <group string="Access &amp; Permissions">
+                            <!-- Requirement 5: Assign users/employees to farm -->
+                            <field name="user_ids"
+                                   widget="many2many_tags"
+                                   options="{'color_field': 'color'}"
+                                   string="Assigned Users"
+                                   help="These users are permitted to perform operations on this farm."/>
+                        </group>
+                    </group>
+
+                    <!-- Pens tab & Notes -->
+                    <notebook>
+                        <page string="Pens / Houses" name="pens">
+                            <field name="pen_ids">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="location_id"/>
+                                    <field name="manager_id" widget="many2one_avatar_user"/>
+                                    <field name="vet_id" widget="many2one_avatar_user"/>
+                                    <field name="series_count" string="Batches"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Internal Notes" name="notes">
+                            <field name="notes" placeholder="Internal notes about this farm location..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- ========================================================== -->
+    <!-- FARM LIST VIEW                                             -->
+    <!-- ========================================================== -->
+    <record id="view_taghini_farm_list" model="ir.ui.view">
+        <field name="name">taghini.farm.list</field>
+        <field name="model">taghini.farm</field>
+        <field name="arch" type="xml">
+            <list string="Farms" export_xlsx="1">
+                <field name="code" string="Farm ID" class="fw-bold"/>
+                <field name="name"/>
+                <field name="farm_type" widget="badge"/>
+                <field name="warehouse_id"/>
+                <field name="manager_id" widget="many2one_avatar_user"/>
+                <field name="vet_id" widget="many2one_avatar_user"/>
+                <field name="pen_count" string="Pens"/>
+                <field name="active_flock_count" string="Active Flocks"/>
+                <field name="total_birds" string="Live Birds"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ========================================================== -->
+    <!-- FARM KANBAN VIEW                                           -->
+    <!-- ========================================================== -->
+    <record id="view_taghini_farm_kanban" model="ir.ui.view">
+        <field name="name">taghini.farm.kanban</field>
+        <field name="model">taghini.farm</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_mobile">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="warehouse_id"/>
+                <field name="manager_id"/>
+                <field name="pen_count"/>
+                <field name="active_flock_count"/>
+                <field name="total_birds"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="oe_kanban_global_click">
+                            <strong class="o_kanban_record_title">
+                                <field name="name"/>
+                                <span t-if="record.code.value" class="text-muted ms-1">
+                                    [<field name="code"/>]
+                                </span>
+                            </strong>
+                            <div class="text-muted">
+                                <i class="fa fa-warehouse" title="Warehouse" aria-label="Warehouse"/> <field name="warehouse_id"/>
+                            </div>
+                            <div class="mt-1">
+                                <span class="badge bg-info me-1">
+                                    <i class="fa fa-home" title="Pens" aria-label="Pens"/> <field name="pen_count"/> Pens
+                                </span>
+                                <span class="badge bg-success me-1">
+                                    <i class="fa fa-cubes" title="Active Flocks" aria-label="Active Flocks"/> <field name="active_flock_count"/> Active
+                                </span>
+                                <span class="badge bg-primary">
+                                    <i class="fa fa-paw" title="Live Birds" aria-label="Live Birds"/> <field name="total_birds"/> Birds
+                                </span>
+                            </div>
+                            <div class="mt-1">
+                                <field name="manager_id" widget="many2one_avatar_user"/>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- ========================================================== -->
+    <!-- FARM SEARCH VIEW (with warehouse/farm filter — Req. 2)    -->
+    <!-- ========================================================== -->
+    <record id="view_taghini_farm_search" model="ir.ui.view">
+        <field name="name">taghini.farm.search</field>
+        <field name="model">taghini.farm</field>
+        <field name="arch" type="xml">
+            <search string="Farms">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="warehouse_id"/>
+                <field name="manager_id"/>
+                <separator/>
+                <filter name="group_warehouse" string="Warehouse" context="{'group_by': 'warehouse_id'}"/>
+                <filter name="group_company" string="Company" context="{'group_by': 'company_id'}"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- ========================================================== -->
+    <!-- ACTION                                                     -->
+    <!-- ========================================================== -->
+    <record id="action_taghini_farm" model="ir.actions.act_window">
+        <field name="name">Farms</field>
+        <field name="res_model">taghini.farm</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="search_view_id" ref="view_taghini_farm_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first Farm
+            </p>
+            <p>
+                Each farm is linked to a warehouse. All feed, medication, and
+                inventory operations use the farm's warehouse automatically.
+            </p>
+        </field>
+    </record>
+
+    <!-- ========================================================== -->
+    <!-- MENU — under Configuration                                 -->
+    <!-- ========================================================== -->
+    <menuitem id="menu_taghini_farm"
+              name="Farms"
+              parent="menu_taghini_config"
+              action="action_taghini_farm"
+              sequence="0"/>
+
+</odoo>

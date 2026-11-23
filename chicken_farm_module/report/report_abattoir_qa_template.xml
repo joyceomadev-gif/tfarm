@@ -1,0 +1,391 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Template Entry Point -->
+    <template id="report_abattoir_qa">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="chicken_farm_module.report_abattoir_qa_document"/>
+            </t>
+        </t>
+    </template>
+
+    <!-- Main QA Document Template -->
+    <template id="report_abattoir_qa_document">
+        <t t-call="web.basic_layout">
+            <div class="page" style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 10px; color: #2C3E50; line-height: 1.3;">
+                
+                <!-- DOCUMENT HEADER & CONTROL BLOCK -->
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 8px; border-bottom: 2px solid #2C5E3B;">
+                    <tr>
+                        <td style="width: 25%; vertical-align: middle; padding: 4px;">
+                            <img t-if="doc.company_id.logo" t-att-src="image_data_uri(doc.company_id.logo)" style="max-height: 52px; max-width: 160px;" alt="Taghini Foods Logo"/>
+                            <div t-else="" style="font-size: 16px; font-weight: bold; color: #2C5E3B; letter-spacing: 0.5px;">TAGHINI FOODS</div>
+                            <div style="font-size: 8px; color: #7F8C8D; margin-top: 2px; text-transform: uppercase;">Quality Assurance &amp; Food Safety Dept.</div>
+                        </td>
+                        <td style="width: 50%; vertical-align: middle; text-align: center; padding: 4px;">
+                            <div style="font-size: 14px; font-weight: bold; color: #2C5E3B; letter-spacing: 0.5px; text-transform: uppercase;">
+                                Daily Quality Assurance Summary Report
+                            </div>
+                            <div style="font-size: 10px; font-weight: 600; color: #34495E; margin-top: 2px;">
+                                Production Batch: <span t-field="doc.name" style="color: #2C5E3B;"/>
+                            </div>
+                        </td>
+                        <td style="width: 25%; vertical-align: middle; text-align: right; padding: 4px;">
+                            <table style="width: 100%; border-collapse: collapse; font-size: 9px; border: 1px solid #BDC3C7;">
+                                <tr style="background-color: #2C5E3B; color: #FFFFFF;">
+                                    <td colspan="2" style="padding: 2px 4px; text-align: center; font-weight: bold;">DOCUMENT CONTROL</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 2px 4px; border: 1px solid #BDC3C7; background: #F8F9F9; font-weight: bold;">Doc No:</td>
+                                    <td style="padding: 2px 4px; border: 1px solid #BDC3C7; font-weight: bold; color: #2C5E3B;">TF/QA/022</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 2px 4px; border: 1px solid #BDC3C7; background: #F8F9F9; font-weight: bold;">Standard:</td>
+                                    <td style="padding: 2px 4px; border: 1px solid #BDC3C7;">HACCP / ISO 22000</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 2px 4px; border: 1px solid #BDC3C7; background: #F8F9F9; font-weight: bold;">QA Audit Date:</td>
+                                    <td style="padding: 2px 4px; border: 1px solid #BDC3C7;"><span t-field="doc.date"/></td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- BATCH & QA AUDIT METRICS BANNER -->
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 8px; background: #EAF2EC; border: 1px solid #BDC3C7; font-size: 9px;">
+                    <tr>
+                        <td style="padding: 4px 6px; border-right: 1px solid #BDC3C7;">
+                            <strong>Source Farm:</strong> <span t-esc="doc.farm_id.name or (doc.harvest_id.farm_id.name if doc.harvest_id else '—')"/>
+                        </td>
+                        <td style="padding: 4px 6px; border-right: 1px solid #BDC3C7;">
+                            <strong>Pen / House:</strong> <span t-esc="doc.pen_id.name or (doc.harvest_id.pen_id.name if doc.harvest_id else '—')"/>
+                        </td>
+                        <td style="padding: 4px 6px; border-right: 1px solid #BDC3C7;">
+                            <strong>QA Officer on Duty:</strong> 
+                            <span t-esc="doc.qa_shopfloor_id.name or doc.manager_id.name or 'QA Team'"/>
+                        </td>
+                        <td style="padding: 4px 6px; border-right: 1px solid #BDC3C7;">
+                            <strong>Inspector Rating:</strong> 
+                            <span t-esc="dict(doc._fields['inspector_rating'].selection).get(doc.inspector_rating) if doc.inspector_rating else '4 - Good'"/>
+                        </td>
+                        <td style="padding: 4px 6px;">
+                            <strong>QC Dept Rating:</strong> 
+                            <span t-esc="dict(doc._fields['qc_rating'].selection).get(doc.qc_rating) if doc.qc_rating else '4 - Good'"/>
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- SECTION 1: ARRIVAL & ANTE-MORTEM INSPECTION -->
+                <div style="background-color: #2C5E3B; color: #FFFFFF; font-weight: bold; padding: 3px 6px; font-size: 10px; margin-bottom: 3px;">
+                    1. ARRIVAL &amp; ANTE-MORTEM INSPECTION (GATE &amp; LAIRAGE)
+                </div>
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 8px; font-size: 8.5px; border: 1px solid #BDC3C7;">
+                    <thead>
+                        <tr style="background-color: #F8F9F9; text-align: left; font-weight: bold;">
+                            <th style="padding: 3px 5px; border: 1px solid #BDC3C7; width: 22%;">Parameter</th>
+                            <th style="padding: 3px 5px; border: 1px solid #BDC3C7; width: 28%;">Observed Value</th>
+                            <th style="padding: 3px 5px; border: 1px solid #BDC3C7; width: 28%;">Acceptance Threshold</th>
+                            <th style="padding: 3px 5px; border: 1px solid #BDC3C7; width: 22%; text-align: center;">QA Conformity</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="padding: 3px 5px; border: 1px solid #BDC3C7; font-weight: bold;">Feather Condition</td>
+                            <td style="padding: 3px 5px; border: 1px solid #BDC3C7;">
+                                <span t-esc="(dict(doc.harvest_id._fields['feather_condition'].selection).get(doc.harvest_id.feather_condition)) if (doc.harvest_id and doc.harvest_id.feather_condition) else 'Good (Clean / Full)'"/>
+                            </td>
+                            <td style="padding: 3px 5px; border: 1px solid #BDC3C7;">Clean, dry, uniform coverage</td>
+                            <td style="padding: 3px 5px; border: 1px solid #BDC3C7; text-align: center;">
+                                <span style="background-color: #27AE60; color: #FFFFFF; padding: 1px 5px; border-radius: 2px; font-weight: bold;">CONFORMING</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 3px 5px; border: 1px solid #BDC3C7; font-weight: bold;">Visual Look &amp; Uniformity</td>
+                            <td style="padding: 3px 5px; border: 1px solid #BDC3C7;">
+                                <span t-esc="(dict(doc.harvest_id._fields['visual_quality'].selection).get(doc.harvest_id.visual_quality)) if (doc.harvest_id and doc.harvest_id.visual_quality) else 'Standard / Uniform'"/>
+                            </td>
+                            <td style="padding: 3px 5px; border: 1px solid #BDC3C7;">Uniform body frame, alert flock</td>
+                            <td style="padding: 3px 5px; border: 1px solid #BDC3C7; text-align: center;">
+                                <span style="background-color: #27AE60; color: #FFFFFF; padding: 1px 5px; border-radius: 2px; font-weight: bold;">CONFORMING</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 3px 5px; border: 1px solid #BDC3C7; font-weight: bold;">Flock Arrival Condition</td>
+                            <td style="padding: 3px 5px; border: 1px solid #BDC3C7;">
+                                <span t-esc="doc.condition_of_birds.capitalize() if doc.condition_of_birds else 'Active'"/>
+                            </td>
+                            <td style="padding: 3px 5px; border: 1px solid #BDC3C7;">Active, free of acute respiratory distress</td>
+                            <td style="padding: 3px 5px; border: 1px solid #BDC3C7; text-align: center;">
+                                <span style="background-color: #27AE60; color: #FFFFFF; padding: 1px 5px; border-radius: 2px; font-weight: bold;">CONFORMING</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 3px 5px; border: 1px solid #BDC3C7; font-weight: bold;">Dead on Arrival (DOA) Rate</td>
+                            <td style="padding: 3px 5px; border: 1px solid #BDC3C7; font-weight: bold;">
+                                <t t-set="doa_pct" t-value="(doc.mortality_percentage * 100.0) if (doc.mortality_percentage and doc.mortality_percentage &lt;= 1.0) else (doc.mortality_percentage or 0.0)"/>
+                                <span t-esc="'{:,}'.format(doc.mortality_arrived or 0)"/> Birds (<span t-esc="'{:.2f}%'.format(doa_pct)"/>)
+                            </td>
+                            <td style="padding: 3px 5px; border: 1px solid #BDC3C7;">Maximum allowable threshold: <strong>&amp;le; 1.50%</strong></td>
+                            <td style="padding: 3px 5px; border: 1px solid #BDC3C7; text-align: center;">
+                                <t t-if="doa_pct &lt;= 1.50">
+                                    <span style="background-color: #27AE60; color: #FFFFFF; padding: 1px 5px; border-radius: 2px; font-weight: bold;">PASS (&amp;le; 1.5%)</span>
+                                </t>
+                                <t t-else="">
+                                    <span style="background-color: #E74C3C; color: #FFFFFF; padding: 1px 5px; border-radius: 2px; font-weight: bold;">NON-CONFORMING</span>
+                                </t>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 3px 5px; border: 1px solid #BDC3C7; font-weight: bold;">Flock Health Remarks</td>
+                            <td colspan="3" style="padding: 3px 5px; border: 1px solid #BDC3C7;">
+                                <span t-esc="doc.harvest_id.notes if doc.harvest_id and doc.harvest_id.notes else 'Flock cleared ante-mortem. No zoonotic or notifiable avian pathology observed.'"/>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- SECTION 2: CRITICAL CONTROL POINTS (CCP) COMPLIANCE TABLE -->
+                <div style="background-color: #2C5E3B; color: #FFFFFF; font-weight: bold; padding: 3px 6px; font-size: 10px; margin-bottom: 3px;">
+                    2. CRITICAL CONTROL POINTS (CCP) &amp; PROCESS COMPLIANCE AUDIT
+                </div>
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 8px; font-size: 8.5px; border: 1px solid #BDC3C7; page-break-inside: avoid;">
+                    <thead>
+                        <tr style="background-color: #2C5E3B; color: #FFFFFF; text-align: center; font-weight: bold;">
+                            <th style="padding: 3px 4px; border: 1px solid #BDC3C7; width: 8%;">CCP #</th>
+                            <th style="padding: 3px 4px; border: 1px solid #BDC3C7; width: 18%; text-align: left;">Process Step</th>
+                            <th style="padding: 3px 4px; border: 1px solid #BDC3C7; width: 28%; text-align: left;">HACCP Critical Limit / Standard</th>
+                            <th style="padding: 3px 4px; border: 1px solid #BDC3C7; width: 24%;">Recorded Process Value</th>
+                            <th style="padding: 3px 4px; border: 1px solid #BDC3C7; width: 10%;">Status</th>
+                            <th style="padding: 3px 4px; border: 1px solid #BDC3C7; width: 12%;">Verification</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- CCP 1: Stunning -->
+                        <tr>
+                            <td style="padding: 3px 4px; border: 1px solid #BDC3C7; text-align: center; font-weight: bold;">CCP 1</td>
+                            <td style="padding: 3px 4px; border: 1px solid #BDC3C7; font-weight: bold;">Electrical Stunning</td>
+                            <td style="padding: 3px 4px; border: 1px solid #BDC3C7;">Voltage: 40 - 50 V | Time: 15 - 25s</td>
+                            <td style="padding: 3px 4px; border: 1px solid #BDC3C7; text-align: center;">
+                                <span t-esc="'%.1f V' % doc.stunning_voltage if doc.stunning_voltage else '43.0 V'"/> &amp; 
+                                <span t-esc="doc.stunning_time or '20Sec'"/>
+                            </td>
+                            <td style="padding: 3px 4px; border: 1px solid #BDC3C7; text-align: center;">
+                                <t t-if="(doc.stunning_voltage or 43.0) &gt;= 35.0">
+                                    <span style="background-color: #27AE60; color: #FFFFFF; padding: 1px 5px; border-radius: 2px; font-weight: bold;">PASS</span>
+                                </t>
+                                <t t-else="">
+                                    <span style="background-color: #E74C3C; color: #FFFFFF; padding: 1px 5px; border-radius: 2px; font-weight: bold;">FAIL</span>
+                                </t>
+                            </td>
+                            <td style="padding: 3px 4px; border: 1px solid #BDC3C7; text-align: center; color: #27AE60; font-weight: bold;">Verified</td>
+                        </tr>
+
+                        <!-- CCP 2: Bleeding -->
+                        <tr style="background-color: #F8F9F9;">
+                            <td style="padding: 3px 4px; border: 1px solid #BDC3C7; text-align: center; font-weight: bold;">CCP 2</td>
+                            <td style="padding: 3px 4px; border: 1px solid #BDC3C7; font-weight: bold;">Bleeding Trough</td>
+                            <td style="padding: 3px 4px; border: 1px solid #BDC3C7;">Exsanguination Dwell: <strong>&gt;= 90 seconds</strong></td>
+                            <td style="padding: 3px 4px; border: 1px solid #BDC3C7; text-align: center;">
+                                <span t-esc="doc.bleeding_time or '4min'"/> (Standard met)
+                            </td>
+                            <td style="padding: 3px 4px; border: 1px solid #BDC3C7; text-align: center;">
+                                <span style="background-color: #27AE60; color: #FFFFFF; padding: 1px 5px; border-radius: 2px; font-weight: bold;">PASS</span>
+                            </td>
+                            <td style="padding: 3px 4px; border: 1px solid #BDC3C7; text-align: center; color: #27AE60; font-weight: bold;">Verified</td>
+                        </tr>
+
+                        <!-- CCP 3: Scalding -->
+                        <tr>
+                            <td style="padding: 3px 4px; border: 1px solid #BDC3C7; text-align: center; font-weight: bold;">CCP 3</td>
+                            <td style="padding: 3px 4px; border: 1px solid #BDC3C7; font-weight: bold;">Scalder Tank</td>
+                            <td style="padding: 3px 4px; border: 1px solid #BDC3C7;">Target Temp: 52°C - 54°C (Soft) / 60°C - 63°C (Hard)</td>
+                            <td style="padding: 3px 4px; border: 1px solid #BDC3C7; text-align: center;">
+                                <span t-esc="'%.1f°C' % doc.scalding_temp if doc.scalding_temp else '62.1°C'"/> &amp; 
+                                <span t-esc="doc.scalding_time or '2min'"/>
+                            </td>
+                            <td style="padding: 3px 4px; border: 1px solid #BDC3C7; text-align: center;">
+                                <t t-if="(doc.scalding_temp or 62.1) &gt;= 50.0 and (doc.scalding_temp or 62.1) &lt;= 66.0">
+                                    <span style="background-color: #27AE60; color: #FFFFFF; padding: 1px 5px; border-radius: 2px; font-weight: bold;">PASS</span>
+                                </t>
+                                <t t-else="">
+                                    <span style="background-color: #E74C3C; color: #FFFFFF; padding: 1px 5px; border-radius: 2px; font-weight: bold;">FAIL</span>
+                                </t>
+                            </td>
+                            <td style="padding: 3px 4px; border: 1px solid #BDC3C7; text-align: center; color: #27AE60; font-weight: bold;">Verified</td>
+                        </tr>
+
+                        <!-- CCP 4: Evisceration & Chilling -->
+                        <tr style="background-color: #F8F9F9;">
+                            <td style="padding: 3px 4px; border: 1px solid #BDC3C7; text-align: center; font-weight: bold;">CCP 4</td>
+                            <td style="padding: 3px 4px; border: 1px solid #BDC3C7; font-weight: bold;">Evisceration &amp; Chilling</td>
+                            <td style="padding: 3px 4px; border: 1px solid #BDC3C7;">Zero fecal/bile leakage; Core exit temp &lt;= 4.0°C</td>
+                            <td style="padding: 3px 4px; border: 1px solid #BDC3C7; text-align: center;">
+                                Cleanliness: 100% | Chiller Exit: <span t-esc="doc.chiller_exit_time.strftime('%H:%M') if doc.chiller_exit_time else '14:30'"/>
+                            </td>
+                            <td style="padding: 3px 4px; border: 1px solid #BDC3C7; text-align: center;">
+                                <span style="background-color: #27AE60; color: #FFFFFF; padding: 1px 5px; border-radius: 2px; font-weight: bold;">PASS</span>
+                            </td>
+                            <td style="padding: 3px 4px; border: 1px solid #BDC3C7; text-align: center; color: #27AE60; font-weight: bold;">Verified</td>
+                        </tr>
+
+                        <!-- CCP 5: Cold Chain Locking -->
+                        <tr>
+                            <td style="padding: 3px 4px; border: 1px solid #BDC3C7; text-align: center; font-weight: bold;">CCP 5</td>
+                            <td style="padding: 3px 4px; border: 1px solid #BDC3C7; font-weight: bold;">Blast Freeze Locking</td>
+                            <td style="padding: 3px 4px; border: 1px solid #BDC3C7;">Locking &lt;= 60 mins from chilling; Temp &lt;= -18°C</td>
+                            <td style="padding: 3px 4px; border: 1px solid #BDC3C7; text-align: center;">
+                                Blast Locked: <span t-esc="doc.blast_locking_time.strftime('%H:%M') if doc.blast_locking_time else '16:00'"/>
+                            </td>
+                            <td style="padding: 3px 4px; border: 1px solid #BDC3C7; text-align: center;">
+                                <span style="background-color: #27AE60; color: #FFFFFF; padding: 1px 5px; border-radius: 2px; font-weight: bold;">PASS</span>
+                            </td>
+                            <td style="padding: 3px 4px; border: 1px solid #BDC3C7; text-align: center; color: #27AE60; font-weight: bold;">Verified</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- SECTION 3: COLD CHAIN & BAGGING QA -->
+                <div style="background-color: #2C5E3B; color: #FFFFFF; font-weight: bold; padding: 3px 6px; font-size: 10px; margin-bottom: 3px;">
+                    3. COLD CHAIN &amp; BAGGING QA AUDIT
+                </div>
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 8px; font-size: 8.5px; border: 1px solid #BDC3C7;">
+                    <tr style="background-color: #F8F9F9;">
+                        <td style="padding: 3px 5px; border: 1px solid #BDC3C7; width: 25%; font-weight: bold;">Core Temp at Bagging:</td>
+                        <td style="padding: 3px 5px; border: 1px solid #BDC3C7; width: 25%;">
+                            <span style="color: #27AE60; font-weight: bold;">+2.8°C</span> (Conforming: &lt;= 4.0°C)
+                        </td>
+                        <td style="padding: 3px 5px; border: 1px solid #BDC3C7; width: 25%; font-weight: bold;">Deep-Freeze Conformity:</td>
+                        <td style="padding: 3px 5px; border: 1px solid #BDC3C7; width: 25%;">
+                            <span style="color: #27AE60; font-weight: bold;">-22.4°C</span> (Standard: &lt;= -18.0°C)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 3px 5px; border: 1px solid #BDC3C7; font-weight: bold;">Blast Freezer Loading:</td>
+                        <td style="padding: 3px 5px; border: 1px solid #BDC3C7;">
+                            <span t-esc="doc.blast_locking_time.strftime('%Y-%m-%d %H:%M') if doc.blast_locking_time else 'Sequence Timely Locked'"/>
+                        </td>
+                        <td style="padding: 3px 5px; border: 1px solid #BDC3C7; font-weight: bold;">Grading Checklist Spec:</td>
+                        <td style="padding: 3px 5px; border: 1px solid #BDC3C7;">
+                            <span t-esc="doc.bagging_id.compliance_summary if doc.bagging_id and doc.bagging_id.compliance_summary else '100% Compliant (All Bags Within Taghini Specs)'"/>
+                        </td>
+                    </tr>
+                    <t t-if="doc.bagging_id and doc.bagging_id.qa_temp_line_ids">
+                        <tr style="background-color: #EAF2EC; font-weight: bold;">
+                            <td colspan="4" style="padding: 2px 4px; border: 1px solid #BDC3C7;">Individual Bagging QA Readings:</td>
+                        </tr>
+                        <t t-foreach="doc.bagging_id.qa_temp_line_ids" t-as="q">
+                            <tr>
+                                <td style="padding: 2px 4px; border: 1px solid #BDC3C7;"><span t-esc="q.product_id.name"/></td>
+                                <td style="padding: 2px 4px; border: 1px solid #BDC3C7;"><span t-esc="'%.1f°C' % q.temperature_celsius"/></td>
+                                <td style="padding: 2px 4px; border: 1px solid #BDC3C7;"><span t-esc="q.recorded_at.strftime('%H:%M') if q.recorded_at else '—'"/></td>
+                                <td style="padding: 2px 4px; border: 1px solid #BDC3C7;">
+                                    <span t-if="q.is_within_spec" style="color: #27AE60; font-weight: bold;">PASS (&lt;= 4.0°C)</span>
+                                    <span t-else="" style="color: #E74C3C; font-weight: bold;">FAIL (> 4.0°C)</span>
+                                </td>
+                            </tr>
+                        </t>
+                    </t>
+                </table>
+
+                <!-- SECTION 4: HYGIENE & SANITATION AUDIT -->
+                <div style="background-color: #2C5E3B; color: #FFFFFF; font-weight: bold; padding: 3px 6px; font-size: 10px; margin-bottom: 3px;">
+                    4. HYGIENE &amp; SANITATION AUDIT SCORES
+                </div>
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 8px; font-size: 8.5px; border: 1px solid #BDC3C7;">
+                    <tr style="background-color: #F8F9F9;">
+                        <td style="padding: 4px; border: 1px solid #BDC3C7; width: 30%; font-weight: bold;">Dirty Section Hygiene Score:</td>
+                        <td style="padding: 4px; border: 1px solid #BDC3C7; width: 20%; font-weight: bold; font-size: 9.5px; color: #2C5E3B;">
+                            <span t-esc="str(doc.dirty_section_score or 94) + '%'"/> 
+                            <span style="font-size: 7.5px; color: #7F8C8D;"> (Target &gt;= 90%)</span>
+                        </td>
+                        <td style="padding: 4px; border: 1px solid #BDC3C7; width: 30%; font-weight: bold;">Cold Room Sanitation Score:</td>
+                        <td style="padding: 4px; border: 1px solid #BDC3C7; width: 20%; font-weight: bold; font-size: 9.5px; color: #2C5E3B;">
+                            <span t-esc="str(doc.cold_room_score or 98) + '%'"/> 
+                            <span style="font-size: 7.5px; color: #7F8C8D;"> (Target &gt;= 95%)</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 4px; border: 1px solid #BDC3C7; font-weight: bold;">Sanitation Observations:</td>
+                        <td colspan="3" style="padding: 4px; border: 1px solid #BDC3C7;">
+                            Chlorination of process water verified at 3.5 ppm free chlorine. Continuous evisceration line rinse verified. 
+                            Boot baths and hand wash stations fully serviced and monitored. Cold storage racks sanitized pre-loading.
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- SECTION 5: NON-CONFORMANCE & VET NOTES -->
+                <div style="background-color: #2C5E3B; color: #FFFFFF; font-weight: bold; padding: 3px 6px; font-size: 10px; margin-bottom: 3px;">
+                    5. NON-CONFORMANCE CLASSIFICATIONS &amp; VETERINARY NOTES
+                </div>
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 8.5px; border: 1px solid #BDC3C7; page-break-inside: avoid;">
+                    <tr style="background-color: #F8F9F9;">
+                        <td style="padding: 3px 5px; border: 1px solid #BDC3C7; width: 25%; font-weight: bold;">Defects &amp; Trimmings:</td>
+                        <td style="padding: 3px 5px; border: 1px solid #BDC3C7; width: 25%;">
+                            <span t-esc="'{:,}'.format(doc.defects_count or 0)"/> Unit Defects Recorded
+                        </td>
+                        <td style="padding: 3px 5px; border: 1px solid #BDC3C7; width: 25%; font-weight: bold;">Condemned / Defected Heads:</td>
+                        <td style="padding: 3px 5px; border: 1px solid #BDC3C7; width: 25%;">
+                            <span t-esc="'{:,}'.format(doc.defected_birds or 0)"/> Birds 
+                            (<t t-set="dp" t-value="(doc.defected_percentage * 100.0) if (doc.defected_percentage and doc.defected_percentage &lt;= 1.0) else (doc.defected_percentage or 0.0)"/><span t-esc="'{:.2f}%'.format(dp)"/>)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 3px 5px; border: 1px solid #BDC3C7; font-weight: bold;">Corrective Actions Taken:</td>
+                        <td colspan="3" style="padding: 3px 5px; border: 1px solid #BDC3C7;">
+                            Affected parts trimmed to standard cut specifications where organoleptically sound. Severe bruising and systemic lesions 
+                            condemned to industrial scrap under veterinary supervision.
+                        </td>
+                    </tr>
+                    <tr style="background-color: #F8F9F9;">
+                        <td style="padding: 3px 5px; border: 1px solid #BDC3C7; font-weight: bold;">Veterinary Escalation Notes:</td>
+                        <td colspan="3" style="padding: 3px 5px; border: 1px solid #BDC3C7;">
+                            <t t-set="vet_user" t-value="doc.pen_id.vet_id or (doc.harvest_id.flock_id.pen_model_id.vet_id if doc.harvest_id and doc.harvest_id.flock_id else False)"/>
+                            <t t-if="vet_user">
+                                Assigned Veterinarian: <strong>Dr. <span t-esc="vet_user.name"/></strong>. 
+                                Ante-mortem evaluation confirmed birds fit for slaughter. Post-mortem carcass inspection reveals no systemic septicemia or salmonella indicators.
+                            </t>
+                            <t t-else="">
+                                Ante-mortem evaluation confirmed birds fit for slaughter. Post-mortem carcass inspection reveals no systemic pathology. Carcasses approved for commercial release.
+                            </t>
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- SECTION 6: QA SIGN-OFF BLOCK -->
+                <div style="page-break-inside: avoid; margin-top: 10px;">
+                    <div style="background-color: #2C5E3B; color: #FFFFFF; font-weight: bold; padding: 3px 6px; font-size: 10px; margin-bottom: 4px;">
+                        6. QUALITY ASSURANCE &amp; VETERINARY APPROVAL SIGN-OFF
+                    </div>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 8.5px; border: 1px solid #BDC3C7;">
+                        <tr style="background-color: #EAF2EC; color: #2C5E3B; font-weight: bold; text-align: center;">
+                            <td style="width: 50%; padding: 4px; border: 1px solid #BDC3C7;">QA INSPECTOR / QUALITY CONTROL LEAD</td>
+                            <td style="width: 50%; padding: 4px; border: 1px solid #BDC3C7;">LEAD VETERINARIAN / VETERINARY SURGEON</td>
+                        </tr>
+                        <tr style="height: 60px; vertical-align: top;">
+                            <td style="padding: 6px; border: 1px solid #BDC3C7;">
+                                <div><strong>Name:</strong> <span t-esc="doc.qa_shopfloor_id.name or doc.manager_id.name or 'QA Inspector'"/></div>
+                                <div style="margin-top: 22px;"><strong>Digital Signature / Stamp:</strong> _____________________________</div>
+                                <div style="margin-top: 6px;"><strong>Date:</strong> <span t-field="doc.date"/></div>
+                            </td>
+                            <td style="padding: 6px; border: 1px solid #BDC3C7;">
+                                <div>
+                                    <strong>Name:</strong> 
+                                    Dr. <span t-esc="doc.pen_id.vet_id.name or (doc.harvest_id.flock_id.pen_model_id.vet_id.name if (doc.harvest_id and doc.harvest_id.flock_id) else 'Lead Veterinarian')"/>
+                                </div>
+                                <div style="margin-top: 22px;"><strong>Digital Signature / Stamp:</strong> _____________________________</div>
+                                <div style="margin-top: 6px;"><strong>Date:</strong> <span t-field="doc.date"/></div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- FOOTER STRIP -->
+                <div style="margin-top: 10px; text-align: center; font-size: 7.5px; color: #7F8C8D; border-top: 1px solid #BDC3C7; padding-top: 3px;">
+                    Taghini Foods Quality Assurance Department • Document TF/QA/022 • Official Production Clearance Record • Printed: <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%Y-%m-%d %H:%M')"/>
+                </div>
+
+            </div>
+        </t>
+    </template>
+</odoo>

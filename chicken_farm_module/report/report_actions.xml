@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- 1. Document TF/ABT/001: Abattoir Daily Production & Yield Report -->
+    <record id="action_report_abattoir_production" model="ir.actions.report">
+        <field name="name">Daily Production &amp; Yield Report (TF/ABT/001)</field>
+        <field name="model">taghini.abattoir.batch</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">chicken_farm_module.report_abattoir_production</field>
+        <field name="report_file">chicken_farm_module.report_abattoir_production</field>
+        <field name="print_report_name">'Production_Yield_Report_' + (object.name or '').replace('/', '_')</field>
+        <field name="binding_model_id" ref="model_taghini_abattoir_batch"/>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="paperformat_taghini_portrait"/>
+    </record>
+
+    <!-- 2. Document TF/QA/022: Daily Quality Assurance Summary Report -->
+    <record id="action_report_abattoir_qa" model="ir.actions.report">
+        <field name="name">Daily Quality Assurance Summary (TF/QA/022)</field>
+        <field name="model">taghini.abattoir.batch</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">chicken_farm_module.report_abattoir_qa</field>
+        <field name="report_file">chicken_farm_module.report_abattoir_qa</field>
+        <field name="print_report_name">'QA_Summary_Report_' + (object.name or '').replace('/', '_')</field>
+        <field name="binding_model_id" ref="model_taghini_abattoir_batch"/>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="paperformat_taghini_portrait"/>
+    </record>
+
+    <!-- 3. Broiler Batch Summary: 12-Column Printable Performance Report -->
+    <record id="action_report_flock_performance" model="ir.actions.report">
+        <field name="name">Broiler Performance Ledger (12-Column Summary)</field>
+        <field name="model">taghini.flock</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">chicken_farm_module.report_flock_performance</field>
+        <field name="report_file">chicken_farm_module.report_flock_performance</field>
+        <field name="print_report_name">'Broiler_Performance_' + (object.name or '').replace('/', '_')</field>
+        <field name="binding_model_id" ref="model_taghini_flock"/>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="paperformat_taghini_landscape"/>
+    </record>
+
+    <!-- 4. Breeder Pen Daily Record: TF/BR/PEN/001 -->
+    <record id="action_report_breeder_pen" model="ir.actions.report">
+        <field name="name">Pen Daily Record (TF/BR/PEN/001)</field>
+        <field name="model">taghini.breeder.pen.log</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">chicken_farm_module.report_breeder_pen</field>
+        <field name="report_file">chicken_farm_module.report_breeder_pen</field>
+        <field name="print_report_name">'Breeder_Pen_Daily_' + (object.name or '').replace('/', '_')</field>
+        <field name="binding_model_id" ref="model_taghini_breeder_pen_log"/>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="paperformat_taghini_portrait"/>
+    </record>
+
+    <!-- 5. Breeder Weekly Performance Ledger: TF/BR/WK/001 -->
+    <record id="action_report_breeder_weekly" model="ir.actions.report">
+        <field name="name">Weekly Performance Ledger (TF/BR/WK/001)</field>
+        <field name="model">taghini.breeder.flock</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">chicken_farm_module.report_breeder_weekly</field>
+        <field name="report_file">chicken_farm_module.report_breeder_weekly</field>
+        <field name="print_report_name">'Breeder_Weekly_Ledger_' + (object.name or '').replace('/', '_')</field>
+        <field name="binding_model_id" ref="model_taghini_breeder_flock"/>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="paperformat_taghini_landscape"/>
+    </record>
+</odoo>

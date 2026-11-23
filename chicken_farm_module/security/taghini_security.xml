@@ -1,40 +1,184 @@
 <odoo>
     <data noupdate="1">
-        
+
+        <!-- ============================================================ -->
+        <!-- SECURITY GROUPS                                              -->
+        <!-- ============================================================ -->
+
+        <!-- Base category -->
+        <record id="module_category_taghini" model="ir.module.category">
+            <field name="name">Taghini Farm</field>
+            <field name="sequence">30</field>
+        </record>
+
+        <!-- Farm User: can do daily operations on assigned farms only -->
+        <record id="group_taghini_farm_user" model="res.groups">
+            <field name="name">Farm User</field>
+            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        </record>
+
+        <!-- Farm Manager: can see all farms in their company, manage config -->
+        <record id="group_taghini_farm_manager" model="res.groups">
+            <field name="name">Farm Manager</field>
+            <field name="implied_ids" eval="[(4, ref('group_taghini_farm_user'))]"/>
+            <field name="user_ids" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+
+        <!-- ============================================================ -->
+        <!-- MULTI-COMPANY RULES (preserved from original)               -->
+        <!-- ============================================================ -->
+
+        <record id="rule_taghini_farm_multi_company" model="ir.rule">
+            <field name="name">Taghini Farm: Multi-Company</field>
+            <field name="model_id" ref="model_taghini_farm"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        </record>
+
         <record id="rule_taghini_pen_multi_company" model="ir.rule">
-            <field name="name">Taghini Pen Multi-Company</field>
+            <field name="name">Taghini Pen: Multi-Company</field>
             <field name="model_id" ref="model_taghini_pen"/>
             <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
         </record>
 
         <record id="rule_taghini_flock_multi_company" model="ir.rule">
-            <field name="name">Taghini Flock Multi-Company</field>
+            <field name="name">Taghini Flock: Multi-Company</field>
             <field name="model_id" ref="model_taghini_flock"/>
             <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
         </record>
 
         <record id="rule_taghini_daily_log_multi_company" model="ir.rule">
-            <field name="name">Taghini Daily Log Multi-Company</field>
+            <field name="name">Taghini Daily Log: Multi-Company</field>
             <field name="model_id" ref="model_taghini_daily_log"/>
             <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
         </record>
 
         <record id="rule_taghini_harvest_multi_company" model="ir.rule">
-            <field name="name">Taghini Harvest Multi-Company</field>
+            <field name="name">Taghini Harvest: Multi-Company</field>
             <field name="model_id" ref="model_taghini_harvest"/>
             <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
         </record>
 
         <record id="rule_taghini_breeder_batch_multi_company" model="ir.rule">
-            <field name="name">Taghini Breeder Batch Multi-Company</field>
+            <field name="name">Taghini Breeder Batch: Multi-Company</field>
             <field name="model_id" ref="model_taghini_breeder_batch"/>
             <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
         </record>
 
         <record id="rule_taghini_breeder_log_multi_company" model="ir.rule">
-            <field name="name">Taghini Breeder Log Multi-Company</field>
-            <field name="model_id" ref="model_taghini_breeder_daily_log"/>
+            <field name="name">Taghini Breeder Log: Multi-Company</field>
+            <field name="model_id" ref="model_taghini_breeder_pen_log"/>
             <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        </record>
+
+        <!-- ============================================================ -->
+        <!-- REQUIREMENT 6: FARM-BASED ACCESS RESTRICTION                -->
+        <!-- Farm Users can only see/edit records in their assigned farms -->
+        <!-- Farm Managers bypass this and see all farms in their company -->
+        <!-- ============================================================ -->
+
+        <!-- FLOCK: Farm Users see only flocks where they are in farm.user_ids -->
+        <record id="rule_taghini_flock_farm_user" model="ir.rule">
+            <field name="name">Flock: Restricted to Assigned Farms (Farm User)</field>
+            <field name="model_id" ref="model_taghini_flock"/>
+            <field name="domain_force">
+                ['|',
+                    ('farm_id', '=', False),
+                    ('farm_id.user_ids', 'in', [user.id])
+                ]
+            </field>
+            <field name="groups" eval="[(4, ref('group_taghini_farm_user'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <!-- FLOCK: Farm Managers see all in their company (no farm restriction) -->
+        <record id="rule_taghini_flock_farm_manager" model="ir.rule">
+            <field name="name">Flock: All Farms (Farm Manager)</field>
+            <field name="model_id" ref="model_taghini_flock"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('group_taghini_farm_manager'))]"/>
+        </record>
+
+        <!-- DAILY LOG: Farm Users see only logs for their assigned farms -->
+        <record id="rule_taghini_daily_log_farm_user" model="ir.rule">
+            <field name="name">Daily Log: Restricted to Assigned Farms (Farm User)</field>
+            <field name="model_id" ref="model_taghini_daily_log"/>
+            <field name="domain_force">
+                ['|',
+                    ('farm_id', '=', False),
+                    ('farm_id.user_ids', 'in', [user.id])
+                ]
+            </field>
+            <field name="groups" eval="[(4, ref('group_taghini_farm_user'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <record id="rule_taghini_daily_log_farm_manager" model="ir.rule">
+            <field name="name">Daily Log: All Farms (Farm Manager)</field>
+            <field name="model_id" ref="model_taghini_daily_log"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('group_taghini_farm_manager'))]"/>
+        </record>
+
+        <!-- HARVEST: Farm Users see only harvests for their assigned farms -->
+        <record id="rule_taghini_harvest_farm_user" model="ir.rule">
+            <field name="name">Harvest: Restricted to Assigned Farms (Farm User)</field>
+            <field name="model_id" ref="model_taghini_harvest"/>
+            <field name="domain_force">
+                ['|',
+                    ('farm_id', '=', False),
+                    ('farm_id.user_ids', 'in', [user.id])
+                ]
+            </field>
+            <field name="groups" eval="[(4, ref('group_taghini_farm_user'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <record id="rule_taghini_harvest_farm_manager" model="ir.rule">
+            <field name="name">Harvest: All Farms (Farm Manager)</field>
+            <field name="model_id" ref="model_taghini_harvest"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('group_taghini_farm_manager'))]"/>
+        </record>
+
+        <!-- BREEDER BATCH: Farm Users see only breeder batches for their company -->
+        <record id="rule_taghini_breeder_farm_user" model="ir.rule">
+            <field name="name">Breeder Batch: Multi-Company (Farm User)</field>
+            <field name="model_id" ref="model_taghini_breeder_batch"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+            <field name="groups" eval="[(4, ref('group_taghini_farm_user'))]"/>
+        </record>
+
+        <!-- PEN: Farm Users only see pens of farms they are assigned to -->
+        <record id="rule_taghini_pen_farm_user" model="ir.rule">
+            <field name="name">Pen: Restricted to Assigned Farms (Farm User)</field>
+            <field name="model_id" ref="model_taghini_pen"/>
+            <field name="domain_force">
+                ['|',
+                    ('farm_id', '=', False),
+                    ('farm_id.user_ids', 'in', [user.id])
+                ]
+            </field>
+            <field name="groups" eval="[(4, ref('group_taghini_farm_user'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <record id="rule_taghini_pen_farm_manager" model="ir.rule">
+            <field name="name">Pen: All Farms (Farm Manager)</field>
+            <field name="model_id" ref="model_taghini_pen"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('group_taghini_farm_manager'))]"/>
         </record>
 
     </data>

@@ -1,4 +1,4 @@
-from odoo import models, fields
+from odoo import models, fields, api
 
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
@@ -21,3 +21,9 @@ class ProductTemplate(models.Model):
         ('residuals', 'Residuals'),
         ('other', 'Other'),
     ], string='Abattoir Category', default='other', help="Classification for Abattoir Reports")
+
+    grading_line_id = fields.Many2one(
+        'taghini.grading.checklist.line',
+        string='Grading Series Spec',
+        help="Links this product / SKU to its standard in the Taghini Grading Checklist."
+    )

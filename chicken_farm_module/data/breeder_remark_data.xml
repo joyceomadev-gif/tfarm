@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="remark_breeder_d01" model="taghini.farm.remark">
+        <field name="code">D01</field>
+        <field name="name">D01: Female mortality above threshold</field>
+        <field name="category">mortality</field>
+        <field name="remark_scope">breeder</field>
+        <field name="need_escalation">True</field>
+        <field name="color">1</field>
+        <field name="description">Female daily mortality exceeds threshold (0.3% in brooding Wk 0-1, 0.03% Wk 2+).</field>
+    </record>
+
+    <record id="remark_breeder_d02" model="taghini.farm.remark">
+        <field name="code">D02</field>
+        <field name="name">D02: Male mortality above threshold</field>
+        <field name="category">mortality</field>
+        <field name="remark_scope">breeder</field>
+        <field name="need_escalation">True</field>
+        <field name="color">1</field>
+        <field name="description">Male daily mortality exceeds threshold and minimum death count (≥2 males).</field>
+    </record>
+
+    <record id="remark_breeder_d03" model="taghini.farm.remark">
+        <field name="code">D03</field>
+        <field name="name">D03: Female feed off AA allocation</field>
+        <field name="category">feed_water</field>
+        <field name="remark_scope">breeder</field>
+        <field name="need_escalation">True</field>
+        <field name="color">2</field>
+        <field name="description">Female feed allocation deviates by more than ±3% from Arbor Acres Plus benchmark.</field>
+    </record>
+
+    <record id="remark_breeder_d04" model="taghini.farm.remark">
+        <field name="code">D04</field>
+        <field name="name">D04: Male feed off AA allocation</field>
+        <field name="category">feed_water</field>
+        <field name="remark_scope">breeder</field>
+        <field name="need_escalation">True</field>
+        <field name="color">2</field>
+        <field name="description">Male feed allocation deviates by more than ±3% from Arbor Acres Plus benchmark.</field>
+    </record>
+
+    <record id="remark_breeder_d05" model="taghini.farm.remark">
+        <field name="code">D05</field>
+        <field name="name">D05: Mating ratio out of range</field>
+        <field name="category">behavior</field>
+        <field name="remark_scope">breeder</field>
+        <field name="need_escalation">True</field>
+        <field name="color">1</field>
+        <field name="description">Mating ratio out of recommended range (&lt;10 or &gt;12 males per 100 females in laying phase).</field>
+    </record>
+
+    <record id="remark_breeder_d06" model="taghini.farm.remark">
+        <field name="code">D06</field>
+        <field name="name">D06: Lighting hours schedule violation</field>
+        <field name="category">environment</field>
+        <field name="remark_scope">breeder</field>
+        <field name="need_escalation">True</field>
+        <field name="color">3</field>
+        <field name="description">Photoperiod drifts by more than ±0.25 hours from scheduled lighting plan.</field>
+    </record>
+
+    <record id="remark_breeder_d07" model="taghini.farm.remark">
+        <field name="code">D07</field>
+        <field name="name">D07: Water intake fell sharply day-on-day</field>
+        <field name="category">feed_water</field>
+        <field name="remark_scope">breeder</field>
+        <field name="need_escalation">True</field>
+        <field name="color">1</field>
+        <field name="description">Daily water intake dropped by &gt;5% day-on-day, or water:feed ratio is outside 1.5 - 2.5.</field>
+    </record>
+
+    <record id="remark_breeder_d08" model="taghini.farm.remark">
+        <field name="code">D08</field>
+        <field name="name">D08: Body weight deviation from AA</field>
+        <field name="category">health</field>
+        <field name="remark_scope">breeder</field>
+        <field name="need_escalation">True</field>
+        <field name="color">2</field>
+        <field name="description">Sample body weight deviates by more than ±5% from Arbor Acres target, or uniformity &lt;80%.</field>
+    </record>
+
+    <record id="remark_breeder_d09" model="taghini.farm.remark">
+        <field name="code">D09</field>
+        <field name="name">D09: House temperature out of range</field>
+        <field name="category">environment</field>
+        <field name="remark_scope">breeder</field>
+        <field name="need_escalation">True</field>
+        <field name="color">1</field>
+        <field name="description">House maximum temperature &gt;30°C or brooding minimum temperature &lt;26°C.</field>
+    </record>
+
+    <record id="remark_breeder_d10" model="taghini.farm.remark">
+        <field name="code">D10</field>
+        <field name="name">D10: Wet / caked litter</field>
+        <field name="category">environment</field>
+        <field name="remark_scope">breeder</field>
+        <field name="need_escalation">True</field>
+        <field name="color">3</field>
+        <field name="description">Litter score is ≥3 indicating excessive moisture or capping, requiring immediate management.</field>
+    </record>
+
+    <record id="remark_breeder_d23" model="taghini.farm.remark">
+        <field name="code">D23</field>
+        <field name="name">D23: Egg dispatch interval exceeded</field>
+        <field name="category">general</field>
+        <field name="remark_scope">breeder</field>
+        <field name="need_escalation">False</field>
+        <field name="color">4</field>
+        <field name="description">Hatching eggs stored for more than 7 days without dispatch to hatchery.</field>
+    </record>
+</odoo>

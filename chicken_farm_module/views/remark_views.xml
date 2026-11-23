@@ -1,0 +1,58 @@
+<odoo>
+
+    <!-- Remarks List View -->
+    <record id="view_taghini_farm_remark_list" model="ir.ui.view">
+        <field name="name">taghini.farm.remark.list</field>
+        <field name="model">taghini.farm.remark</field>
+        <field name="arch" type="xml">
+            <list string="Remarks &amp; Conditions" editable="bottom">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="category"/>
+                <field name="remark_scope"/>
+                <field name="need_escalation" widget="boolean_toggle"/>
+                <field name="color" widget="color_picker" optional="show"/>
+                <field name="description"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Remarks Search View -->
+    <record id="view_taghini_farm_remark_search" model="ir.ui.view">
+        <field name="name">taghini.farm.remark.search</field>
+        <field name="model">taghini.farm.remark</field>
+        <field name="arch" type="xml">
+            <search string="Remarks &amp; Conditions">
+                <field name="name"/>
+                <field name="category"/>
+                <filter name="filter_escalation" string="Needs Vet Escalation" domain="[('need_escalation', '=', True)]"/>
+                <filter name="group_category" string="Category" context="{'group_by': 'category'}"/>
+                <filter name="group_escalation" string="Needs Escalation" context="{'group_by': 'need_escalation'}"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- Remarks Action -->
+    <record id="action_taghini_farm_remark" model="ir.actions.act_window">
+        <field name="name">Standard Remarks &amp; Conditions</field>
+        <field name="res_model">taghini.farm.remark</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_taghini_farm_remark_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Define standard symptoms and conditions
+            </p>
+            <p>
+                Tag conditions with "Needs Vet Attention" to trigger automated alerts whenever logged by workers.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menuitem under Configuration -->
+    <menuitem id="menu_taghini_farm_remark"
+              name="Symptoms &amp; Remarks"
+              parent="menu_taghini_config"
+              action="action_taghini_farm_remark"
+              sequence="15"/>
+
+</odoo>

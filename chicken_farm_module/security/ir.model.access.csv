@@ -1,12 +1,43 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_taghini_flock,taghini.flock,model_taghini_flock,base.group_user,1,1,1,1
-access_taghini_log,taghini.daily.log,model_taghini_daily_log,base.group_user,1,1,1,1
-access_taghini_std,taghini.farm.standard,model_taghini_farm_standard,base.group_user,1,1,1,1
-access_taghini_std_line,taghini.farm.standard.line,model_taghini_farm_standard_line,base.group_user,1,1,1,1
-access_taghini_pen,taghini.pen,model_taghini_pen,base.group_user,1,1,1,1
-access_taghini_harvest,taghini.harvest,model_taghini_harvest,base.group_user,1,1,1,1
-access_taghini_abattoir,taghini.abattoir,model_taghini_abattoir_batch,base.group_user,1,1,1,1
-access_taghini_abattoir_line,taghini.abattoir.line,model_taghini_abattoir_line,base.group_user,1,1,1,1
-access_taghini_chicken_batch,taghini.chicken.batch,model_taghini_chicken_batch,base.group_user,1,1,1,1
-access_taghini_breeder_batch,taghini.breeder.batch,model_taghini_breeder_batch,base.group_user,1,1,1,1
-access_taghini_breeder_log,taghini.breeder.daily.log,model_taghini_breeder_daily_log,base.group_user,1,1,1,1
+access_taghini_farm_user,taghini.farm (user),model_taghini_farm,group_taghini_farm_user,1,0,0,0
+access_taghini_farm_manager,taghini.farm (manager),model_taghini_farm,group_taghini_farm_manager,1,1,1,1
+access_taghini_flock,taghini.flock,model_taghini_flock,group_taghini_farm_user,1,1,1,1
+access_taghini_log,taghini.daily.log,model_taghini_daily_log,group_taghini_farm_user,1,1,1,1
+access_taghini_log_med,taghini.daily.log.medication,model_taghini_daily_log_medication,group_taghini_farm_user,1,1,1,1
+access_taghini_farm_remark_user,taghini.farm.remark (user),model_taghini_farm_remark,group_taghini_farm_user,1,0,0,0
+access_taghini_farm_remark_manager,taghini.farm.remark (manager),model_taghini_farm_remark,group_taghini_farm_manager,1,1,1,1
+access_taghini_std,taghini.farm.standard,model_taghini_farm_standard,group_taghini_farm_user,1,0,0,0
+access_taghini_std_manager,taghini.farm.standard (manager),model_taghini_farm_standard,group_taghini_farm_manager,1,1,1,1
+access_taghini_std_line,taghini.farm.standard.line,model_taghini_farm_standard_line,group_taghini_farm_user,1,0,0,0
+access_taghini_std_line_manager,taghini.farm.standard.line (manager),model_taghini_farm_standard_line,group_taghini_farm_manager,1,1,1,1
+access_taghini_pen,taghini.pen,model_taghini_pen,group_taghini_farm_user,1,1,1,0
+access_taghini_pen_manager,taghini.pen (manager),model_taghini_pen,group_taghini_farm_manager,1,1,1,1
+access_taghini_harvest,taghini.harvest,model_taghini_harvest,group_taghini_farm_user,1,1,1,0
+access_taghini_harvest_manager,taghini.harvest (manager),model_taghini_harvest,group_taghini_farm_manager,1,1,1,1
+access_taghini_abattoir,taghini.abattoir,model_taghini_abattoir_batch,group_taghini_farm_user,1,1,1,0
+access_taghini_abattoir_manager,taghini.abattoir (manager),model_taghini_abattoir_batch,group_taghini_farm_manager,1,1,1,1
+access_taghini_abattoir_line,taghini.abattoir.line,model_taghini_abattoir_line,group_taghini_farm_user,1,1,1,1
+access_taghini_bagging,taghini.abattoir.bagging,model_taghini_abattoir_bagging,group_taghini_farm_user,1,1,1,0
+access_taghini_bagging_manager,taghini.abattoir.bagging (manager),model_taghini_abattoir_bagging,group_taghini_farm_manager,1,1,1,1
+access_taghini_bagging_line,taghini.abattoir.bagging.line,model_taghini_abattoir_bagging_line,group_taghini_farm_user,1,1,1,1
+access_taghini_bagging_qa,taghini.abattoir.bagging.qa,model_taghini_abattoir_bagging_qa,group_taghini_farm_user,1,1,1,1
+access_taghini_grading,taghini.grading.checklist,model_taghini_grading_checklist,group_taghini_farm_user,1,0,0,0
+access_taghini_grading_manager,taghini.grading.checklist (manager),model_taghini_grading_checklist,group_taghini_farm_manager,1,1,1,1
+access_taghini_grading_line,taghini.grading.checklist.line,model_taghini_grading_checklist_line,group_taghini_farm_user,1,0,0,0
+access_taghini_grading_line_manager,taghini.grading.checklist.line (manager),model_taghini_grading_checklist_line,group_taghini_farm_manager,1,1,1,1
+access_taghini_chicken_batch,taghini.chicken.batch,model_taghini_chicken_batch,group_taghini_farm_user,1,1,1,0
+access_taghini_chicken_batch_manager,taghini.chicken.batch (manager),model_taghini_chicken_batch,group_taghini_farm_manager,1,1,1,1
+access_taghini_breeder_batch,taghini.breeder.batch,model_taghini_breeder_batch,group_taghini_farm_user,1,1,1,0
+access_taghini_breeder_batch_manager,taghini.breeder.batch (manager),model_taghini_breeder_batch,group_taghini_farm_manager,1,1,1,1
+access_taghini_breeder_flock,taghini.breeder.flock,model_taghini_breeder_flock,group_taghini_farm_user,1,1,1,0
+access_taghini_breeder_flock_manager,taghini.breeder.flock (manager),model_taghini_breeder_flock,group_taghini_farm_manager,1,1,1,1
+access_taghini_breeder_pen_log,taghini.breeder.pen.log,model_taghini_breeder_pen_log,group_taghini_farm_user,1,1,1,0
+access_taghini_breeder_pen_log_manager,taghini.breeder.pen.log (manager),model_taghini_breeder_pen_log,group_taghini_farm_manager,1,1,1,1
+access_taghini_log_import_export_user,taghini.daily.log.import.export.wizard,model_taghini_daily_log_import_export_wizard,group_taghini_farm_user,1,1,1,1
+access_taghini_log_import_export_mgr,taghini.daily.log.import.export.wizard (mgr),model_taghini_daily_log_import_export_wizard,group_taghini_farm_manager,1,1,1,1
+access_taghini_breeder_egg_room_user,taghini.breeder.egg.room (user),model_taghini_breeder_egg_room,group_taghini_farm_user,1,1,1,0
+access_taghini_breeder_egg_room_mgr,taghini.breeder.egg.room (manager),model_taghini_breeder_egg_room,group_taghini_farm_manager,1,1,1,1
+access_taghini_breeder_hatchery_user,taghini.breeder.hatchery.dispatch (user),model_taghini_breeder_hatchery_dispatch,group_taghini_farm_user,1,1,1,0
+access_taghini_breeder_hatchery_mgr,taghini.breeder.hatchery.dispatch (manager),model_taghini_breeder_hatchery_dispatch,group_taghini_farm_manager,1,1,1,1
+access_taghini_breeder_excel_export_user,taghini.breeder.excel.export.wizard,model_taghini_breeder_excel_export_wizard,group_taghini_farm_user,1,1,1,1
+access_taghini_breeder_excel_export_mgr,taghini.breeder.excel.export.wizard (mgr),model_taghini_breeder_excel_export_wizard,group_taghini_farm_manager,1,1,1,1

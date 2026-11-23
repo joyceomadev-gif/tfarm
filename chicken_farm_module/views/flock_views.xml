@@ -6,12 +6,19 @@
             <form string="Pen Series">
                 <header>
                     <button name="action_add_daily_log" string="Add Daily Log" type="object" class="btn-primary" icon="fa-plus-square" invisible="state != 'active'"/>
+                    <button name="action_open_import_export_wizard" string="Import / Export Logs" type="object" class="btn-secondary" icon="fa-exchange"/>
                     <button name="action_start_batch" string="Start Series" type="object" class="btn-primary" invisible="state != 'draft'"/>
                     <button name="action_close_batch" string="Close Sseries" type="object" class="btn-secondary" invisible="state != 'active'"/>
                     <button name="action_cancel_batch" string="Cancel" type="object" invisible="state in ('closed', 'cancelled')"/>
                     <button name="action_set_draft" string="Reset to Draft" type="object" invisible="state != 'cancelled'"/>
                     
                     <button name="action_escalate_issue" string="Escalate Issue" type="object" class="btn-danger" icon="fa-bell" invisible="state != 'active'"/>
+                    
+                    <button name="%(chicken_farm_module.action_report_flock_performance)d" 
+                            string="Print Performance Ledger" 
+                            type="action" 
+                            class="btn-secondary" 
+                            icon="fa-print"/>
                     
                     <field name="state" widget="statusbar" statusbar_visible="draft,active,closed"/>
                 </header>
@@ -22,24 +29,27 @@
                         </button>
                     </div>
                     <div class="oe_title">
-                        <h1><field name="name"/></h1>
+                        <h1><field name="flock_code" readonly="1"/></h1>
                     </div>
                     <group>
                         <group>
+                            <field name="name" string="Pen Series Name" readonly="state != 'draft'"/>
                             <field name="batch_id" options="{'no_create': True}" readonly="state != 'draft'"/>
-                            <field name="product_id"/>
-                            <field name="pen_model_id"/> 
-                            <field name="pen_id"/>
-                            <field name="breed"/>
-                            <field name="start_date"/>
-                            <field name="standard_id"/>
+                            <field name="product_id" readonly="state != 'draft'"/>
+                            <field name="farm_id" readonly="1"/>
+                            <field name="pen_model_id" readonly="state != 'draft'"/> 
+                            <field name="pen_id" readonly="state != 'draft'"/>
+                            <field name="breed" readonly="state != 'draft'"/>
+                            <field name="start_date" readonly="state != 'draft'"/>
+                            <field name="standard_id" readonly="state != 'draft'"/>
                         </group>
                         <group>
-                            <field name="quantity_placed" readonly="state != 'draft'"/>
+                            <field name="pen_capacity"/>
+                            <field name="quantity_placed" readonly="state != 'draft'" decoration-danger="pen_capacity &gt; 0 and quantity_placed &gt; pen_capacity"/>
                             <field name="initial_birds" invisible="1"/>
-                            <field name="current_birds"/>
-                            <field name="mortality_rate" widget="percentage"/>
-                            <field name="current_age"/>
+                            <field name="current_birds" readonly="1"/>
+                            <field name="mortality_rate" widget="percentage" readonly="1"/>
+                            <field name="current_age" readonly="1"/>
                         </group>
                     </group>
                     
@@ -110,12 +120,11 @@
                                 <list create="0">
                                     <field name="date" readonly="1"/>
                                     <field name="age_day"/>
-                                    <field name="medication_product_id"/>
-                                    <field name="medication_qty"/>
-                                    <field name="medication_uom_id" optional="show"/>
-                                    
+                                    <field name="medication_line_ids" widget="many2many_tags" optional="show"/>
                                     <field name="vaccine_name"/>
-                                    <field name="remarks"/>
+                                    <field name="remark_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                                    <field name="remarks" optional="show"/>
+                                    <field name="vet_notified" widget="boolean_toggle" readonly="1"/>
                                 </list>
                             </field>
                         </page>
@@ -137,12 +146,39 @@
         </field>
     </record>
 
-    <record id="action_taghini_flock" model="ir.actions.act_window">
-        <field name="name">Flocks / Batches</field>
-        <field name="res_model">taghini.flock</field>
-        <field name="view_mode">list,form</field>
+    <record id="view_taghini_flock_tree" model="ir.ui.view">
+        <field name="name">taghini.flock.tree</field>
+        <field name="model">taghini.flock</field>
+        <field name="arch" type="xml">
+            <list string="Flocks / Pen Series" decoration-muted="state == 'closed'" decoration-info="state == 'draft'" decoration-success="state == 'active'" export_xlsx="1">
+                <field name="flock_code" string="Flock ID" class="fw-bold"/>
+                <field name="name" string="Pen Series Name"/>
+                <field name="pen_model_id" string="Pen"/>
+                <field name="farm_id" string="Farm"/>
+                <field name="current_age" string="Age (Days)" decoration-bf="1"/>
+                <field name="current_birds" string="Live Birds" sum="Total Live" class="fw-bold"/>
+                <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-success="state == 'active'" decoration-muted="state == 'closed'"/>
+                <field name="mortality_rate" string="Mortality %" widget="percentage" optional="hide"/>
+                <field name="total_feed_bags" string="Feed (Bags)" sum="Total Bags" optional="hide"/>
+                <field name="latest_avg_weight" string="Avg Wgt (g)" optional="hide"/>
+                <field name="start_date" string="Stocked Date" optional="hide"/>
+                <field name="initial_birds" string="Placed Birds" sum="Total Placed" optional="hide"/>
+                <field name="total_mortality" string="Dead Birds" sum="Total Dead" optional="hide"/>
+                <field name="batch_id" string="Source Batch" optional="hide"/>
+                <field name="product_id" string="Bird Variant" optional="hide"/>
+                <field name="unrecorded_birds" string="Unrecorded" optional="hide"/>
+            </list>
+        </field>
     </record>
 
-    <menuitem id="menu_taghini_root" name="Taghini Farm" web_icon="chicken_farm_module,static/description/icon.png"/>
-    <menuitem id="menu_taghini_flock" name="Flocks" parent="menu_taghini_root" action="action_taghini_flock" sequence="2"/>
+    <record id="action_taghini_flock" model="ir.actions.act_window">
+        <field name="name">Broiler Flocks</field>
+        <field name="res_model">taghini.flock</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_taghini_flock_tree"/>
+        <field name="search_view_id" ref="view_taghini_flock_search"/>
+        <field name="context">{'search_default_filter_active': 1}</field>
+    </record>
+
+    <menuitem id="menu_taghini_flock" name="Broiler Flocks" parent="menu_taghini_flock_root" action="action_taghini_flock" sequence="1"/>
 </odoo>

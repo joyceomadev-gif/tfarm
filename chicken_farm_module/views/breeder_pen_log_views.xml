@@ -1,0 +1,385 @@
+<odoo>
+    <!-- Breeder Pen Daily Log Form View -->
+    <record id="view_taghini_breeder_pen_log_form" model="ir.ui.view">
+        <field name="name">taghini.breeder.pen.log.form</field>
+        <field name="model">taghini.breeder.pen.log</field>
+        <field name="arch" type="xml">
+            <form string="Breeder Daily Pen Ledger">
+                <header>
+                    <button name="action_post_log" string="Post Daily Log" type="object" class="btn-primary" invisible="state == 'posted'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,posted"/>
+                </header>
+                <sheet>
+                    <div class="alert alert-danger mb-2" role="alert" invisible="danger_count == 0">
+                        <strong><i class="fa fa-exclamation-triangle me-1"/> CRITICAL DANGER DETECTED (<field name="danger_count"/> flags):</strong>
+                        <div class="mt-1"><field name="danger_flags" readonly="1"/></div>
+                    </div>
+                    <div class="alert alert-warning mb-2" role="alert" invisible="error_count == 0">
+                        <strong><i class="fa fa-info-circle me-1"/> DATA INCONSISTENCIES / INCOMPLETE ENTRIES:</strong>
+                        <div class="mt-1"><field name="data_errors" readonly="1"/></div>
+                    </div>
+
+                    <div class="oe_title">
+                        <span class="text-muted fs-5"><field name="name" readonly="1"/></span>
+                        <h1><field name="flock_id" placeholder="Select Pen Series" readonly="state == 'posted'"/></h1>
+                    </div>
+
+                    <group>
+                        <group string="Location &amp; Batch">
+                            <field name="pen_id"/>
+                            <field name="batch_id"/>
+                            <field name="farm_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group string="Timing &amp; Lifecycle">
+                            <field name="date" readonly="state == 'posted'"/>
+                            <field name="age_day"/>
+                            <field name="age_week"/>
+                            <field name="phase" widget="badge"/>
+                            <field name="is_laying" invisible="1"/>
+                            <field name="recorded_by"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <!-- TAB 1: POPULATION & RECONCILIATION -->
+                        <page string="Population Balances">
+                            <group>
+                                <group string="Female Population (Hens)">
+                                    <field name="opening_females" readonly="1"/>
+                                    <field name="female_mortality" readonly="state == 'posted'"/>
+                                    <field name="female_culls" readonly="state == 'posted'"/>
+                                    <field name="sex_error_removals" readonly="state == 'posted'"/>
+                                    <field name="females_in" readonly="state == 'posted'"/>
+                                    <field name="females_out" readonly="state == 'posted'"/>
+                                    <field name="closing_females" readonly="1" class="fw-bold fs-5"/>
+                                    <field name="female_daily_mort_pct" widget="percentage" readonly="1"/>
+                                    <field name="female_cum_mortality" readonly="1"/>
+                                    <field name="female_cum_mort_pct_placed" widget="percentage" readonly="1"/>
+                                </group>
+                                <group string="Male Population (Cocks)">
+                                    <field name="opening_males" readonly="1"/>
+                                    <field name="male_mortality" readonly="state == 'posted'"/>
+                                    <field name="male_culls" readonly="state == 'posted'"/>
+                                    <field name="males_in" readonly="state == 'posted'"/>
+                                    <field name="males_out" readonly="state == 'posted'"/>
+                                    <field name="closing_males" readonly="1" class="fw-bold fs-5"/>
+                                    <field name="male_daily_mort_pct" widget="percentage" readonly="1"/>
+                                    <field name="male_cum_mortality" readonly="1"/>
+                                    <field name="males_per_100_females" decoration-bf="1" decoration-danger="males_per_100_females &lt; 10.0 or males_per_100_females &gt; 12.0"/>
+                                    <field name="main_cause_of_death" readonly="state == 'posted'"/>
+                                    <field name="post_mortem_done" widget="boolean_toggle" readonly="state == 'posted'"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- TAB 2: FEEDING (SEX-SEPARATE) -->
+                        <page string="Feed Allocations (Sex-Separate)">
+                            <group>
+                                <group string="Feed Details &amp; Control">
+                                    <field name="feed_product_id" readonly="state == 'posted'"/>
+                                    <field name="feed_batch_no" readonly="state == 'posted'"/>
+                                    <field name="planned_nil_feed_day" widget="boolean_toggle" readonly="state == 'posted'"/>
+                                    <field name="female_cleanup_hours" readonly="state == 'posted'"/>
+                                    <field name="sex_separate_feeding_ok" widget="boolean_toggle" readonly="state == 'posted'"/>
+                                </group>
+                            </group>
+                            <group>
+                                <group string="Female Feed Allocation">
+                                    <field name="female_feed_kg" readonly="state == 'posted'"/>
+                                    <field name="female_feed_g_per_bird" readonly="1"/>
+                                    <field name="aa_female_feed_g" readonly="1"/>
+                                    <field name="female_feed_var_pct" widget="percentage" readonly="1" decoration-danger="female_feed_var_pct &gt; 0.03 or female_feed_var_pct &lt; -0.03"/>
+                                </group>
+                                <group string="Male Feed Allocation">
+                                    <field name="male_feed_kg" readonly="state == 'posted'"/>
+                                    <field name="male_feed_g_per_bird" readonly="1"/>
+                                    <field name="aa_male_feed_g" readonly="1"/>
+                                    <field name="male_feed_var_pct" widget="percentage" readonly="1" decoration-danger="male_feed_var_pct &gt; 0.03 or male_feed_var_pct &lt; -0.03"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- TAB 3: WATER & ENVIRONMENT -->
+                        <page string="Water &amp; Environment">
+                            <group>
+                                <group string="Water Intake">
+                                    <field name="water_consumed_l" readonly="state == 'posted'"/>
+                                    <field name="water_ml_per_bird" readonly="1"/>
+                                    <field name="water_feed_ratio" readonly="1" decoration-danger="water_feed_ratio &lt; 1.5 or water_feed_ratio &gt; 2.5"/>
+                                </group>
+                                <group string="House Climate &amp; Hygiene">
+                                    <field name="min_temp" readonly="state == 'posted'"/>
+                                    <field name="max_temp" readonly="state == 'posted'"/>
+                                    <field name="max_rh" readonly="state == 'posted'"/>
+                                    <field name="litter_score" readonly="state == 'posted'"/>
+                                    <field name="curtain_position" readonly="state == 'posted'"/>
+                                    <field name="footbath_changed" widget="boolean_toggle" readonly="state == 'posted'"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- TAB 4: LIGHTING SCHEDULE -->
+                        <page string="Lighting Photoperiod">
+                            <group>
+                                <group string="Photoperiod Schedule">
+                                    <field name="light_on_time" widget="float_time" readonly="state == 'posted'"/>
+                                    <field name="light_off_time" widget="float_time" readonly="state == 'posted'"/>
+                                    <field name="light_hours" widget="float_time" readonly="1"/>
+                                </group>
+                                <group string="Light Intensity">
+                                    <field name="light_intensity_lux" readonly="state == 'posted'"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- TAB 5: WEEKLY SAMPLE WEIGHING -->
+                        <page string="Sample Body Weights">
+                            <group>
+                                <group string="Female Body Weight (Sample)">
+                                    <field name="female_sample_n" readonly="state == 'posted'"/>
+                                    <field name="female_avg_bw_g" readonly="state == 'posted'"/>
+                                    <field name="female_cv_pct" widget="percentage" readonly="state == 'posted'"/>
+                                    <field name="female_uniformity_pct" widget="percentage" readonly="state == 'posted'"/>
+                                    <field name="aa_female_bw_g" readonly="1"/>
+                                    <field name="female_bw_dev_pct" widget="percentage" readonly="1" decoration-danger="female_bw_dev_pct &gt; 0.05 or female_bw_dev_pct &lt; -0.05"/>
+                                </group>
+                                <group string="Male Body Weight (Sample)">
+                                    <field name="male_sample_n" readonly="state == 'posted'"/>
+                                    <field name="male_avg_bw_g" readonly="state == 'posted'"/>
+                                    <field name="male_cv_pct" widget="percentage" readonly="state == 'posted'"/>
+                                    <field name="male_uniformity_pct" widget="percentage" readonly="state == 'posted'"/>
+                                    <field name="aa_male_bw_g" readonly="1"/>
+                                    <field name="male_bw_dev_pct" widget="percentage" readonly="1" decoration-danger="male_bw_dev_pct &gt; 0.05 or male_bw_dev_pct &lt; -0.05"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- TAB 6: DAILY EGG COLLECTION & REJECTION -->
+                        <page string="Egg Collection &amp; Grading" invisible="not is_laying">
+                            <group>
+                                <group string="Production Summary">
+                                    <field name="hatching_eggs" readonly="state == 'posted'"/>
+                                    <field name="total_rejects" readonly="1"/>
+                                    <field name="total_eggs_collected" readonly="1" class="fw-bold fs-5"/>
+                                    <field name="avg_egg_weight_g" readonly="state == 'posted'"/>
+                                    <field name="aa_egg_weight_g" readonly="1"/>
+                                </group>
+                                <group string="Rates vs AA Standard">
+                                    <field name="hen_day_pct" widget="percentage" readonly="1"/>
+                                    <field name="aa_hen_week_pct" widget="percentage" readonly="1"/>
+                                    <field name="hen_day_var_pts" readonly="1"/>
+                                    <field name="hatching_egg_pct" widget="percentage" readonly="1"/>
+                                    <field name="reject_pct" widget="percentage" readonly="1"/>
+                                    <field name="floor_egg_pct" widget="percentage" readonly="1"/>
+                                    <field name="cum_eggs_per_hen" readonly="1"/>
+                                    <field name="cum_hatching_eggs_per_hen" readonly="1"/>
+                                </group>
+                            </group>
+                            <group string="7-Type Rejection Classification">
+                                <group>
+                                    <field name="floor_eggs" readonly="state == 'posted'"/>
+                                    <field name="double_yolk_eggs" readonly="state == 'posted'"/>
+                                    <field name="cracked_eggs" readonly="state == 'posted'"/>
+                                </group>
+                                <group>
+                                    <field name="dirty_eggs" readonly="state == 'posted'"/>
+                                    <field name="small_eggs" readonly="state == 'posted'"/>
+                                    <field name="misshapen_eggs" readonly="state == 'posted'"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- TAB 7: HEALTH & TREATMENTS -->
+                        <page string="Health &amp; Vet">
+                            <group>
+                                <group string="Medication &amp; Prescription">
+                                    <field name="medication_product_id" readonly="state == 'posted'"/>
+                                    <field name="vet_prescription_no" readonly="state == 'posted'"/>
+                                </group>
+                                <group string="Vaccination">
+                                    <field name="vaccine_name" readonly="state == 'posted'"/>
+                                    <field name="vaccine_batch_no" readonly="state == 'posted'"/>
+                                    <field name="vaccine_route" readonly="state == 'posted'"/>
+                                </group>
+                            </group>
+                            <group string="Clinical Signs">
+                                <field name="clinical_remarks" placeholder="Observations, symptoms, necropsy findings..." readonly="state == 'posted'"/>
+                            </group>
+                        </page>
+
+                        <!-- TAB 8: AUDIT & FLAGS -->
+                        <page string="Audit &amp; Flags">
+                            <group>
+                                <group string="Audit Status">
+                                    <field name="row_status" widget="badge" decoration-danger="row_status == 'danger'" decoration-warning="row_status == 'fix_errors'" decoration-success="row_status == 'ok'"/>
+                                    <field name="danger_count"/>
+                                    <field name="error_count"/>
+                                </group>
+                            </group>
+                            <group string="Active Flag Messages">
+                                <field name="danger_flags" readonly="1"/>
+                                <field name="data_errors" readonly="1"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Breeder Pen Daily Log List View -->
+    <record id="view_taghini_breeder_pen_log_tree" model="ir.ui.view">
+        <field name="name">taghini.breeder.pen.log.tree</field>
+        <field name="model">taghini.breeder.pen.log</field>
+        <field name="arch" type="xml">
+            <list string="Daily Pen Operations"
+                  decoration-danger="row_status == 'danger'"
+                  decoration-warning="row_status == 'fix_errors'"
+                  decoration-success="row_status == 'ok'">
+                <field name="name" class="fw-bold"/>
+                <field name="date"/>
+                <field name="flock_id"/>
+                <field name="age_week"/>
+                <field name="closing_females"/>
+                <field name="female_mortality"/>
+                <field name="closing_males"/>
+                <field name="male_mortality"/>
+                <field name="males_per_100_females"/>
+                <field name="female_feed_g_per_bird"/>
+                <field name="water_feed_ratio"/>
+                <field name="hen_day_pct" widget="percentage"/>
+                <field name="hatching_eggs"/>
+                <field name="danger_count" optional="show" decoration-danger="danger_count &gt; 0"/>
+                <field name="row_status" widget="badge" decoration-danger="row_status == 'danger'" decoration-warning="row_status == 'fix_errors'" decoration-success="row_status == 'ok'"/>
+                <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-success="state == 'posted'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Breeder Pen Daily Log Search View -->
+    <record id="view_taghini_breeder_pen_log_search" model="ir.ui.view">
+        <field name="name">taghini.breeder.pen.log.search</field>
+        <field name="model">taghini.breeder.pen.log</field>
+        <field name="arch" type="xml">
+            <search string="Daily Pen Operations">
+                <field name="name"/>
+                <field name="flock_id"/>
+                <field name="pen_id"/>
+                <field name="batch_id"/>
+                <field name="date"/>
+                <field name="recorded_by"/>
+                <separator/>
+                <filter name="filter_danger" string="Critical Danger Triggered" domain="[('danger_count', '&gt;', 0)]"/>
+                <filter name="filter_errors" string="Data Inconsistencies / Fix Errors" domain="[('error_count', '&gt;', 0)]"/>
+                <filter name="filter_normal" string="Operational Normal (OK)" domain="[('row_status', '=', 'ok')]"/>
+                <separator/>
+                <filter name="filter_draft" string="Draft" domain="[('state', '=', 'draft')]"/>
+                <filter name="filter_posted" string="Posted" domain="[('state', '=', 'posted')]"/>
+                <separator/>
+                <filter name="filter_lay" string="Laying Phase" domain="[('phase', '=', 'lay')]"/>
+                <filter name="filter_rearing" string="Rearing Phase" domain="[('phase', '=', 'rearing')]"/>
+                <separator/>
+                <filter name="group_flock" string="Pen Series" context="{'group_by': 'flock_id'}"/>
+                <filter name="group_date" string="Date" context="{'group_by': 'date:month'}"/>
+                <filter name="group_phase" string="Lifecycle Phase" context="{'group_by': 'phase'}"/>
+                <filter name="group_status" string="Audit Status" context="{'group_by': 'row_status'}"/>
+                <filter name="group_state" string="State" context="{'group_by': 'state'}"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- Breeder Pen Daily Log Pivot View -->
+    <record id="view_taghini_breeder_pen_log_pivot" model="ir.ui.view">
+        <field name="name">taghini.breeder.pen.log.pivot</field>
+        <field name="model">taghini.breeder.pen.log</field>
+        <field name="arch" type="xml">
+            <pivot string="Breeder Operations Analysis" sample="1">
+                <field name="flock_id" type="row"/>
+                <field name="phase" type="row"/>
+                <field name="date" interval="week" type="col"/>
+                <field name="total_eggs_collected" type="measure"/>
+                <field name="hatching_eggs" type="measure"/>
+                <field name="hatching_egg_pct" type="measure"/>
+                <field name="female_mortality" type="measure"/>
+                <field name="male_mortality" type="measure"/>
+                <field name="female_daily_mort_pct" type="measure"/>
+                <field name="female_feed_kg" type="measure"/>
+                <field name="male_feed_kg" type="measure"/>
+                <field name="water_consumed_l" type="measure"/>
+                <field name="water_feed_ratio" type="measure"/>
+                <field name="total_rejects" type="measure"/>
+                <field name="reject_pct" type="measure"/>
+                <field name="female_avg_bw_g" type="measure"/>
+                <field name="male_avg_bw_g" type="measure"/>
+                <field name="danger_count" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Breeder Pen Daily Log Graph View (Eggs & Hatching) -->
+    <record id="view_taghini_breeder_pen_log_graph_eggs" model="ir.ui.view">
+        <field name="name">taghini.breeder.pen.log.graph.eggs</field>
+        <field name="model">taghini.breeder.pen.log</field>
+        <field name="arch" type="xml">
+            <graph string="Daily &amp; Weekly Egg Production" type="line" sample="1">
+                <field name="date" interval="week"/>
+                <field name="total_eggs_collected" type="measure"/>
+                <field name="hatching_eggs" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Breeder Pen Daily Log Graph View (Mortality per Pen) -->
+    <record id="view_taghini_breeder_pen_log_graph_mort" model="ir.ui.view">
+        <field name="name">taghini.breeder.pen.log.graph.mort</field>
+        <field name="model">taghini.breeder.pen.log</field>
+        <field name="arch" type="xml">
+            <graph string="Breeder Mortality per Pen" type="bar" stacked="1" sample="1">
+                <field name="flock_id"/>
+                <field name="female_mortality" type="measure"/>
+                <field name="male_mortality" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Action for Breeder Daily Pen Operations -->
+    <record id="action_taghini_breeder_pen_log" model="ir.actions.act_window">
+        <field name="name">Daily Pen Operations</field>
+        <field name="res_model">taghini.breeder.pen.log</field>
+        <field name="view_mode">list,pivot,graph,form</field>
+        <field name="search_view_id" ref="view_taghini_breeder_pen_log_search"/>
+        <field name="context">{'search_default_filter_draft': 1}</field>
+    </record>
+
+    <!-- Dedicated Pivot/Graph Analysis Action for Reporting -->
+    <record id="action_taghini_breeder_analysis" model="ir.actions.act_window">
+        <field name="name">Breeder Operations Analysis</field>
+        <field name="res_model">taghini.breeder.pen.log</field>
+        <field name="view_mode">pivot,graph,list,form</field>
+        <field name="search_view_id" ref="view_taghini_breeder_pen_log_search"/>
+        <field name="context">{'search_default_group_flock': 1}</field>
+    </record>
+
+    <!-- Primary Operational Menuitem under Flocks Root -->
+    <menuitem id="menu_taghini_breeder_pen_log"
+              name="Breeder Pen Daily Logs"
+              parent="menu_taghini_flock_root"
+              action="action_taghini_breeder_pen_log"
+              sequence="3"/>
+
+    <!-- Shortcut under Reporting > Daily Logs -->
+    <menuitem id="menu_taghini_breeder_pen_log_report"
+              name="Breeder Pen Operations"
+              parent="menu_taghini_logs_root"
+              action="action_taghini_breeder_pen_log"
+              sequence="7"/>
+
+    <!-- Dedicated Breeder Pivot Reporting under Reporting -->
+    <menuitem id="menu_taghini_report_breeder_analysis"
+              name="Breeder Performance Analysis"
+              parent="menu_taghini_reporting_root"
+              action="action_taghini_breeder_analysis"
+              sequence="12"/>
+</odoo>

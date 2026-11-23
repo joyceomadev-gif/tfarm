@@ -1,0 +1,744 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="chicken_farm_module.FarmMonitorDashboard">
+        <div class="o_taghini_dashboard">
+            <div class="container-fluid p-0">
+
+                <!-- ============================================================ -->
+                <!-- 1. TOP HEADER & NAVIGATION TABS                              -->
+                <!-- ============================================================ -->
+                <div class="o_tf_header d-flex flex-wrap justify-content-between align-items-center mb-3">
+                    <div>
+                        <h1 class="o_tf_title">Farm Operations &amp; Abattoir Dashboard</h1>
+                        <p class="o_tf_subtitle">Cross-farm mortality tracking, abattoir yield %, production volume, feed intake, bird weight variance &amp; defect analysis</p>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-2">
+                        <!-- Navigation Tabs Pill Group -->
+                        <div class="o_tf_tab_group">
+                            <button type="button"
+                                    t-attf-class="o_tf_tab_btn {{state.activeTab === 'flocks' ? 'active' : ''}}"
+                                    t-on-click="() => this.setTab('flocks')">
+                                <i class="fa fa-cubes me-1"/> Flocks &amp; Pens
+                            </button>
+                            <button type="button"
+                                    t-attf-class="o_tf_tab_btn {{state.activeTab === 'abattoir' ? 'active' : ''}}"
+                                    t-on-click="() => this.setTab('abattoir')">
+                                <i class="fa fa-cutlery me-1"/> Abattoir &amp; Bagging
+                            </button>
+                            <button type="button"
+                                    t-attf-class="o_tf_tab_btn {{state.activeTab === 'breeder' ? 'active' : ''}}"
+                                    t-on-click="() => this.setTab('breeder')">
+                                <i class="fa fa-circle-o me-1"/> Breeder Stock
+                            </button>
+                        </div>
+
+                        <!-- Refresh Button -->
+                        <button type="button" class="btn o_tf_btn_secondary" t-on-click="refresh">
+                            <i class="fa fa-refresh me-1"/> Refresh
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ============================================================ -->
+                <!-- 2. FILTER BAR (Date Presets, Date Picker, Dropdowns, Reset) -->
+                <!-- ============================================================ -->
+                <div class="o_tf_filter_bar d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                    <!-- Left: Date Range Filters -->
+                    <div class="d-flex flex-wrap align-items-center gap-2">
+                        <!-- Date Presets -->
+                        <div class="o_tf_preset_group">
+                            <button type="button"
+                                    t-attf-class="o_tf_preset_btn {{state.datePreset === 'all' ? 'active' : ''}}"
+                                    t-on-click="() => this.setDatePreset('all')">
+                                All Time
+                            </button>
+                            <button type="button"
+                                    t-attf-class="o_tf_preset_btn {{state.datePreset === '30d' ? 'active' : ''}}"
+                                    t-on-click="() => this.setDatePreset('30d')">
+                                Last 30 Days
+                            </button>
+                            <button type="button"
+                                    t-attf-class="o_tf_preset_btn {{state.datePreset === 'month' ? 'active' : ''}}"
+                                    t-on-click="() => this.setDatePreset('month')">
+                                This Month
+                            </button>
+                            <button type="button"
+                                    t-attf-class="o_tf_preset_btn {{state.datePreset === 'quarter' ? 'active' : ''}}"
+                                    t-on-click="() => this.setDatePreset('quarter')">
+                                This Quarter
+                            </button>
+                        </div>
+
+                        <!-- Date Range Input -->
+                        <div class="o_tf_date_picker_box">
+                            <i class="fa fa-calendar text-muted"/>
+                            <input type="date" class="o_tf_date_input"
+                                   t-att-value="state.dateFrom"
+                                   t-on-change="onDateFromChange"/>
+                            <span class="text-muted">➔</span>
+                            <input type="date" class="o_tf_date_input"
+                                   t-att-value="state.dateTo"
+                                   t-on-change="onDateToChange"/>
+                        </div>
+                    </div>
+
+                    <!-- Right: Dropdown Filters & Reset -->
+                    <div class="d-flex flex-wrap align-items-center gap-2">
+                        <!-- Dropdown 1: Farm -->
+                        <div class="o_tf_dropdown_pill">
+                            <i class="fa fa-home text-muted me-1"/>
+                            <span class="o_tf_pill_label">FARM:</span>
+                            <select class="o_tf_select_clean" t-model="state.selectedFarmId" t-on-change="onFarmSelected">
+                                <t t-foreach="state.farms" t-as="farm" t-key="farm.id">
+                                    <option t-att-value="farm.id" t-esc="farm.name"/>
+                                </t>
+                            </select>
+                        </div>
+
+                        <!-- Dropdown 2: Status -->
+                        <div class="o_tf_dropdown_pill">
+                            <i class="fa fa-globe text-muted me-1"/>
+                            <span class="o_tf_pill_label">STATUS:</span>
+                            <select class="o_tf_select_clean" t-model="state.statusFilter" t-on-change="onStatusSelected">
+                                <option value="all">All</option>
+                                <option value="active">Active</option>
+                                <option value="harvested">Harvested</option>
+                                <option value="draft">Draft</option>
+                            </select>
+                        </div>
+
+                        <!-- Dropdown 3: Stage -->
+                        <div class="o_tf_dropdown_pill">
+                            <i class="fa fa-tasks text-muted me-1"/>
+                            <span class="o_tf_pill_label">STAGE:</span>
+                            <select class="o_tf_select_clean" t-model="state.stageFilter" t-on-change="onStageSelected">
+                                <option value="all">All</option>
+                                <option value="brooding">Brooding (1-10d)</option>
+                                <option value="early_grow">Early Grow (11-20d)</option>
+                                <option value="late_grow">Late Grow (21-30d)</option>
+                                <option value="finishing">Finishing (31d+)</option>
+                            </select>
+                        </div>
+
+                        <!-- Dropdown 4: Alert -->
+                        <div class="o_tf_dropdown_pill">
+                            <i class="fa fa-bell-o text-muted me-1"/>
+                            <span class="o_tf_pill_label">ALERT:</span>
+                            <select class="o_tf_select_clean" t-model="state.alertFilter" t-on-change="onAlertSelected">
+                                <option value="all">All</option>
+                                <option value="normal">Normal</option>
+                                <option value="critical">Critical (&gt;2% Mort)</option>
+                            </select>
+                        </div>
+
+                        <!-- Reset Button -->
+                        <button type="button" class="btn o_tf_btn_secondary" t-on-click="resetFilters">
+                            <i class="fa fa-undo me-1"/> Reset
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ============================================================ -->
+                <!-- 3. KPI CARDS STRIP (6 Core Operations & Abattoir Figures)    -->
+                <!-- ============================================================ -->
+                <div class="o_tf_kpi_strip mb-3">
+                    <!-- KPI 1: Mortality Rate -->
+                    <div class="o_tf_kpi_cell">
+                        <div class="o_tf_kpi_num_row">
+                            <span class="o_tf_kpi_val"><t t-esc="formatDecimal(state.kpis.mortality_rate)"/>%</span>
+                            <span t-attf-class="o_tf_dot {{state.kpis.mortality_rate &gt; 3.0 ? 'dot_red' : (state.kpis.mortality_rate &gt; 1.5 ? 'dot_orange' : 'dot_green')}}"/>
+                        </div>
+                        <div class="o_tf_kpi_caption">Avg Mortality Rate</div>
+                    </div>
+
+                    <!-- KPI 2: Abattoir Yield % -->
+                    <div class="o_tf_kpi_cell">
+                        <div class="o_tf_kpi_num_row">
+                            <span class="o_tf_kpi_val"><t t-esc="formatDecimal(state.kpis.abattoir_yield_pct)"/>%</span>
+                            <span class="o_tf_dot dot_blue"/>
+                        </div>
+                        <div class="o_tf_kpi_caption">Abattoir Yield %</div>
+                    </div>
+
+                    <!-- KPI 3: Abattoir Production Volume -->
+                    <div class="o_tf_kpi_cell">
+                        <div class="o_tf_kpi_num_row">
+                            <span class="o_tf_kpi_val"><t t-esc="formatNumber(state.kpis.production_volume_kg)"/> <small class="fs-6 text-muted">kg</small></span>
+                            <span class="o_tf_dot dot_purple"/>
+                        </div>
+                        <div class="o_tf_kpi_caption">Abattoir Production Volume</div>
+                    </div>
+
+                    <!-- KPI 4: Farm Feed Consumption -->
+                    <div class="o_tf_kpi_cell">
+                        <div class="o_tf_kpi_num_row">
+                            <span class="o_tf_kpi_val"><t t-esc="formatNumber(state.kpis.feed_consumed_bags)"/> <small class="fs-6 text-muted">bags</small></span>
+                            <span class="o_tf_dot dot_teal"/>
+                        </div>
+                        <div class="o_tf_kpi_caption">Farm Feed Consumed</div>
+                    </div>
+
+                    <!-- KPI 5: Weight Variance -->
+                    <div class="o_tf_kpi_cell">
+                        <div class="o_tf_kpi_num_row">
+                            <span class="o_tf_kpi_val">
+                                <t t-if="state.kpis.weight_variance_g &gt; 0">+</t><t t-esc="formatDecimal(state.kpis.weight_variance_g, 0)"/> <small class="fs-6 text-muted">g</small>
+                            </span>
+                            <span t-attf-class="o_tf_dot {{state.kpis.weight_variance_g &gt;= 0 ? 'dot_green' : 'dot_red'}}"/>
+                        </div>
+                        <div class="o_tf_kpi_caption">Avg Weight Variance</div>
+                    </div>
+
+                    <!-- KPI 6: Abattoir Defect Breakdown Count -->
+                    <div class="o_tf_kpi_cell">
+                        <div class="o_tf_kpi_num_row">
+                            <span class="o_tf_kpi_val"><t t-esc="formatNumber(state.kpis.total_defects)"/></span>
+                            <span class="o_tf_dot dot_red"/>
+                        </div>
+                        <div class="o_tf_kpi_caption">Total Abattoir Defects</div>
+                    </div>
+                </div>
+
+                <!-- ============================================================ -->
+                <!-- 4. 6 CORE CHARTS GRID                                        -->
+                <!-- ============================================================ -->
+                <div class="row g-3 mb-3">
+                    <!-- Chart 1: Mortality Rate per Each Farm -->
+                    <div class="col-lg-4 col-md-6 col-12">
+                        <div class="o_tf_chart_card h-100">
+                            <div class="o_tf_chart_header justify-content-between">
+                                <div>
+                                    <i class="fa fa-heartbeat text-danger me-1"/>
+                                    <span class="o_tf_chart_title">Mortality Rate per Each Farm</span>
+                                </div>
+                                <span class="badge bg-light text-muted border">Benchmark &lt; 2%</span>
+                            </div>
+                            <div class="o_tf_canvas_box">
+                                <canvas t-ref="chartCanvasMortality"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chart 2: Abattoir Yield % per Each Farm -->
+                    <div class="col-lg-4 col-md-6 col-12">
+                        <div class="o_tf_chart_card h-100">
+                            <div class="o_tf_chart_header justify-content-between">
+                                <div>
+                                    <i class="fa fa-percent text-info me-1"/>
+                                    <span class="o_tf_chart_title">Abattoir Yield % per Each Farm</span>
+                                </div>
+                                <span class="badge bg-light text-muted border">Target: 75%+</span>
+                            </div>
+                            <div class="o_tf_canvas_box">
+                                <canvas t-ref="chartCanvasYield"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chart 3: Abattoir Production Volume -->
+                    <div class="col-lg-4 col-md-6 col-12">
+                        <div class="o_tf_chart_card h-100">
+                            <div class="o_tf_chart_header justify-content-between">
+                                <div>
+                                    <i class="fa fa-cutlery text-primary me-1"/>
+                                    <span class="o_tf_chart_title">Abattoir Production Volume (Kg)</span>
+                                </div>
+                                <span class="badge bg-light text-muted border">Carcass Output</span>
+                            </div>
+                            <div class="o_tf_canvas_box">
+                                <canvas t-ref="chartCanvasVolume"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chart 4: Farm Feed Consumption (Actual vs Exp) -->
+                    <div class="col-lg-4 col-md-6 col-12">
+                        <div class="o_tf_chart_card h-100">
+                            <div class="o_tf_chart_header justify-content-between">
+                                <div>
+                                    <i class="fa fa-database text-teal me-1"/>
+                                    <span class="o_tf_chart_title">Farm Feed Consumption (Bags)</span>
+                                </div>
+                                <span class="badge bg-light text-muted border">Actual vs Exp</span>
+                            </div>
+                            <div class="o_tf_canvas_box">
+                                <canvas t-ref="chartCanvasFeed"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chart 5: Weight Variance -->
+                    <div class="col-lg-4 col-md-6 col-12">
+                        <div class="o_tf_chart_card h-100">
+                            <div class="o_tf_chart_header justify-content-between">
+                                <div>
+                                    <i class="fa fa-balance-scale text-warning me-1"/>
+                                    <span class="o_tf_chart_title">Weight Variance (g vs Standard)</span>
+                                </div>
+                                <span class="badge bg-light text-muted border">Zero-Baseline</span>
+                            </div>
+                            <div class="o_tf_canvas_box">
+                                <canvas t-ref="chartCanvasWeight"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chart 6: Abattoir Defect Breakdown -->
+                    <div class="col-lg-4 col-md-6 col-12">
+                        <div class="o_tf_chart_card h-100">
+                            <div class="o_tf_chart_header justify-content-between">
+                                <div>
+                                    <i class="fa fa-bug text-danger me-1"/>
+                                    <span class="o_tf_chart_title">Abattoir Defect Breakdown</span>
+                                </div>
+                                <span class="badge bg-light text-muted border">QC Faults</span>
+                            </div>
+                            <div class="o_tf_canvas_box">
+                                <canvas t-ref="chartCanvasDefect"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ============================================================ -->
+                <!-- 5. OPERATIONAL DETAILS (Dynamic Based on Active Tab)         -->
+                <!-- ============================================================ -->
+
+                <!-- TAB A: FLOCKS & PENS -->
+                <t t-if="state.activeTab === 'flocks'">
+                    <div class="row g-3 mb-3">
+                        <!-- Table 1: Production Sites Breakdown (Full Width) -->
+                        <div class="col-12">
+                            <div class="o_tf_table_card h-100">
+                                <div class="o_tf_card_header d-flex justify-content-between align-items-center">
+                                    <span class="o_tf_card_title">Production Sites Breakdown</span>
+                                    <small class="text-muted">Click row to filter by farm</small>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="o_tf_table">
+                                        <thead>
+                                            <tr>
+                                                <th>Farm</th>
+                                                <th class="text-end">Batches</th>
+                                                <th class="text-end">Live Birds</th>
+                                                <th class="text-end">Mortality %</th>
+                                                <th class="text-end">Abattoir Yield %</th>
+                                                <th class="text-end">Feed (Bags)</th>
+                                                <th class="text-end">Weight Var</th>
+                                                <th class="text-end">Defects</th>
+                                                <th class="text-center">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-if="state.farm_breakdown.length === 0">
+                                                <tr>
+                                                    <td colspan="9" class="text-center text-muted p-3">No farm data recorded yet.</td>
+                                                </tr>
+                                            </t>
+                                            <t t-foreach="state.farm_breakdown" t-as="row" t-key="row.farm_id">
+                                                <tr style="cursor: pointer;" t-on-click="() => this.selectFarmRow(row.farm_id)">
+                                                    <td>
+                                                        <strong t-esc="row.name"/><br/>
+                                                        <small class="text-muted" t-esc="row.code"/>
+                                                    </td>
+                                                    <td class="text-end" t-esc="formatNumber(row.active_flocks)"/>
+                                                    <td class="text-end" t-esc="formatNumber(row.live_birds)"/>
+                                                    <td class="text-end">
+                                                        <span t-attf-class="fw-bold {{row.mortality_pct &gt; 3.0 ? 'text-danger' : (row.mortality_pct &gt; 1.5 ? 'text-warning' : 'text-success')}}">
+                                                            <t t-esc="formatDecimal(row.mortality_pct)"/>%
+                                                        </span>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <t t-if="row.yield_pct &gt; 0">
+                                                            <span t-attf-class="fw-bold {{row.yield_pct &gt;= 74.0 ? 'text-success' : 'text-primary'}}">
+                                                                <t t-esc="formatDecimal(row.yield_pct)"/>%
+                                                            </span>
+                                                        </t>
+                                                        <t t-else="">
+                                                            <span class="text-muted">-</span>
+                                                        </t>
+                                                    </td>
+                                                    <td class="text-end" t-esc="formatNumber(row.feed_bags)"/>
+                                                    <td class="text-end">
+                                                        <t t-if="row.weight_variance !== 0">
+                                                            <span t-attf-class="{{row.weight_variance &gt;= 0 ? 'text-success' : 'text-danger'}}">
+                                                                <t t-if="row.weight_variance &gt; 0">+</t><t t-esc="formatDecimal(row.weight_variance, 0)"/>g
+                                                            </span>
+                                                        </t>
+                                                        <t t-else="">
+                                                            <span class="text-muted">-</span>
+                                                        </t>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <t t-if="row.defects_count &gt; 0">
+                                                            <span class="badge bg-danger text-white"><t t-esc="row.defects_count"/></span>
+                                                        </t>
+                                                        <t t-else="">
+                                                            <span class="text-muted">0</span>
+                                                        </t>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <span t-attf-class="o_tf_badge {{row.status_color}}" t-esc="row.status"/>
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- TAB B: ABATTOIR & BAGGING -->
+                <t t-if="state.activeTab === 'abattoir'">
+                    <div class="o_tf_table_card mb-3">
+                        <div class="o_tf_card_header d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="o_tf_card_title">Abattoir Production, Yield &amp; Defect Records</span>
+                                <p class="text-muted small mb-0">Production volume output, slaughter yield %, defect breakdown &amp; bagging compliance</p>
+                            </div>
+                            <span class="badge bg-primary text-white">Grading Standards Active</span>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="o_tf_table">
+                                <thead>
+                                    <tr>
+                                        <th>Production Batch</th>
+                                        <th>Date</th>
+                                        <th>Farm Source</th>
+                                        <th class="text-end">Birds Processed</th>
+                                        <th class="text-end">Output Volume (Kg)</th>
+                                        <th class="text-end">Yield %</th>
+                                        <th class="text-end">Defects</th>
+                                        <th class="text-end">DOA Mort</th>
+                                        <th>Bagging Compliance</th>
+                                        <th class="text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-if="state.abattoir_batches.length === 0">
+                                        <tr>
+                                            <td colspan="10" class="text-center text-muted p-4">No abattoir production records found for the selected period.</td>
+                                        </tr>
+                                    </t>
+                                    <t t-foreach="state.abattoir_batches" t-as="abt" t-key="abt.id">
+                                        <tr>
+                                            <td><strong t-esc="abt.name"/></td>
+                                            <td t-esc="abt.date"/>
+                                            <td t-esc="abt.farm_name"/>
+                                            <td class="text-end" t-esc="formatNumber(abt.birds_processed)"/>
+                                            <td class="text-end fw-bold" t-esc="formatNumber(abt.total_weight)"/>
+                                            <td class="text-end">
+                                                <span t-attf-class="fw-bold {{abt.yield_pct &gt;= 74.0 ? 'text-success' : (abt.yield_pct &gt;= 70.0 ? 'text-primary' : 'text-danger')}}">
+                                                    <t t-esc="abt.yield_pct"/>%
+                                                </span>
+                                            </td>
+                                            <td class="text-end">
+                                                <t t-if="abt.defected_birds &gt; 0">
+                                                    <span class="badge bg-warning text-dark"><t t-esc="abt.defected_birds"/></span>
+                                                </t>
+                                                <t t-else="">0</t>
+                                            </td>
+                                            <td class="text-end">
+                                                <t t-if="abt.mortality_arrived &gt; 0">
+                                                    <span class="badge bg-danger text-white"><t t-esc="abt.mortality_arrived"/></span>
+                                                </t>
+                                                <t t-else="">0</t>
+                                            </td>
+                                            <td>
+                                                <t t-if="abt.has_penalty_risk">
+                                                    <span class="o_tf_badge danger"><i class="fa fa-warning me-1"/> <t t-esc="abt.bagging_status"/></span>
+                                                </t>
+                                                <t t-else="">
+                                                    <span class="o_tf_badge success"><i class="fa fa-check me-1"/> <t t-esc="abt.bagging_status"/></span>
+                                                </t>
+                                            </td>
+                                            <td class="text-center">
+                                                <button class="o_tf_btn_sm" t-on-click="() => this.openAbattoir(abt.id)">
+                                                    View
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- TAB C: BREEDER STOCK -->
+                <t t-if="state.activeTab === 'breeder'">
+                    <!-- 1. Dedicated Breeder KPI Cards -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-12 col-sm-6 col-xl-2">
+                            <div class="o_tf_kpi_card">
+                                <div class="o_tf_kpi_icon bg-primary-subtle text-primary">
+                                    <i class="fa fa-users"/>
+                                </div>
+                                <div class="o_tf_kpi_body">
+                                    <span class="o_tf_kpi_title">Active Breeders</span>
+                                    <div class="o_tf_kpi_val text-primary" t-esc="formatNumber(state.breeder_kpis.total_active_birds)"/>
+                                    <span class="o_tf_kpi_sub">♀ <t t-esc="formatNumber(state.breeder_kpis.active_females)"/> | ♂ <t t-esc="formatNumber(state.breeder_kpis.active_males)"/></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-xl-2">
+                            <div class="o_tf_kpi_card">
+                                <div class="o_tf_kpi_icon bg-success-subtle text-success">
+                                    <i class="fa fa-heartbeat"/>
+                                </div>
+                                <div class="o_tf_kpi_body">
+                                    <span class="o_tf_kpi_title">Mating Ratio</span>
+                                    <div class="o_tf_kpi_val text-success" t-esc="state.breeder_kpis.males_per_100_females + ' ♂'"/>
+                                    <span class="o_tf_kpi_sub">Target: 10 - 12 per 100 ♀</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-xl-2">
+                            <div class="o_tf_kpi_card">
+                                <div class="o_tf_kpi_icon bg-warning-subtle text-warning">
+                                    <i class="fa fa-percent"/>
+                                </div>
+                                <div class="o_tf_kpi_body">
+                                    <span class="o_tf_kpi_title">Today's Lay Rate</span>
+                                    <div class="o_tf_kpi_val text-warning" t-esc="state.breeder_kpis.today_hen_day_pct + '%'"/>
+                                    <span class="o_tf_kpi_sub">Total: <t t-esc="formatNumber(state.breeder_kpis.today_total_eggs)"/> eggs</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-xl-2">
+                            <div class="o_tf_kpi_card">
+                                <div class="o_tf_kpi_icon bg-teal-subtle text-teal">
+                                    <i class="fa fa-circle-o"/>
+                                </div>
+                                <div class="o_tf_kpi_body">
+                                    <span class="o_tf_kpi_title">Hatching Eggs Today</span>
+                                    <div class="o_tf_kpi_val text-teal" t-esc="formatNumber(state.breeder_kpis.today_hatching_eggs)"/>
+                                    <span class="o_tf_kpi_sub">Settable to Egg Room</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-xl-2">
+                            <div class="o_tf_kpi_card">
+                                <div class="o_tf_kpi_icon bg-info-subtle text-info">
+                                    <i class="fa fa-flask"/>
+                                </div>
+                                <div class="o_tf_kpi_body">
+                                    <span class="o_tf_kpi_title">Latest Hatchability</span>
+                                    <div class="o_tf_kpi_val text-info" t-esc="state.breeder_kpis.latest_hatchability_pct + '%'"/>
+                                    <span class="o_tf_kpi_sub">Cum: <t t-esc="state.breeder_kpis.cum_chicks_per_hen"/> chicks/hen</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-xl-2">
+                            <div class="o_tf_kpi_card">
+                                <div class="o_tf_kpi_icon bg-danger-subtle text-danger">
+                                    <i class="fa fa-exclamation-triangle"/>
+                                </div>
+                                <div class="o_tf_kpi_body">
+                                    <span class="o_tf_kpi_title">Breeder Alerts</span>
+                                    <div class="o_tf_kpi_val text-danger" t-esc="state.breeder_kpis.active_danger_count"/>
+                                    <span class="o_tf_kpi_sub">D01-D12 Triggered</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. Active Breeder Pen Series Table -->
+                    <div class="o_tf_table_card mb-3">
+                        <div class="o_tf_card_header d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fa fa-building-o text-primary me-1"/>
+                                <span class="o_tf_card_title">Breeder Pen Series (Flocks)</span>
+                            </div>
+                            <span class="badge bg-success text-white">Parent Stock Active</span>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="o_tf_table">
+                                <thead>
+                                    <tr>
+                                        <th>Pen Series ID</th>
+                                        <th>Mother Batch</th>
+                                        <th>Farm</th>
+                                        <th>Pen / House</th>
+                                        <th class="text-end">Females (♀)</th>
+                                        <th class="text-end">Males (♂)</th>
+                                        <th class="text-end">Mating Ratio</th>
+                                        <th class="text-center">Phase</th>
+                                        <th class="text-center">Status</th>
+                                        <th class="text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-if="state.breeder_flocks.length === 0">
+                                        <tr>
+                                            <td colspan="10" class="text-center text-muted p-4">No breeder pen series active.</td>
+                                        </tr>
+                                    </t>
+                                    <t t-foreach="state.breeder_flocks" t-as="flk" t-key="flk.id">
+                                        <tr>
+                                            <td><strong t-esc="flk.name"/></td>
+                                            <td t-esc="flk.batch_name"/>
+                                            <td t-esc="flk.farm_name"/>
+                                            <td t-esc="flk.pen_name"/>
+                                            <td class="text-end fw-bold" t-esc="formatNumber(flk.current_females)"/>
+                                            <td class="text-end" t-esc="formatNumber(flk.current_males)"/>
+                                            <td class="text-end">
+                                                <span t-att-class="flk.males_per_100_females &lt; 10 or flk.males_per_100_females &gt; 12 ? 'text-danger fw-bold' : 'text-success fw-bold'"
+                                                      t-esc="flk.males_per_100_females + ' ♂'"/>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="o_tf_badge info" t-esc="flk.phase"/>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="o_tf_badge success" t-esc="flk.state"/>
+                                            </td>
+                                            <td class="text-center">
+                                                <button class="o_tf_btn_sm" t-on-click="() => this.openBreederFlock(flk.id)">
+                                                    View
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 3. Recent Hatchery Dispatches & Incubation Batches -->
+                    <div class="o_tf_table_card mb-3">
+                        <div class="o_tf_card_header d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fa fa-cubes text-teal me-1"/>
+                                <span class="o_tf_card_title">Hatchery Dispatches &amp; Incubation Results</span>
+                            </div>
+                            <span class="badge bg-teal text-white">Weekly Hatchery Stream</span>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="o_tf_table">
+                                <thead>
+                                    <tr>
+                                        <th>Hatch Ref</th>
+                                        <th>Dispatch Note</th>
+                                        <th>Date</th>
+                                        <th class="text-center">Age (Wk)</th>
+                                        <th class="text-end">Eggs Set</th>
+                                        <th class="text-end">Grade-A DOCs</th>
+                                        <th class="text-end">Fertility %</th>
+                                        <th class="text-end">Hatch %</th>
+                                        <th class="text-end">AA Target %</th>
+                                        <th class="text-end">Dev (pts)</th>
+                                        <th class="text-center">Status</th>
+                                        <th class="text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-if="state.hatchery_dispatches.length === 0">
+                                        <tr>
+                                            <td colspan="12" class="text-center text-muted p-4">No hatchery dispatches recorded yet.</td>
+                                        </tr>
+                                    </t>
+                                    <t t-foreach="state.hatchery_dispatches" t-as="hd" t-key="hd.id">
+                                        <tr>
+                                            <td><strong t-esc="hd.name"/></td>
+                                            <td t-esc="hd.dispatch_note_no"/>
+                                            <td t-esc="hd.dispatch_date"/>
+                                            <td class="text-center" t-esc="hd.flock_age_week"/>
+                                            <td class="text-end fw-bold" t-esc="formatNumber(hd.eggs_set)"/>
+                                            <td class="text-end fw-bold text-success" t-esc="formatNumber(hd.saleable_chicks)"/>
+                                            <td class="text-end" t-esc="hd.fertility_pct + '%'"/>
+                                            <td class="text-end fw-bold" t-esc="hd.hatch_pct_of_set + '%'"/>
+                                            <td class="text-end text-muted" t-esc="hd.aa_hatch_pct + '%'"/>
+                                            <td class="text-end">
+                                                <span t-att-class="hd.hatch_dev_pts &lt; 0 ? 'text-danger fw-bold' : 'text-success fw-bold'"
+                                                      t-esc="(hd.hatch_dev_pts &gt;= 0 ? '+' : '') + hd.hatch_dev_pts"/>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="o_tf_badge info" t-esc="hd.state"/>
+                                            </td>
+                                            <td class="text-center">
+                                                <button class="o_tf_btn_sm" t-on-click="() => this.openHatchery(hd.id)">
+                                                    View
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 4. Mother Batches Overview -->
+                    <div class="o_tf_table_card mb-3">
+                        <div class="o_tf_card_header">
+                            <span class="o_tf_card_title">Breeder Mother Batches</span>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="o_tf_table">
+                                <thead>
+                                    <tr>
+                                        <th>Breeder Batch</th>
+                                        <th>Farm</th>
+                                        <th class="text-end">Male Birds</th>
+                                        <th class="text-end">Female Birds</th>
+                                        <th class="text-end">Total Population</th>
+                                        <th class="text-center">Status</th>
+                                        <th class="text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-if="state.breeder_batches.length === 0">
+                                        <tr>
+                                            <td colspan="7" class="text-center text-muted p-4">No breeder batches recorded yet.</td>
+                                        </tr>
+                                    </t>
+                                    <t t-foreach="state.breeder_batches" t-as="brd" t-key="brd.id">
+                                        <tr>
+                                            <td><strong t-esc="brd.name"/></td>
+                                            <td t-esc="brd.farm_name"/>
+                                            <td class="text-end" t-esc="formatNumber(brd.male_count)"/>
+                                            <td class="text-end" t-esc="formatNumber(brd.female_count)"/>
+                                            <td class="text-end" t-esc="formatNumber(brd.total_birds)"/>
+                                            <td class="text-center">
+                                                <span class="o_tf_badge info" t-esc="brd.state"/>
+                                            </td>
+                                            <td class="text-center">
+                                                <button class="o_tf_btn_sm" t-on-click="() => this.openBreeder(brd.id)">
+                                                    View
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- Biosecurity & Alerts Strip -->
+                <div class="o_tf_alert_card mt-3">
+                    <div class="o_tf_alert_header">
+                        <i class="fa fa-shield me-1 text-primary"/> Biosecurity &amp; Urgent Operational Alerts
+                    </div>
+                    <t t-if="state.alerts.length === 0">
+                        <div class="o_tf_alert_content">
+                            <i class="fa fa-check-circle o_tf_alert_icon text-success"/>
+                            <span>All production farms, pens, and abattoir lines are operating within standard biological parameters. Mortality rates, yield %, and feed intake are verified.</span>
+                        </div>
+                    </t>
+                    <t t-else="">
+                        <t t-foreach="state.alerts" t-as="alert" t-key="alert.pen">
+                            <div class="o_tf_alert_content warning mb-2">
+                                <i class="fa fa-exclamation-triangle o_tf_alert_icon text-danger"/>
+                                <span t-esc="alert.message"/>
+                            </div>
+                        </t>
+                    </t>
+                </div>
+
+            </div>
+        </div>
+    </t>
+</templates>

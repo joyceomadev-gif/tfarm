@@ -1,12 +1,21 @@
 from odoo import models, fields, api, _
 from datetime import date
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
 
 class FarmFlock(models.Model):
     _name = 'taghini.flock'
     _description = 'Broiler Flock (Batch)'
     _inherit = ['mail.thread', 'mail.activity.mixin']
+    _order = 'flock_code desc, start_date desc, id desc'
 
+    flock_code = fields.Char(
+        string='Flock ID',
+        readonly=True,
+        copy=False,
+        default='New',
+        index=True,
+        help="Unique system sequence generated flock identifier (e.g. FLK/2026/0001)."
+    )
     name = fields.Char(string='Pen Series', required=True, default='New')
     start_date = fields.Date(string='Stocking Date', required=True, default=fields.Date.context_today)
     
@@ -19,10 +28,23 @@ class FarmFlock(models.Model):
     quantity_placed = fields.Integer(string='Quantity Placed', required=True)
 
     # Configuration
-    pen_model_id = fields.Many2one('taghini.pen', string='Pen (Unit)', required=True, domain="['|', ('company_id', '=', False), ('company_id', '=', company_id)]")
-    company_id = fields.Many2one('res.company', string='Farm/Branch', related='pen_model_id.company_id', store=True, readonly=True)
-    # KEEP EXISTING: Physical Location (Auto-filled)
-    pen_id = fields.Many2one('stock.location', string='Location', related='pen_model_id.location_id', store=True, readonly=True)
+    pen_model_id = fields.Many2one('taghini.pen', string='Pen (Unit)', required=True)
+    pen_capacity = fields.Integer(
+        related='pen_model_id.capacity',
+        string='Pen Capacity',
+        readonly=True,
+        help="Accommodation limit of the assigned pen."
+    )
+    # Derived from pen → farm chain
+    farm_id = fields.Many2one('taghini.farm', string='Farm',
+                              related='pen_model_id.farm_id', store=True, readonly=True)
+    company_id = fields.Many2one('res.company', string='Company',
+                                 related='pen_model_id.company_id', store=True, readonly=True)
+    warehouse_id = fields.Many2one('stock.warehouse', string='Warehouse',
+                                   related='pen_model_id.warehouse_id', store=True, readonly=True)
+    # Physical pen stock location (auto-filled from pen)
+    pen_id = fields.Many2one('stock.location', string='Pen Location',
+                             related='pen_model_id.location_id', store=True, readonly=True)
     breed = fields.Char(string='Breed', default='Ross 308')
     
     # NEW FIELD: Which product is this?
@@ -35,6 +57,14 @@ class FarmFlock(models.Model):
     total_mortality = fields.Integer(string='Total Mortality', compute='_compute_metrics')
     mortality_rate = fields.Float(string='Mortality %', compute='_compute_metrics')
     current_age = fields.Integer(string='Current Age (Days)', compute='_compute_age')
+    total_feed_bags = fields.Integer(string='Feed Consumed (Bags)', compute='_compute_log_aggregates', store=True)
+    latest_avg_weight = fields.Float(string='Latest Avg Wgt (g)', compute='_compute_log_aggregates', store=True)
+    # Task C1: Unrecorded birds
+    unrecorded_birds = fields.Integer(
+        string='Unrecorded Birds',
+        compute='_compute_unrecorded_birds', store=True,
+        help="Birds not accounted for: Placed − Mortality − Harvested that exceed the placed quantity."
+    )
     
     # Relation to Logs
     log_ids = fields.One2many('taghini.daily.log', 'flock_id', string='Daily Logs')
@@ -66,6 +96,13 @@ class FarmFlock(models.Model):
             record.total_mortality = dead
             record.mortality_rate = (record.total_mortality / record.initial_birds) if record.initial_birds else 0.0
 
+    @api.depends('log_ids.feed_consumed_bags', 'log_ids.actual_avg_weight', 'log_ids.date')
+    def _compute_log_aggregates(self):
+        for record in self:
+            record.total_feed_bags = sum(record.log_ids.mapped('feed_consumed_bags'))
+            logs_with_weight = record.log_ids.filtered(lambda l: l.actual_avg_weight > 0).sorted('date', reverse=True)
+            record.latest_avg_weight = logs_with_weight[0].actual_avg_weight if logs_with_weight else 0.0
+
     @api.depends('initial_birds', 'log_ids.mortality', 'log_ids.harvested_qty')
     def _compute_current_birds(self):
         for record in self:
@@ -75,6 +112,24 @@ class FarmFlock(models.Model):
             
             # Calculate remaining
             record.current_birds = record.initial_birds - total_dead - total_harvested
+
+    @api.depends('initial_birds', 'state', 'log_ids.mortality', 'log_ids.harvested_qty')
+    def _compute_unrecorded_birds(self):
+        """
+        Unrecorded Birds:
+        When a flock is closed, any remaining birds not accounted for by mortality or harvest are missing.
+        Additionally, if mortality + harvest exceeds placed, it indicates over-removed birds (data discrepancy).
+        """
+        for record in self:
+            total_dead = sum(record.log_ids.mapped('mortality'))
+            total_harvested = sum(record.log_ids.mapped('harvested_qty'))
+            diff = (record.initial_birds or 0) - (total_dead + total_harvested)
+            if record.state == 'closed':
+                # Pen should be empty upon closure: any difference is unrecorded / discrepant
+                record.unrecorded_birds = abs(diff)
+            else:
+                # While active, only negative difference (more removed than placed) is an error
+                record.unrecorded_birds = abs(diff) if diff < 0 else 0
             
     def action_escalate_issue(self):
         """ Notify Vet and Manager about issues """
@@ -125,6 +180,58 @@ class FarmFlock(models.Model):
                 'default_date': fields.Date.context_today(self),
                 # Optional: Pre-fill Feed Product if Standard is set
                 'default_feed_product_id': self.product_id.id if self.product_id else False, 
+            }
+        }
+
+    @api.onchange('pen_model_id', 'quantity_placed')
+    def _onchange_check_pen_capacity(self):
+        if self.pen_model_id and self.pen_model_id.capacity > 0 and self.quantity_placed:
+            if self.quantity_placed > self.pen_model_id.capacity:
+                return {
+                    'warning': {
+                        'title': _("Over-Capacity Warning"),
+                        'message': _(
+                            "Pen '%(pen)s' has a maximum accommodation capacity of %(cap)s chicks.\n"
+                            "Current allocation is %(qty)s (%(excess)s over capacity)."
+                        ) % {
+                            'pen': self.pen_model_id.name,
+                            'cap': f"{self.pen_model_id.capacity:,}",
+                            'qty': f"{self.quantity_placed:,}",
+                            'excess': f"{(self.quantity_placed - self.pen_model_id.capacity):,}",
+                        }
+                    }
+                }
+
+    @api.constrains('quantity_placed', 'pen_model_id')
+    def _check_pen_capacity(self):
+        for rec in self:
+            if rec.pen_model_id and rec.pen_model_id.capacity > 0 and rec.quantity_placed:
+                if rec.quantity_placed > rec.pen_model_id.capacity:
+                    raise ValidationError(_(
+                        "Allocation Exceeds Pen Accommodation Capacity!\n\n"
+                        "Pen '%(pen)s' can accommodate at most %(cap)s chicks.\n"
+                        "You are attempting to allocate %(qty)s chicks, exceeding capacity by %(excess)s."
+                    ) % {
+                        'pen': rec.pen_model_id.display_name or rec.pen_model_id.name,
+                        'cap': f"{rec.pen_model_id.capacity:,}",
+                        'qty': f"{rec.quantity_placed:,}",
+                        'excess': f"{(rec.quantity_placed - rec.pen_model_id.capacity):,}",
+                    })
+
+    def action_open_import_export_wizard(self):
+        """ Opens the Import & Export Daily Logs Wizard pre-filtered for this flock """
+        self.ensure_one()
+        return {
+            'name': _('Import & Export Daily Logs - %s') % self.name,
+            'type': 'ir.actions.act_window',
+            'res_model': 'taghini.daily.log.import.export.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_flock_id': self.id,
+                'default_target_flock_id': self.id,
+                'default_template_flock_id': self.id,
+                'default_farm_id': self.farm_id.id if self.farm_id else False,
             }
         }
 
@@ -195,3 +302,32 @@ class FarmFlock(models.Model):
                     f"You cannot place {record.quantity_placed} birds. "
                     f"The Source Batch only has {record.batch_id.remaining_quantity + record.quantity_placed} remaining."
                 ))
+
+    # --- UNIQUE SEQUENCE ID & DISPLAY NAME ---
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if vals.get('flock_code', 'New') == 'New' or not vals.get('flock_code'):
+                vals['flock_code'] = self.env['ir.sequence'].next_by_code('taghini.flock') or 'New'
+            if not vals.get('name') or vals.get('name') == 'New':
+                vals['name'] = vals['flock_code']
+        return super().create(vals_list)
+
+    def _compute_display_name(self):
+        for record in self:
+            code = record.flock_code
+            name = record.name
+            if code and code != 'New' and name and name != code:
+                record.display_name = f"[{code}] {name}"
+            else:
+                record.display_name = name or code or _('New')
+
+    def init(self):
+        super().init()
+        # Backfill flock_code for existing flocks that lack one
+        flocks_without_code = self.search([
+            '|', ('flock_code', '=', False), ('flock_code', '=', 'New')
+        ], order='id asc')
+        for flock in flocks_without_code:
+            seq_val = self.env['ir.sequence'].next_by_code('taghini.flock')
+            flock.flock_code = seq_val or f"FLK/{flock.id:04d}"

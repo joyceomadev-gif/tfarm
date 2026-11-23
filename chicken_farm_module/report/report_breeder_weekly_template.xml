@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Template Entry Point -->
+    <template id="report_breeder_weekly">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="chicken_farm_module.report_breeder_weekly_document"/>
+            </t>
+        </t>
+    </template>
+
+    <!-- Main Weekly Performance Ledger Template (A4 Landscape) -->
+    <template id="report_breeder_weekly_document">
+        <t t-call="web.basic_layout">
+            <div class="page" style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 8px; color: #2C3E50; line-height: 1.2; width: 100%;">
+                
+                <!-- DOCUMENT HEADER & CONTROL BLOCK -->
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 6px; border-bottom: 2px solid #1B4D3E;">
+                    <tr>
+                        <td style="width: 22%; vertical-align: middle; padding: 3px;">
+                            <img t-if="doc.company_id.logo" t-att-src="image_data_uri(doc.company_id.logo)" style="max-height: 44px; max-width: 140px;" alt="Taghini Foods Logo"/>
+                            <div t-else="" style="font-size: 14px; font-weight: bold; color: #1B4D3E; letter-spacing: 0.5px;">TAGHINI FOODS</div>
+                            <div style="font-size: 7.5px; color: #7F8C8D; margin-top: 1px; text-transform: uppercase;">Breeder Operations Division</div>
+                        </td>
+                        <td style="width: 56%; vertical-align: middle; text-align: center; padding: 3px;">
+                            <div style="font-size: 13px; font-weight: bold; color: #1B4D3E; letter-spacing: 0.5px; text-transform: uppercase;">
+                                Weekly Breeder Performance Ledger
+                            </div>
+                            <div style="font-size: 9px; font-weight: 600; color: #34495E; margin-top: 2px;">
+                                Pen Series: <span t-field="doc.name" style="color: #1B4D3E;"/> | Mother Batch: <span t-esc="doc.batch_id.name"/> | Pen: <span t-esc="doc.pen_id.name"/>
+                            </div>
+                        </td>
+                        <td style="width: 22%; vertical-align: middle; text-align: right; padding: 3px;">
+                            <table style="width: 100%; border-collapse: collapse; font-size: 7.5px; border: 1px solid #BDC3C7;">
+                                <tr style="background-color: #1B4D3E; color: #FFFFFF;">
+                                    <td colspan="2" style="padding: 2px 4px; text-align: center; font-weight: bold;">LEDGER IDENTIFIER</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 1.5px 3px; border: 1px solid #BDC3C7; background: #F8F9F9; font-weight: bold;">Doc Ref:</td>
+                                    <td style="padding: 1.5px 3px; border: 1px solid #BDC3C7; font-weight: bold; color: #1B4D3E;">TF/BR/WK/001</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 1.5px 3px; border: 1px solid #BDC3C7; background: #F8F9F9; font-weight: bold;">Print Date:</td>
+                                    <td style="padding: 1.5px 3px; border: 1px solid #BDC3C7;"><span t-esc="context_timestamp(datetime.datetime.now()).strftime('%Y-%m-%d')"/></td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 1.5px 3px; border: 1px solid #BDC3C7; background: #F8F9F9; font-weight: bold;">Status:</td>
+                                    <td style="padding: 1.5px 3px; border: 1px solid #BDC3C7; font-weight: bold;">
+                                        <span t-esc="doc.state.upper()"/>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- FLOCK PROFILE SUMMARY -->
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 6px; font-size: 7.5px; border: 1px solid #BDC3C7; background: #FAFAFA;">
+                    <tr>
+                        <td style="padding: 2px 4px; border: 1px solid #BDC3C7; font-weight: bold; background: #EAECEE; width: 10%;">Farm:</td>
+                        <td style="padding: 2px 4px; border: 1px solid #BDC3C7; width: 15%;"><span t-esc="doc.farm_id.name or '—'"/></td>
+                        <td style="padding: 2px 4px; border: 1px solid #BDC3C7; font-weight: bold; background: #EAECEE; width: 10%;">Placement Date:</td>
+                        <td style="padding: 2px 4px; border: 1px solid #BDC3C7; width: 15%;"><span t-field="doc.start_date"/></td>
+                        <td style="padding: 2px 4px; border: 1px solid #BDC3C7; font-weight: bold; background: #EAECEE; width: 10%;">Breed / Standard:</td>
+                        <td style="padding: 2px 4px; border: 1px solid #BDC3C7; width: 20%;"><span t-esc="doc.batch_id.standard_id.name or 'Arbor Acres Plus'"/></td>
+                        <td style="padding: 2px 4px; border: 1px solid #BDC3C7; font-weight: bold; background: #EAECEE; width: 10%;">Initial Placed:</td>
+                        <td style="padding: 2px 4px; border: 1px solid #BDC3C7; width: 10%; font-weight: bold; color: #1B4D3E;">
+                            ♀ <span t-field="doc.initial_females"/> | ♂ <span t-field="doc.initial_males"/>
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- WEEKLY AGGREGATE LEDGER TABLE -->
+                <div style="font-weight: bold; font-size: 8.5px; color: #1B4D3E; margin-bottom: 3px; text-transform: uppercase;">
+                    Weekly Performance Summary vs Arbor Acres Plus Objectives
+                </div>
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 6px; font-size: 7px; border: 1px solid #BDC3C7;">
+                    <thead>
+                        <tr style="background-color: #1B4D3E; color: #FFFFFF; text-align: center;">
+                            <th style="padding: 3px; border: 1px solid #BDC3C7;">Wk</th>
+                            <th style="padding: 3px; border: 1px solid #BDC3C7;">Date Range</th>
+                            <th style="padding: 3px; border: 1px solid #BDC3C7;">Closing ♀</th>
+                            <th style="padding: 3px; border: 1px solid #BDC3C7;">♀ Wk Mort %</th>
+                            <th style="padding: 3px; border: 1px solid #BDC3C7;">Closing ♂</th>
+                            <th style="padding: 3px; border: 1px solid #BDC3C7;">♂/100♀ Ratio</th>
+                            <th style="padding: 3px; border: 1px solid #BDC3C7;">♀ Feed (g/bird)</th>
+                            <th style="padding: 3px; border: 1px solid #BDC3C7;">AA ♀ Feed (g)</th>
+                            <th style="padding: 3px; border: 1px solid #BDC3C7;">Lay %</th>
+                            <th style="padding: 3px; border: 1px solid #BDC3C7;">AA Lay %</th>
+                            <th style="padding: 3px; border: 1px solid #BDC3C7;">Hatching Eggs</th>
+                            <th style="padding: 3px; border: 1px solid #BDC3C7;">Hatching %</th>
+                            <th style="padding: 3px; border: 1px solid #BDC3C7;">Cum Eggs/Hen</th>
+                            <th style="padding: 3px; border: 1px solid #BDC3C7;">Cum Hatch/Hen</th>
+                            <th style="padding: 3px; border: 1px solid #BDC3C7;">Alerts Triggered</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-set="logs" t-value="doc.pen_log_ids.sorted('date')"/>
+                        <t t-if="not logs">
+                            <tr>
+                                <td colspan="15" style="text-align: center; padding: 10px; color: #7F8C8D;">No daily pen logs recorded for this series yet.</td>
+                            </tr>
+                        </t>
+                        <t t-else="">
+                            <!-- Iterate over unique weeks -->
+                            <t t-set="weeks" t-value="sorted(list(set(logs.mapped('age_week'))))"/>
+                            <t t-foreach="weeks" t-as="wk">
+                                <t t-set="wk_logs" t-value="logs.filtered(lambda l: l.age_week == wk)"/>
+                                <t t-set="latest_log" t-value="wk_logs.sorted('date', reverse=True)[0]"/>
+                                <t t-set="earliest_log" t-value="wk_logs.sorted('date')[0]"/>
+                                <t t-set="tot_f_mort" t-value="sum(wk_logs.mapped('female_mortality'))"/>
+                                <t t-set="tot_hatching" t-value="sum(wk_logs.mapped('hatching_eggs'))"/>
+                                <t t-set="tot_eggs" t-value="sum(wk_logs.mapped('total_eggs_collected'))"/>
+                                <t t-set="avg_f_feed" t-value="round(sum(wk_logs.mapped('female_feed_g_per_bird')) / len(wk_logs), 1) if wk_logs else 0.0"/>
+                                <t t-set="avg_lay" t-value="round(sum(wk_logs.mapped('hen_day_pct')) / len(wk_logs), 4) if wk_logs else 0.0"/>
+                                <t t-set="wk_dangers" t-value="set([d for l in wk_logs for d in (l.danger_flags or '').split('; ') if d])"/>
+                                
+                                <tr t-att-style="'background: ' + ('#FFFFFF' if wk % 2 == 0 else '#F9FAFA') + '; text-align: center;'">
+                                    <td style="padding: 2px; border: 1px solid #BDC3C7; font-weight: bold;"><span t-esc="wk"/></td>
+                                    <td style="padding: 2px; border: 1px solid #BDC3C7;">
+                                        <span t-esc="earliest_log.date.strftime('%m/%d')"/> – <span t-esc="latest_log.date.strftime('%m/%d')"/>
+                                    </td>
+                                    <td style="padding: 2px; border: 1px solid #BDC3C7; font-weight: bold;"><span t-esc="latest_log.closing_females"/></td>
+                                    <td style="padding: 2px; border: 1px solid #BDC3C7; color: #C0392B;">
+                                        <t t-if="doc.initial_females &gt; 0">
+                                            <span t-esc="str(round((tot_f_mort / doc.initial_females) * 100, 2)) + '%'"/>
+                                        </t>
+                                        <t t-else="">0.00%</t>
+                                    </td>
+                                    <td style="padding: 2px; border: 1px solid #BDC3C7;"><span t-esc="latest_log.closing_males"/></td>
+                                    <td style="padding: 2px; border: 1px solid #BDC3C7; font-weight: bold;">
+                                        <span t-esc="latest_log.males_per_100_females"/>
+                                    </td>
+                                    <td style="padding: 2px; border: 1px solid #BDC3C7;"><span t-esc="avg_f_feed"/> g</td>
+                                    <td style="padding: 2px; border: 1px solid #BDC3C7;"><span t-esc="latest_log.aa_female_feed_g"/> g</td>
+                                    <td style="padding: 2px; border: 1px solid #BDC3C7; font-weight: bold; color: #1B4D3E;">
+                                        <span t-esc="str(round(avg_lay * 100, 1)) + '%'"/>
+                                    </td>
+                                    <td style="padding: 2px; border: 1px solid #BDC3C7;">
+                                        <span t-esc="str(round(latest_log.aa_hen_week_pct * 100, 1)) + '%'"/>
+                                    </td>
+                                    <td style="padding: 2px; border: 1px solid #BDC3C7; font-weight: bold; color: #27AE60;">
+                                        <span t-esc="tot_hatching"/>
+                                    </td>
+                                    <td style="padding: 2px; border: 1px solid #BDC3C7;">
+                                        <t t-if="tot_eggs &gt; 0">
+                                            <span t-esc="str(round((tot_hatching / tot_eggs) * 100, 1)) + '%'"/>
+                                        </t>
+                                        <t t-else="">—</t>
+                                    </td>
+                                    <td style="padding: 2px; border: 1px solid #BDC3C7;"><span t-esc="latest_log.cum_eggs_per_hen"/></td>
+                                    <td style="padding: 2px; border: 1px solid #BDC3C7; font-weight: bold;"><span t-esc="latest_log.cum_hatching_eggs_per_hen"/></td>
+                                    <td style="padding: 2px; border: 1px solid #BDC3C7; text-align: left;">
+                                        <t t-if="wk_dangers">
+                                            <span style="color: #C0392B; font-weight: bold;" t-esc="', '.join(wk_dangers)"/>
+                                        </t>
+                                        <t t-else="">
+                                            <span style="color: #27AE60;">OK</span>
+                                        </t>
+                                    </td>
+                                </tr>
+                            </t>
+                        </t>
+                    </tbody>
+                </table>
+
+                <!-- SIGN-OFF FOOTER -->
+                <table style="width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 7.5px; border: 1px solid #BDC3C7;">
+                    <tr style="background: #F2F4F4; text-align: center; font-weight: bold;">
+                        <td style="width: 33%; padding: 3px; border: 1px solid #BDC3C7;">Prepared By (Farm Records Officer)</td>
+                        <td style="width: 33%; padding: 3px; border: 1px solid #BDC3C7;">Audited By (Technical Service Vet)</td>
+                        <td style="width: 34%; padding: 3px; border: 1px solid #BDC3C7;">Approved By (General Manager Operations)</td>
+                    </tr>
+                    <tr style="height: 32px;">
+                        <td style="border: 1px solid #BDC3C7; vertical-align: bottom; padding: 2px; text-align: center;">______________________</td>
+                        <td style="border: 1px solid #BDC3C7; vertical-align: bottom; padding: 2px; text-align: center;">______________________</td>
+                        <td style="border: 1px solid #BDC3C7; vertical-align: bottom; padding: 2px; text-align: center;">______________________</td>
+                    </tr>
+                </table>
+
+            </div>
+        </t>
+    </template>
+</odoo>
