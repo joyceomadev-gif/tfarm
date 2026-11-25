@@ -9,10 +9,18 @@ class AbattoirBatch(models.Model):
 
     name = fields.Char(string='Batch Reference', required=True, copy=False, readonly=True, default='New')
     date = fields.Date(string='Production Date', default=fields.Date.context_today, required=True)
-    company_id = fields.Many2one('res.company', default=lambda self: self.env.company)
+    company_id = fields.Many2one(
+        'res.company', string='Company',
+        compute='_compute_company_id', store=True, readonly=False,
+        default=lambda self: self.env.company
+    )
     farm_id = fields.Many2one(
         'taghini.farm', string='Farm',
         related='harvest_id.farm_id', store=True, readonly=True
+    )
+    abattoir_id = fields.Many2one(
+        'taghini.abattoir', string='Abattoir',
+        related='harvest_id.abattoir_id', store=True, readonly=True
     )
 
     # --- TIMING (From Excel) ---
@@ -176,6 +184,16 @@ class AbattoirBatch(models.Model):
     # "packaging - locking of blast (mins)"
     blast_locking_time = fields.Datetime(string="Packaging/Locking of Blast")
 
+    @api.depends('abattoir_id', 'abattoir_id.company_id', 'harvest_id', 'harvest_id.company_id')
+    def _compute_company_id(self):
+        for rec in self:
+            rec.company_id = (
+                rec.abattoir_id.company_id
+                or rec.harvest_id.company_id
+                or rec.company_id
+                or self.env.company
+            )
+
     @api.depends('start_time', 'end_time')
     def _compute_duration(self):
         for record in self:
@@ -266,6 +284,42 @@ class AbattoirBatch(models.Model):
             'res_id': self.bagging_id.id,
         }
 
+    def action_create_bagging(self):
+        """
+        Validate required production details, create a Bagging record from
+        production output if one does not already exist, and open it.
+        """
+        self.ensure_one()
+        if self.bagging_id:
+            return self.action_view_bagging()
+
+        if self.state not in ('production', 'done'):
+            raise UserError(_("You can only create a bagging record once the batch reaches Production."))
+
+        if not self.line_ids:
+            raise UserError(_("Please add at least one production output line before creating a bagging record."))
+
+        incomplete_lines = self.line_ids.filtered(
+            lambda l: not l.product_id or (l.weight_kg <= 0 and l.quantity <= 0)
+        )
+        if incomplete_lines:
+            names = ", ".join(incomplete_lines.mapped(lambda l: l.product_id.name or _('Unnamed Line')))
+            raise UserError(_(
+                "Please enter a positive Weight (Kg) or Pieces/Birds for all production output lines before moving to bagging: %s"
+            ) % names)
+
+        bagging = self._create_bagging_from_output()
+        self.bagging_id = bagging.id
+
+        return {
+            'name': _('Bagging & Freezer'),
+            'type': 'ir.actions.act_window',
+            'res_model': 'taghini.abattoir.bagging',
+            'view_mode': 'form',
+            'res_id': bagging.id,
+            'target': 'current',
+        }
+
     def action_post_inventory(self):
         """ 
         Performs the 'Reverse Manufacturing':
@@ -273,27 +327,39 @@ class AbattoirBatch(models.Model):
         2. Produces Finished Meat (Finished Goods)
         """
         self.ensure_one()
-        
+        if self.state == 'done':
+            raise UserError(_("This Production Batch has already been posted to stock."))
+
         if not self.line_ids:
             raise UserError(_("You cannot post an empty batch. Please add production lines."))
         
         # 1. Define Locations
-        # Prefer farm-level locations; fall back to standard profile
-        farm = self.harvest_id.flock_id.pen_model_id.farm_id
+        # Prefer dedicated Abattoir site; fall back to farm-level locations or standard profile
+        farm = self.harvest_id.flock_id.pen_model_id.farm_id or self.harvest_id.farm_id
+        abattoir = self.abattoir_id or (farm.default_abattoir_id if farm else False)
         source_location = (
-            farm.abattoir_location_id
+            (abattoir.abattoir_location_id if abattoir else False)
+            or (farm.abattoir_location_id if farm else False)
             or self.harvest_id.flock_id.standard_id.abattoir_location_id
         )
         if not source_location:
             raise UserError(_(
-                "No Abattoir Location defined. Set it on the Farm (Configuration > Farms) "
-                "or on the Growth Standard."
+                "No Abattoir Location defined. Set it on the Abattoir (Configuration > Abattoirs), "
+                "on the Farm, or on the Growth Standard."
             ))
 
         dest_location = (
-            farm.storage_location_id
+            (abattoir.storage_location_id if abattoir else False)
+            or (abattoir.freezer_location_id if abattoir else False)
+            or (farm.storage_location_id if farm else False)
+            or (farm.freezer_location_id if farm else False)
             or self.harvest_id.flock_id.standard_id.storage_location_id
         )
+        if not dest_location:
+            raise UserError(_(
+                "No Storage or Freezer Location defined. Set it on the Abattoir (Configuration > Abattoirs), "
+                "on the Farm, or on the Growth Standard."
+            ))
         
         # Search for Virtual Production Location
         production_loc_record = self.env['stock.location'].search([
@@ -360,8 +426,14 @@ class AbattoirBatch(models.Model):
         src_company = source_location.company_id or self.company_id
         prod_company = self.company_id # Production happens in current company
 
-        product = self.harvest_id.flock_id.product_id
-        uom = self.harvest_id.flock_id.product_id.uom_id
+        if self.harvest_id.flock_type == 'breeder' and self.harvest_id.breeder_flock_id:
+            bird_tmpl = self.harvest_id.breeder_flock_id.batch_id.bird_variant_id
+            product = bird_tmpl.product_variant_id or bird_tmpl.product_variant_ids[:1]
+        else:
+            product = self.harvest_id.flock_id.product_id
+        if not product:
+            raise UserError(_("Could not determine the live bird product from the Source Harvest."))
+        uom = product.uom_id
         qty = self.input_birds
 
         if src_company.id == prod_company.id:
@@ -423,17 +495,19 @@ class AbattoirBatch(models.Model):
         # === TASK C4: Alert MD if bird count discrepancy ===
         self._check_and_alert_md_abattoir()
 
-        # === TASK A5: Auto-create Bagging record from production output ===
-        bagging = self._create_bagging_from_output()
-        self.bagging_id = bagging.id
+        # === TASK A5: Auto-create Bagging record from production output if not already created ===
+        bagging = self.bagging_id
+        if not bagging:
+            bagging = self._create_bagging_from_output()
+            self.bagging_id = bagging.id
 
         return {
             'type': 'ir.actions.client',
             'tag': 'display_notification',
             'params': {
-                'title': _('Stock Updated — Bagging Created'),
+                'title': _('Stock Updated — Bagging Ready'),
                 'message': (
-                    f'Inventory posted. Bagging record {bagging.name} created. '
+                    f'Inventory posted. Bagging record {bagging.name} is linked. '
                     f'Live birds consumed from abattoir location.'
                 ),
                 'type': 'success',
@@ -450,7 +524,7 @@ class AbattoirBatch(models.Model):
         input_birds = self.input_birds
         abattoir_mortality = self.mortality_arrived or 0
         expected_output = input_birds - abattoir_mortality
-        actual_output = self.total_output_qty
+        actual_output = sum(self.series_line_ids.mapped('quantity')) if self.series_line_ids else self.total_output_qty
 
         if actual_output != expected_output:
             diff = expected_output - actual_output
@@ -494,13 +568,20 @@ class AbattoirBatch(models.Model):
             lines_to_create.append({
                 'bagging_id': bagging.id,
                 'product_id': line.product_id.id,
-                'no_bags': 0,          # To be filled by bagging staff
+                'no_bags': 0,
                 'quantity': line.quantity,
                 'weight_kg': line.weight_kg,
             })
         if lines_to_create:
             self.env['taghini.abattoir.bagging.line'].create(lines_to_create)
         return bagging
+
+    def get_bag_count_for_product(self, product):
+        """Return total bagged count for a product from linked bagging record."""
+        self.ensure_one()
+        if not self.bagging_id or not product:
+            return 0
+        return sum(self.bagging_id.line_ids.filtered(lambda l: l.product_id.id == product.id).mapped('no_bags'))
 
     def _get_md_users(self):
         """Return MD users from farm or fallback to system param."""
@@ -529,13 +610,82 @@ class AbattoirLine(models.Model):
         store=True, 
         readonly=True
     )
-    # Note: You might want a custom field on product.template for this instead
-    no_bags = fields.Integer(string='Number of bags')
     quantity = fields.Integer(string='Pieces / Birds')
-    weight_kg = fields.Float(string='Total Weight (Kg)')
-    avg_weight = fields.Float(string='Avg Unit Wgt', compute='_compute_avg')
+    no_bags = fields.Integer(
+        string='Number of Bags',
+        compute='_compute_no_bags',
+        store=True,
+        readonly=True,
+        help="Read-only count synced from Actual Bags entered in Bagging."
+    )
+    grading_line_id = fields.Many2one(
+        'taghini.grading.checklist.line', string='Series Spec',
+        compute='_compute_grading_line', store=True
+    )
+    avg_weight = fields.Float(
+        string='Avg Unit Wgt', compute='_compute_weights', store=True, readonly=True
+    )
+    weight_kg = fields.Float(
+        string='Total Weight (Kg)', compute='_compute_weights', store=True, readonly=False
+    )
 
-    @api.depends('quantity', 'weight_kg')
-    def _compute_avg(self):
+    @api.depends('batch_id.bagging_id', 'batch_id.bagging_id.line_ids.no_bags',
+                 'batch_id.bagging_id.line_ids.product_id', 'product_id')
+    def _compute_no_bags(self):
         for line in self:
-            line.avg_weight = line.weight_kg / line.quantity if line.quantity else 0.0
+            bagging = line.batch_id.bagging_id
+            if bagging and line.product_id:
+                line.no_bags = sum(
+                    bagging.line_ids.filtered(lambda bl: bl.product_id.id == line.product_id.id).mapped('no_bags')
+                )
+            else:
+                line.no_bags = 0
+
+    @api.depends('product_id', 'product_id.grading_line_id', 'product_id.name')
+    def _compute_grading_line(self):
+        checklist = self.env['taghini.grading.checklist'].search([('is_default', '=', True)], limit=1)
+        if not checklist:
+            checklist = self.env['taghini.grading.checklist'].search([], limit=1)
+        for line in self:
+            if line.product_id.grading_line_id:
+                line.grading_line_id = line.product_id.grading_line_id
+                continue
+            matched = False
+            if checklist and line.product_id:
+                prod_name = (line.product_id.name or '').lower()
+                if 'head' in prod_name and 'leg' in prod_name:
+                    matched = checklist.line_ids.filtered(lambda l: l.is_head_and_leg)[:1]
+                if not matched:
+                    for cl_line in checklist.line_ids:
+                        cl_code_key = (cl_line.name or '').split('/')[0].strip().lower()
+                        if cl_code_key and cl_code_key in prod_name:
+                            matched = cl_line
+                            break
+            line.grading_line_id = matched or False
+
+    def _get_nominal_unit_weight(self):
+        self.ensure_one()
+        spec = self.grading_line_id
+        if spec and not spec.is_underweight and not spec.is_head_and_leg:
+            if spec.unit_weight_min > 0 and spec.unit_weight_max < 90:
+                return round((spec.unit_weight_min + spec.unit_weight_max) / 2.0, 3)
+            if self.product_id and self.product_id.weight > 0:
+                return self.product_id.weight
+            if spec.unit_weight_min > 0:
+                return spec.unit_weight_min
+        if self.product_id and self.product_id.weight > 0:
+            return self.product_id.weight
+        return 0.0
+
+    @api.depends('product_id', 'quantity', 'grading_line_id', 'product_id.weight')
+    def _compute_weights(self):
+        for line in self:
+            nominal = line._get_nominal_unit_weight()
+            if nominal > 0 and line.quantity > 0:
+                line.avg_weight = nominal
+                line.weight_kg = round(nominal * line.quantity, 2)
+            elif nominal > 0:
+                line.avg_weight = nominal
+                line.weight_kg = 0.0
+            else:
+                line.avg_weight = (line.weight_kg / line.quantity) if line.quantity else 0.0

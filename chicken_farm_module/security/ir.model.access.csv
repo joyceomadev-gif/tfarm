@@ -1,6 +1,8 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_taghini_farm_user,taghini.farm (user),model_taghini_farm,group_taghini_farm_user,1,0,0,0
 access_taghini_farm_manager,taghini.farm (manager),model_taghini_farm,group_taghini_farm_manager,1,1,1,1
+access_taghini_abattoir_site_user,taghini.abattoir (user),model_taghini_abattoir,group_taghini_farm_user,1,0,0,0
+access_taghini_abattoir_site_manager,taghini.abattoir (manager),model_taghini_abattoir,group_taghini_farm_manager,1,1,1,1
 access_taghini_flock,taghini.flock,model_taghini_flock,group_taghini_farm_user,1,1,1,1
 access_taghini_log,taghini.daily.log,model_taghini_daily_log,group_taghini_farm_user,1,1,1,1
 access_taghini_log_med,taghini.daily.log.medication,model_taghini_daily_log_medication,group_taghini_farm_user,1,1,1,1

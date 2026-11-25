@@ -1,6 +1,6 @@
 {
     'name': 'Taghini Farm Management',
-    'version': '1.6.2',
+    'version': '1.6.3',
     'author': 'Taghini Foods / Antigravity',
     'license': 'LGPL-3',
     'category': 'Manufacturing/Agriculture',
@@ -25,6 +25,7 @@
         'views/grading_views.xml',
         'views/remark_views.xml',
         'views/farm_views.xml',
+        'views/abattoir_site_views.xml',
         'views/pen_views.xml',
         'views/dashboard.xml',
         'views/flock_views.xml',

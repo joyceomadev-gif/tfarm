@@ -1,0 +1,86 @@
+<odoo>
+
+    <!-- ========================================================== -->
+    <!-- ABATTOIR SITE FORM VIEW                                    -->
+    <!-- ========================================================== -->
+    <record id="view_taghini_abattoir_site_form" model="ir.ui.view">
+        <field name="name">taghini.abattoir.form</field>
+        <field name="model">taghini.abattoir</field>
+        <field name="arch" type="xml">
+            <form string="Abattoir">
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="code" placeholder="Abattoir Code / ID"/></h1>
+                    </div>
+
+                    <group>
+                        <group string="Identity">
+                            <field name="name" string="Abattoir Name" placeholder="e.g. Central Abattoir"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="warehouse_id" options="{'no_create': True}"/>
+                            <field name="stock_location_id" readonly="1"/>
+                        </group>
+                        <group string="Processing &amp; Cold-Chain Locations">
+                            <field name="abattoir_location_id"/>
+                            <field name="storage_location_id"/>
+                            <field name="cold_room_location_id"/>
+                            <field name="freezer_location_id"/>
+                        </group>
+                    </group>
+
+                    <group>
+                        <group string="Staff">
+                            <field name="manager_id" widget="many2one_avatar_user"/>
+                        </group>
+                        <group string="Access &amp; Permissions">
+                            <field name="user_ids"
+                                   widget="many2many_tags"
+                                   options="{'color_field': 'color'}"
+                                   string="Assigned Users"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Internal Notes" name="notes">
+                            <field name="notes" placeholder="Internal notes about this abattoir..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- ========================================================== -->
+    <!-- ABATTOIR SITE LIST VIEW                                    -->
+    <!-- ========================================================== -->
+    <record id="view_taghini_abattoir_site_list" model="ir.ui.view">
+        <field name="name">taghini.abattoir.list</field>
+        <field name="model">taghini.abattoir</field>
+        <field name="arch" type="xml">
+            <list string="Abattoirs" export_xlsx="1">
+                <field name="code" string="Abattoir ID" class="fw-bold"/>
+                <field name="name"/>
+                <field name="warehouse_id"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="manager_id" widget="many2one_avatar_user"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ========================================================== -->
+    <!-- ABATTOIR SITE ACTION & MENU                                -->
+    <!-- ========================================================== -->
+    <record id="action_taghini_abattoir_site" model="ir.actions.act_window">
+        <field name="name">Abattoirs</field>
+        <field name="res_model">taghini.abattoir</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_taghini_abattoir_site"
+              name="Abattoirs"
+              parent="menu_taghini_config"
+              action="action_taghini_abattoir_site"
+              sequence="12"/>
+
+</odoo>

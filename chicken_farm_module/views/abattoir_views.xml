@@ -13,6 +13,9 @@
                     <button name="action_confirm_slaughtering" string="Finish Slaughtering" type="object" 
                             class="btn-primary" invisible="state != 'slaughtering'"/>
 
+                    <button name="action_create_bagging" string="Create Bagging" type="object" 
+                            class="btn-primary" invisible="state not in ('production', 'done') or bagging_id"/>
+
                     <button name="action_post_inventory" string="Post to Stock" type="object" 
                             class="btn-success" invisible="state != 'production'"/>
                     
@@ -31,6 +34,19 @@
                     <field name="state" widget="statusbar" statusbar_visible="draft,reception,slaughtering,production,done"/>
                 </header>
                 <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_bagging"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-cubes"
+                                invisible="not bagging_id">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_text">Bagging</span>
+                                <span class="o_stat_value"><field name="bagging_state" readonly="1"/></span>
+                            </div>
+                        </button>
+                    </div>
+                    <field name="bagging_id" invisible="1"/>
                     <div class="oe_title">
                         <h1><field name="name"/></h1>
                     </div>
@@ -39,6 +55,7 @@
                         <group>
                             <field name="date"/>
                             <field name="harvest_id" options="{'no_create': True}" readonly="state != 'draft'"/>
+                            <field name="abattoir_id" readonly="1"/>
                             <field name="pen_id" options="{'no_create': True}" readonly="True"/>
                             <field name="batch_id" options="{'no_create': True}" readonly="True"/>
                             <field name="manager_id" widget="many2one_avatar_user"/>
@@ -128,10 +145,10 @@
                                     <field name="series_line_ids" readonly="state == 'done'">
                                         <list editable="bottom">
                                             <field name="product_id" domain="[('abattoir_type', '=', 'series')]"/>
-                                            <field name="no_bags" sum="Total Bags"/>
+                                            <field name="no_bags" sum="Total Bags" readonly="1"/>
                                             <field name="quantity" sum="Total Pcs"/>
-                                            <field name="weight_kg" sum="Total Kg"/>
-                                            <field name="avg_weight"/>
+                                            <field name="weight_kg" sum="Total Kg" readonly="1" decoration-danger="1" decoration-bf="1"/>
+                                            <field name="avg_weight" readonly="1" decoration-danger="1" decoration-bf="1"/>
                                         </list>
                                     </field>
                                 </page>
@@ -140,7 +157,7 @@
                                     <field name="parts_line_ids" readonly="state == 'done'">
                                         <list editable="bottom">
                                             <field name="product_id" domain="[('abattoir_type', '=', 'parts')]"/>
-                                            <field name="no_bags" sum="Total Bags"/>
+                                            <field name="no_bags" sum="Total Bags" readonly="1"/>
                                             <field name="quantity" sum="Total Pcs"/>
                                             <field name="weight_kg" sum="Total Kg"/>
                                             <field name="avg_weight"/>
@@ -153,10 +170,10 @@
                                     <field name="cuts_line_ids" readonly="state == 'done'">
                                         <list editable="bottom">
                                             <field name="product_id" domain="[('abattoir_type', '=', 'cuts')]"/>
-                                            <field name="no_bags" sum="Total Bags"/>
+                                            <field name="no_bags" sum="Total Bags" readonly="1"/>
                                             <field name="quantity" sum="Total Pcs"/>
-                                            <field name="weight_kg" sum="Total Kg"/>
-                                            <field name="avg_weight"/>
+                                            <field name="weight_kg" sum="Total Kg" readonly="1" decoration-danger="1" decoration-bf="1"/>
+                                            <field name="avg_weight" readonly="1" decoration-danger="1" decoration-bf="1"/>
                                         </list>
                                     </field>
                                 </page>
@@ -165,7 +182,7 @@
                                     <field name="residuals_line_ids" readonly="state == 'done'">
                                         <list editable="bottom">
                                             <field name="product_id" domain="[('abattoir_type', '=', 'residuals')]"/>
-                                            <field name="no_bags" sum="Total Bags"/>
+                                            <field name="no_bags" sum="Total Bags" readonly="1"/>
                                             <field name="quantity" sum="Total Pcs"/>
                                             <field name="weight_kg" sum="Total Kg"/>
                                             <field name="avg_weight"/>
@@ -225,8 +242,6 @@
     </record>
 
 
-
-    <menuitem id="menu_taghini_abattoir_root" name="Abattoir" parent="menu_taghini_root" sequence="40"/>
 
     <menuitem id="menu_taghini_abattoir_batch" name="Daily Production" parent="menu_taghini_abattoir_root" action="action_taghini_abattoir" sequence="2"/>
 </odoo>

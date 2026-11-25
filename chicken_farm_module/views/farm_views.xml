@@ -37,6 +37,7 @@
                                    options="{'no_create': True}"
                                    help="The warehouse that IS this farm. All feed and meds stock moves draw from here."/>
                             <field name="stock_location_id" readonly="1"/>
+                            <field name="default_abattoir_id" options="{'no_create': True}"/>
                         </group>
                         <group string="Destination Locations">
                             <field name="abattoir_location_id"

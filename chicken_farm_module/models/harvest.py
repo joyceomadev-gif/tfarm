@@ -17,6 +17,11 @@ class FarmHarvest(models.Model):
 
     company_id = fields.Many2one('res.company', string='Company', compute='_compute_origin_info', store=True, readonly=True)
     farm_id = fields.Many2one('taghini.farm', string='Farm', compute='_compute_origin_info', store=True, readonly=True)
+    abattoir_id = fields.Many2one(
+        'taghini.abattoir', string='Destination Abattoir',
+        check_company=False, tracking=True,
+        help="Abattoir receiving these birds. Auto-filled from the Farm's Default Abattoir."
+    )
     # Link to Farm
     flock_id = fields.Many2one('taghini.flock', string='Source Broiler Batch', required=False, domain=[('state', '=', 'active')])
     breeder_flock_id = fields.Many2one('taghini.breeder.flock', string='Source Breeder Pen Series', required=False, domain=[('state', '=', 'active')])
@@ -92,7 +97,7 @@ class FarmHarvest(models.Model):
                  'flock_id.log_ids.mortality', 'flock_id.log_ids.harvested_qty',
                  'breeder_flock_id', 'breeder_flock_id.initial_females', 'breeder_flock_id.initial_males',
                  'breeder_flock_id.pen_log_ids.female_mortality', 'breeder_flock_id.pen_log_ids.male_mortality',
-                 'birds_received')
+                 'birds_received', 'state')
     def _compute_unrecorded(self):
         for record in self:
             if record.flock_type == 'breeder' and record.breeder_flock_id:
@@ -151,12 +156,28 @@ class FarmHarvest(models.Model):
                 record.total_meds_count = 0
                 record.fcr = 0.0
 
+    @api.onchange('flock_type', 'flock_id', 'breeder_flock_id')
+    def _onchange_flock_default_abattoir(self):
+        for rec in self:
+            if not rec.abattoir_id:
+                farm = rec.breeder_flock_id.farm_id if rec.flock_type == 'breeder' else rec.flock_id.farm_id
+                rec.abattoir_id = farm.default_abattoir_id if farm and farm.default_abattoir_id else False
+
     @api.model_create_multi
     def create(self, vals_list):
         """ Overridden to generate Sequence Number for every record in the list """
         for vals in vals_list:
             if vals.get('name', 'New') == 'New':
                 vals['name'] = self.env['ir.sequence'].next_by_code('taghini.harvest') or 'New'
+            if not vals.get('abattoir_id'):
+                if vals.get('flock_type', 'broiler') == 'breeder' and vals.get('breeder_flock_id'):
+                    bf = self.env['taghini.breeder.flock'].browse(vals['breeder_flock_id'])
+                    if bf.farm_id.default_abattoir_id:
+                        vals['abattoir_id'] = bf.farm_id.default_abattoir_id.id
+                elif vals.get('flock_id'):
+                    flk = self.env['taghini.flock'].browse(vals['flock_id'])
+                    if flk.farm_id.default_abattoir_id:
+                        vals['abattoir_id'] = flk.farm_id.default_abattoir_id.id
         return super(FarmHarvest, self).create(vals_list)
 
     def action_confirm_harvest(self):
@@ -175,14 +196,16 @@ class FarmHarvest(models.Model):
             if not product:
                 raise UserError(_("The Breeder Batch does not have a Bird Variant Product."))
             source_loc = self.pen_id.location_id
+            abattoir = self.abattoir_id or self.breeder_flock_id.farm_id.default_abattoir_id
             dest_loc = (
-                self.breeder_flock_id.farm_id.abattoir_location_id
+                (abattoir.abattoir_location_id if abattoir else False)
+                or self.breeder_flock_id.farm_id.abattoir_location_id
                 or self.breeder_flock_id.batch_id.standard_id.abattoir_location_id
             )
             if not dest_loc:
                 raise UserError(_(
                     "Destination Abattoir Location is missing. "
-                    "Set it on the Farm (Configuration > Farms) or the Breed Standard."
+                    "Select a Destination Abattoir or set it on the Farm / Breed Standard."
                 ))
         else:
             if not self.flock_id:
@@ -191,14 +214,17 @@ class FarmHarvest(models.Model):
                 raise UserError(_("The Flock does not have a Product defined."))
             product = self.flock_id.product_id
             source_loc = self.pen_id.location_id
+            farm = self.flock_id.pen_model_id.farm_id
+            abattoir = self.abattoir_id or farm.default_abattoir_id
             dest_loc = (
-                self.flock_id.pen_model_id.farm_id.abattoir_location_id
+                (abattoir.abattoir_location_id if abattoir else False)
+                or farm.abattoir_location_id
                 or self.flock_id.standard_id.abattoir_location_id
             )
             if not dest_loc:
                 raise UserError(_(
                     "Destination Abattoir Location is missing. "
-                    "Set it on the Farm (Configuration > Farms) or the Growth Standard."
+                    "Select a Destination Abattoir or set it on the Farm / Growth Standard."
                 ))
 
         src_company = source_loc.company_id or self.company_id

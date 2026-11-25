@@ -1,4 +1,5 @@
 from . import farm
+from . import abattoir_site
 from . import remark
 from . import pen
 from . import flock

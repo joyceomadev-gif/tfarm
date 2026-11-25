@@ -11,7 +11,7 @@
             <form string="Bagging &amp; Freezer Transfer">
                 <header>
                     <button name="action_auto_fill_bags"
-                            string="Auto-Fill Bags from Standard"
+                            string="Auto-Fill Expected Bags"
                             type="object"
                             class="btn-secondary"
                             invisible="state != 'draft'"
@@ -29,7 +29,7 @@
                             type="object"
                             class="btn-success"
                             invisible="state != 'confirmed'"
-                            help="Create stock moves to destination locations."/>
+                            help="Transfer bagged goods to destination location."/>
 
                     <field name="state" widget="statusbar"
                            statusbar_visible="draft,confirmed,moved"/>
@@ -41,8 +41,8 @@
 
                     <!-- GRADING COMPLIANCE BANNER -->
                     <div class="alert alert-danger" role="alert" invisible="has_penalty_risk == False">
-                        <strong>⚠️ TAGHINI GRADING COMPLIANCE WARNING:</strong>
-                        <field name="non_compliant_count" class="oe_inline font-weight-bold"/> line(s) violate the official Taghini Grading Checklist.
+                        <strong>⚠️ TAGHINI GRADING EXCEPTION / PENALTY WARNING:</strong>
+                        <field name="non_compliant_count" class="oe_inline font-weight-bold"/> line(s) deviate from the official Taghini Grading Checklist.
                         <em>NB: The information must be strictly adhered to, failure to do so would attract penalty.</em>
                     </div>
                     <div class="alert alert-success" role="alert" invisible="has_penalty_risk == True or not line_ids">
@@ -51,49 +51,56 @@
                     </div>
 
                     <group>
-                        <group>
+                        <group string="Batch &amp; Destination">
                             <field name="batch_id" options="{'no_create': True}" readonly="state != 'draft'"/>
+                            <field name="harvest_id" readonly="1"/>
                             <field name="farm_id" readonly="1"/>
+                            <field name="abattoir_id" readonly="1"/>
                             <field name="date"/>
                             <field name="checklist_id" options="{'no_create': True}" readonly="state != 'draft'"/>
+                            <field name="destination_location_id" options="{'no_create': True}" readonly="state == 'moved'"/>
                         </group>
-                        <group>
-                            <field name="total_bags" readonly="1"/>
+                        <group string="Bagging Totals &amp; Compliance">
                             <field name="total_expected_bags" readonly="1"/>
+                            <field name="total_bags" readonly="1"/>
+                            <field name="total_bag_difference" readonly="1"
+                                   decoration-danger="total_bag_difference != 0"
+                                   decoration-success="total_bag_difference == 0"/>
                             <field name="total_weight_kg" readonly="1"/>
+                            <field name="production_output_weight_kg" readonly="1"/>
                             <field name="has_penalty_risk" invisible="1"/>
                             <field name="compliance_summary" readonly="1"
                                    decoration-danger="has_penalty_risk == True"
                                    decoration-success="has_penalty_risk == False"/>
+                            <field name="packaging_supervisor_id" widget="many2one_avatar_user" readonly="1"/>
+                            <field name="qa_shopfloor_id" widget="many2one_avatar_user" readonly="1"/>
                         </group>
                     </group>
 
                     <notebook>
-                        <!-- BAGGING LINES WITH GRADING CHECKLIST VALIDATION -->
                         <page string="Bagging &amp; Grading Lines">
                             <field name="line_ids" readonly="state == 'moved'">
                                 <list editable="bottom">
                                     <field name="product_id"/>
                                     <field name="category_type" readonly="1"/>
-                                    <field name="quantity" string="Pieces / Birds" readonly="1"/>
-                                    <field name="weight_kg" string="Total Wgt (Kg)" readonly="1"/>
-                                    <field name="avg_unit_weight" string="Unit Wgt (Kg)" optional="show" readonly="1"/>
+                                    <field name="quantity" string="Pieces / Birds"/>
+                                    <field name="weight_kg" string="Total Wgt (Kg)" decoration-danger="1" decoration-bf="1"/>
+                                    <field name="avg_unit_weight" string="Unit Wgt (Kg)" readonly="1" decoration-danger="1" decoration-bf="1"/>
                                     <field name="grading_line_id" string="Grading Series" options="{'no_create': True}"/>
                                     <field name="pieces_per_bag_spec" string="Spec Pcs/Bag" readonly="1"/>
                                     <field name="expected_bags" string="Exp Bags" readonly="1"/>
-                                    <field name="no_bags" string="Actual Bags"/>
-                                    <field name="avg_bag_weight" string="Avg Bag Wgt (Kg)" readonly="1"
-                                           decoration-bf="1"/>
+                                    <field name="no_bags" string="Actual Bags" decoration-success="1" decoration-bf="1"/>
+                                    <field name="bag_difference" string="Diff (Act - Exp)" readonly="1"
+                                           decoration-danger="bag_difference != 0"
+                                           decoration-success="bag_difference == 0"/>
+                                    <field name="avg_bag_weight" string="Avg Bag Wgt (Kg)" readonly="1" decoration-bf="1"/>
                                     <field name="expected_range_display" string="Expected Range (Kg)" readonly="1"/>
                                     <field name="compliance_status" widget="badge"
                                            decoration-success="compliance_status == 'compliant'"
                                            decoration-danger="compliance_status in ('underweight', 'overweight', 'pieces_mismatch')"
                                            decoration-muted="compliance_status == 'na'"/>
                                     <field name="penalty_risk" column_invisible="True"/>
-                                    <field name="compliance_notes" string="Grading Compliance Details" optional="show" readonly="1"/>
-                                    <field name="destination_location_id"
-                                           string="Destination (Cold Room / Freezer)"
-                                           options="{'no_create': True}"/>
+                                    <field name="compliance_notes" string="Exception / Compliance Details" optional="show" readonly="1"/>
                                 </list>
                             </field>
                             <group>
@@ -103,14 +110,31 @@
                             </group>
                         </page>
 
-                        <!-- QA TEMPERATURE -->
+                        <page string="Harvest &amp; Traceability">
+                            <group>
+                                <group string="Source Flock &amp; Pen">
+                                    <field name="flock_id" readonly="1" invisible="not flock_id"/>
+                                    <field name="breeder_flock_id" readonly="1" invisible="not breeder_flock_id"/>
+                                    <field name="pen_id" readonly="1"/>
+                                    <field name="birds_received" readonly="1"/>
+                                    <field name="total_live_weight" readonly="1"/>
+                                </group>
+                                <group string="Harvest Quality &amp; Notes">
+                                    <field name="visual_quality" readonly="1"/>
+                                    <field name="feather_condition" readonly="1"/>
+                                    <field name="harvest_notes" readonly="1"/>
+                                </group>
+                            </group>
+                        </page>
+
                         <page string="QA Temperature Checks">
                             <field name="qa_temp_line_ids" readonly="state == 'moved'">
                                 <list editable="bottom">
                                     <field name="product_id"/>
+                                    <field name="storage_class"/>
                                     <field name="temperature_celsius" string="Temperature (°C)"
-                                           decoration-danger="temperature_celsius &gt; 4"
-                                           decoration-success="temperature_celsius &lt;= 4"/>
+                                           decoration-danger="not is_within_spec"
+                                           decoration-success="is_within_spec"/>
                                     <field name="is_within_spec" readonly="1" widget="boolean_toggle"/>
                                     <field name="recorded_at"/>
                                     <field name="notes"/>
@@ -123,7 +147,6 @@
                                 </div>
                             </group>
                         </page>
-
                     </notebook>
                 </sheet>
                 <chatter/>
@@ -140,8 +163,15 @@
                 <field name="name"/>
                 <field name="date"/>
                 <field name="batch_id"/>
+                <field name="harvest_id" optional="show"/>
                 <field name="farm_id"/>
-                <field name="total_bags" sum="Total Bags"/>
+                <field name="abattoir_id" optional="show"/>
+                <field name="destination_location_id" optional="show"/>
+                <field name="total_expected_bags" sum="Total Exp Bags"/>
+                <field name="total_bags" sum="Total Actual Bags"/>
+                <field name="total_bag_difference" sum="Total Diff"
+                       decoration-danger="total_bag_difference != 0"
+                       decoration-success="total_bag_difference == 0"/>
                 <field name="total_weight_kg" sum="Total Kg"/>
                 <field name="compliance_summary" string="Grading Compliance"
                        decoration-danger="has_penalty_risk == True"

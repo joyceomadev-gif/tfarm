@@ -19,6 +19,7 @@
                             <field name="breeder_flock_id" readonly="state != 'draft'" invisible="flock_type != 'breeder'" required="flock_type == 'breeder'"/>
                             <field name="pen_id"/>
                             <field name="farm_id"/>
+                            <field name="abattoir_id" options="{'no_create': True}" readonly="state != 'draft'"/>
                             <field name="date"/>
                         </group>
                         <group string="Abattoir Intake">
@@ -60,6 +61,7 @@
                 <field name="flock_type"/>
                 <field name="flock_id" invisible="flock_type == 'breeder'"/>
                 <field name="breeder_flock_id" invisible="flock_type != 'breeder'"/>
+                <field name="abattoir_id"/>
                 <field name="birds_received" sum="Total Birds"/>
                 <field name="total_live_weight" sum="Total Kg"/>
                 <field name="fcr" widget="badge" decoration-success="fcr &lt; 1.6" decoration-warning="fcr &gt; 1.6"/>

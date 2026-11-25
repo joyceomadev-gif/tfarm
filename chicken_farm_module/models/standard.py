@@ -26,6 +26,16 @@ class FarmStandard(models.Model):
         check_company=False,
         help="The destination location when harvesting."
     )
+    maturity_age_days = fields.Integer(
+        string='Maturity Age (Days)',
+        default=42,
+        help="Minimum flock age in days before broiler chicks are considered mature for harvest (0 to disable age check)."
+    )
+    maturity_weight_g = fields.Float(
+        string='Maturity Avg Weight (g)',
+        default=0.0,
+        help="Minimum average bird weight in grams for harvest readiness (0 to ignore weight check)."
+    )
     line_ids = fields.One2many('taghini.farm.standard.line', 'standard_id', string='Rules')
 
 class FarmStandardLine(models.Model):

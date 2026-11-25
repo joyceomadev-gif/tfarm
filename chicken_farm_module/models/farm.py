@@ -38,6 +38,12 @@ class TaghiniFarm(models.Model):
         help="Automatically set from the warehouse. Feed and meds are drawn from here."
     )
 
+    default_abattoir_id = fields.Many2one(
+        'taghini.abattoir', string='Default Abattoir',
+        check_company=False, tracking=True,
+        help="Default abattoir this farm dispatches harvested birds to."
+    )
+
     # Farm-level destination locations (moved from taghini.farm.standard)
     abattoir_location_id = fields.Many2one(
         'stock.location', string='Abattoir Location',

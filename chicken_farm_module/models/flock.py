@@ -72,6 +72,11 @@ class FarmFlock(models.Model):
 
     harvest_ids = fields.One2many('taghini.harvest', 'flock_id', string='Harvest Records')
     harvest_count = fields.Integer(compute='_compute_harvest_count', string='Harvest Count')
+    is_mature = fields.Boolean(
+        string='Mature for Harvest',
+        compute='_compute_is_mature',
+        help="True when the flock meets the Growth Profile's maturity age and target weight (if target weight > 0)."
+    )
 
     state = fields.Selection([
         ('draft', 'Draft'),         # Planned, no birds yet
@@ -88,6 +93,19 @@ class FarmFlock(models.Model):
                 record.current_age = delta.days
             else:
                 record.current_age = 0
+
+    @api.depends('current_age', 'latest_avg_weight', 'standard_id',
+                 'standard_id.maturity_age_days', 'standard_id.maturity_weight_g')
+    def _compute_is_mature(self):
+        for record in self:
+            std = record.standard_id
+            if not std:
+                record.is_mature = False
+                continue
+            target_age = std.maturity_age_days if std.maturity_age_days > 0 else 42
+            age_ok = record.current_age >= target_age
+            weight_ok = (std.maturity_weight_g <= 0) or (record.latest_avg_weight >= std.maturity_weight_g)
+            record.is_mature = bool(age_ok and weight_ok)
 
     @api.depends('log_ids.mortality')
     def _compute_metrics(self):
@@ -252,6 +270,32 @@ class FarmFlock(models.Model):
             'context': {
                 'default_flock_id': self.id,
                 'default_pen_id': self.pen_model_id.id if self.pen_model_id else False,
+            }
+        }
+
+    def action_create_harvest(self):
+        """Open a pre-filled Harvest form once the broiler flock is mature."""
+        self.ensure_one()
+        if self.state != 'active':
+            raise UserError(_("You can only create a harvest from an active flock."))
+        if self.current_birds <= 0:
+            raise UserError(_("There are no live birds remaining in this flock to harvest."))
+        if not self.is_mature:
+            raise UserError(_(
+                "This flock has not reached maturity yet (Age: %s days, Avg Weight: %.0f g)."
+            ) % (self.current_age, self.latest_avg_weight))
+
+        return {
+            'name': _('Create Harvest - %s') % self.name,
+            'type': 'ir.actions.act_window',
+            'res_model': 'taghini.harvest',
+            'view_mode': 'form',
+            'target': 'current',
+            'context': {
+                'default_flock_type': 'broiler',
+                'default_flock_id': self.id,
+                'default_abattoir_id': self.farm_id.default_abattoir_id.id if self.farm_id.default_abattoir_id else False,
+                'default_birds_received': self.current_birds,
             }
         }
 

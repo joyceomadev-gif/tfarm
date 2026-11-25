@@ -16,6 +16,8 @@
                         <group string="Slaughterhouse &amp; Storage" invisible="standard_type != 'broiler'">
                             <field name="abattoir_location_id"/>
                             <field name="storage_location_id"/>
+                            <field name="maturity_age_days"/>
+                            <field name="maturity_weight_g"/>
                         </group>
                     </group>
                     <notebook>
@@ -62,6 +64,5 @@
         <field name="view_mode">list,form</field>
     </record>
 
-    <menuitem id="menu_taghini_config" name="Configuration" parent="menu_taghini_root" sequence="100"/>
     <menuitem id="menu_taghini_standard" name="Breed &amp; Performance Standards" parent="menu_taghini_config" action="action_taghini_standard"/>
 </odoo>

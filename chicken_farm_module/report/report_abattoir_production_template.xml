@@ -198,7 +198,7 @@
                             <t t-foreach="series_lines" t-as="l">
                                 <tr style="border-bottom: 1px solid #E5E7E9;">
                                     <td style="padding: 2px 4px; border: 1px solid #BDC3C7;"><span t-esc="l.product_id.name"/></td>
-                                    <td style="padding: 2px 4px; border: 1px solid #BDC3C7; text-align: center;"><span t-esc="l.no_bags or 0"/></td>
+                                    <td style="padding: 2px 4px; border: 1px solid #BDC3C7; text-align: center;"><span t-esc="doc.get_bag_count_for_product(l.product_id)"/></td>
                                     <td style="padding: 2px 4px; border: 1px solid #BDC3C7; text-align: center;"><span t-esc="'{:,}'.format(l.quantity or 0)"/></td>
                                     <td style="padding: 2px 4px; border: 1px solid #BDC3C7; text-align: right;"><span t-esc="'{:,.2f}'.format(l.weight_kg or 0.0)"/></td>
                                     <td style="padding: 2px 4px; border: 1px solid #BDC3C7; text-align: right;"><span t-esc="'{:.3f}'.format(l.avg_weight or 0.0)"/></td>
@@ -220,7 +220,7 @@
                             <t t-foreach="cut_lines" t-as="l">
                                 <tr style="border-bottom: 1px solid #E5E7E9;">
                                     <td style="padding: 2px 4px; border: 1px solid #BDC3C7;"><span t-esc="l.product_id.name"/></td>
-                                    <td style="padding: 2px 4px; border: 1px solid #BDC3C7; text-align: center;"><span t-esc="l.no_bags or 0"/></td>
+                                    <td style="padding: 2px 4px; border: 1px solid #BDC3C7; text-align: center;"><span t-esc="doc.get_bag_count_for_product(l.product_id)"/></td>
                                     <td style="padding: 2px 4px; border: 1px solid #BDC3C7; text-align: center;"><span t-esc="'{:,}'.format(l.quantity or 0)"/></td>
                                     <td style="padding: 2px 4px; border: 1px solid #BDC3C7; text-align: right;"><span t-esc="'{:,.2f}'.format(l.weight_kg or 0.0)"/></td>
                                     <td style="padding: 2px 4px; border: 1px solid #BDC3C7; text-align: right;"><span t-esc="'{:.3f}'.format(l.avg_weight or 0.0)"/></td>
@@ -242,7 +242,7 @@
                             <t t-foreach="part_lines" t-as="l">
                                 <tr style="border-bottom: 1px solid #E5E7E9;">
                                     <td style="padding: 2px 4px; border: 1px solid #BDC3C7;"><span t-esc="l.product_id.name"/></td>
-                                    <td style="padding: 2px 4px; border: 1px solid #BDC3C7; text-align: center;"><span t-esc="l.no_bags or 0"/></td>
+                                    <td style="padding: 2px 4px; border: 1px solid #BDC3C7; text-align: center;"><span t-esc="doc.get_bag_count_for_product(l.product_id)"/></td>
                                     <td style="padding: 2px 4px; border: 1px solid #BDC3C7; text-align: center;"><span t-esc="'{:,}'.format(l.quantity or 0)"/></td>
                                     <td style="padding: 2px 4px; border: 1px solid #BDC3C7; text-align: right;"><span t-esc="'{:,.2f}'.format(l.weight_kg or 0.0)"/></td>
                                     <td style="padding: 2px 4px; border: 1px solid #BDC3C7; text-align: right;"><span t-esc="'{:.3f}'.format(l.avg_weight or 0.0)"/></td>
@@ -264,7 +264,7 @@
                             <t t-foreach="residual_lines" t-as="l">
                                 <tr style="border-bottom: 1px solid #E5E7E9;">
                                     <td style="padding: 2px 4px; border: 1px solid #BDC3C7;"><span t-esc="l.product_id.name"/></td>
-                                    <td style="padding: 2px 4px; border: 1px solid #BDC3C7; text-align: center;"><span t-esc="l.no_bags or 0"/></td>
+                                    <td style="padding: 2px 4px; border: 1px solid #BDC3C7; text-align: center;"><span t-esc="doc.get_bag_count_for_product(l.product_id)"/></td>
                                     <td style="padding: 2px 4px; border: 1px solid #BDC3C7; text-align: center;"><span t-esc="'{:,}'.format(l.quantity or 0)"/></td>
                                     <td style="padding: 2px 4px; border: 1px solid #BDC3C7; text-align: right;"><span t-esc="'{:,.2f}'.format(l.weight_kg or 0.0)"/></td>
                                     <td style="padding: 2px 4px; border: 1px solid #BDC3C7; text-align: right;"><span t-esc="'{:.3f}'.format(l.avg_weight or 0.0)"/></td>
@@ -281,7 +281,7 @@
                         <tr style="background-color: #2C5E3B; color: #FFFFFF; font-weight: bold; font-size: 9.5px;">
                             <td style="padding: 4px; border: 1px solid #2C5E3B;">TOTAL PRODUCTION OUTPUT</td>
                             <td style="padding: 4px; border: 1px solid #2C5E3B; text-align: center;">
-                                <span t-esc="'{:,}'.format(sum(l.no_bags for l in doc.line_ids))"/> Bags
+                                <span t-esc="'{:,}'.format(doc.bagging_id.total_bags if doc.bagging_id else 0)"/> Bags
                             </td>
                             <td style="padding: 4px; border: 1px solid #2C5E3B; text-align: center;">
                                 <span t-esc="'{:,}'.format(doc.total_output_qty or 0)"/> Pcs
