@@ -111,11 +111,18 @@ class BreederFlock(models.Model):
 
     pen_log_ids = fields.One2many('taghini.breeder.pen.log', 'flock_id', string='Pen Daily Logs')
     pen_log_count = fields.Integer(string='Daily Logs Count', compute='_compute_pen_log_count')
+    harvest_ids = fields.One2many('taghini.harvest', 'breeder_flock_id', string='Harvest Records')
+    harvest_count = fields.Integer(string='Harvest Count', compute='_compute_harvest_count')
 
     @api.depends('pen_log_ids')
     def _compute_pen_log_count(self):
         for rec in self:
             rec.pen_log_count = len(rec.pen_log_ids)
+
+    @api.depends('harvest_ids')
+    def _compute_harvest_count(self):
+        for rec in self:
+            rec.harvest_count = len(rec.harvest_ids)
 
     def action_export_111_col_excel(self):
         self.ensure_one()
@@ -152,6 +159,50 @@ class BreederFlock(models.Model):
             'domain': [('flock_id', '=', self.id)],
             'context': {
                 'default_flock_id': self.id,
+            },
+        }
+
+    def action_view_harvests(self):
+        """Smart button to view harvests for this breeder pen series."""
+        self.ensure_one()
+        return {
+            'name': _('Harvest Records'),
+            'type': 'ir.actions.act_window',
+            'res_model': 'taghini.harvest',
+            'view_mode': 'list,form',
+            'domain': [('breeder_flock_id', '=', self.id)],
+            'context': {
+                'default_flock_type': 'breeder',
+                'default_breeder_flock_id': self.id,
+            },
+        }
+
+    def action_create_harvest(self):
+        """Open a pre-filled Harvest form once the breeder flock is in the Laying phase."""
+        self.ensure_one()
+        if self.state != 'active':
+            raise UserError(_("You can only create a harvest from an active Breeder Pen Series."))
+        total_alive = (self.current_females or 0) + (self.current_males or 0)
+        if total_alive <= 0:
+            raise UserError(_("There are no live birds remaining in this breeder flock to harvest."))
+        harvested_done = sum(self.harvest_ids.filtered(lambda h: h.state == 'done').mapped('birds_received'))
+        remaining_alive = max(total_alive - harvested_done, 0)
+        if remaining_alive <= 0:
+            raise UserError(_("All live birds in this breeder flock have already been harvested."))
+        if self.lifecycle_phase != 'lay':
+            raise UserError(_("Breeder Pen Series must be in the Laying phase before creating a spent-hen harvest."))
+
+        return {
+            'name': _('Create Breeder Harvest - %s') % self.name,
+            'type': 'ir.actions.act_window',
+            'res_model': 'taghini.harvest',
+            'view_mode': 'form',
+            'target': 'current',
+            'context': {
+                'default_flock_type': 'breeder',
+                'default_breeder_flock_id': self.id,
+                'default_abattoir_id': self.farm_id.default_abattoir_id.id if self.farm_id.default_abattoir_id else False,
+                'default_birds_received': remaining_alive,
             },
         }
 
@@ -212,7 +263,24 @@ class BreederFlock(models.Model):
         for vals in vals_list:
             if vals.get('name', 'New') == 'New' or not vals.get('name'):
                 vals['name'] = self.env['ir.sequence'].next_by_code('taghini.breeder.flock') or 'New'
-        return super().create(vals_list)
+        records = super().create(vals_list)
+        records.mapped('batch_id')._check_auto_sorted()
+        return records
+
+    def write(self, vals):
+        old_batches = self.mapped('batch_id')
+        res = super().write(vals)
+        if any(k in vals for k in ('initial_females', 'initial_males', 'batch_id')):
+            (old_batches | self.mapped('batch_id'))._check_auto_sorted()
+        if 'laying_started' in vals:
+            self.mapped('batch_id')._check_auto_laying()
+        return res
+
+    def unlink(self):
+        batches = self.mapped('batch_id')
+        res = super().unlink()
+        batches._check_auto_sorted()
+        return res
 
     @api.depends('initial_females', 'initial_males', 'pen_log_ids.closing_females', 'pen_log_ids.closing_males')
     def _compute_counts(self):
@@ -256,6 +324,7 @@ class BreederFlock(models.Model):
                 rec.lifecycle_phase = 'lay'
                 if not rec.laying_started:
                     rec.laying_started = True
+        self.mapped('batch_id')._check_auto_laying()
 
     @api.onchange('pen_id', 'initial_females', 'initial_males')
     def _onchange_check_pen_capacity_warning(self):
@@ -340,6 +409,14 @@ class BreederFlock(models.Model):
         self.write({'state': 'active'})
 
     def action_close(self):
+        for rec in self:
+            harvested_done = sum(rec.harvest_ids.filtered(lambda h: h.state == 'done').mapped('birds_received'))
+            remaining_alive = (rec.current_females or 0) + (rec.current_males or 0) - harvested_done
+            if remaining_alive > 0:
+                raise UserError(_(
+                    "Cannot close Breeder Pen Series '%(name)s' while %(count)d live bird(s) remain unharvested. "
+                    "Please use 'Create Harvest' (or record mortality/culls in Daily Logs) first."
+                ) % {'name': rec.name, 'count': remaining_alive})
         self.write({'state': 'closed'})
 
     def action_reset_draft(self):

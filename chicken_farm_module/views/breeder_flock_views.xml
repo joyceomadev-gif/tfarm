@@ -7,6 +7,7 @@
             <form string="Breeder Pen Series">
                 <header>
                     <button name="action_create_daily_log" string="Log Daily Operations" type="object" class="btn-primary" invisible="state != 'active'"/>
+                    <button name="action_create_harvest" string="Create Harvest" type="object" class="btn-success" icon="fa-truck" invisible="state != 'active' or lifecycle_phase != 'lay' or (current_females + current_males) &lt;= 0"/>
                     <button name="action_export_111_col_excel" string="Export 111-Col Ledger (Excel)" type="object" class="btn-secondary" icon="fa-file-excel-o" invisible="pen_log_count == 0"/>
                     <button name="action_activate" string="Activate Flock" type="object" class="btn-success" invisible="state != 'draft'"/>
                     <button name="action_close" string="Close / Depopulate" type="object" class="btn-secondary" invisible="state != 'active'"/>
@@ -17,6 +18,9 @@
                     <div class="oe_button_box" name="button_box">
                         <button name="action_view_pen_logs" type="object" class="oe_stat_button" icon="fa-pencil-square-o">
                             <field name="pen_log_count" widget="statinfo" string="Daily Logs"/>
+                        </button>
+                        <button name="action_view_harvests" type="object" class="oe_stat_button" icon="fa-truck" invisible="harvest_count == 0">
+                            <field name="harvest_count" widget="statinfo" string="Harvests"/>
                         </button>
                     </div>
 

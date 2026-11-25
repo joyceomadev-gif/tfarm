@@ -104,8 +104,15 @@ class FarmHarvest(models.Model):
                 placed = (record.breeder_flock_id.initial_females or 0) + (record.breeder_flock_id.initial_males or 0)
                 logs = record.breeder_flock_id.pen_log_ids
                 total_dead = sum(logs.mapped('female_mortality')) + sum(logs.mapped('male_mortality')) + sum(logs.mapped('female_culls')) + sum(logs.mapped('male_culls'))
-                remaining = placed - total_dead - (record.birds_received or 0)
-                record.unrecorded_birds = abs(remaining) if (remaining < 0 or record.state == 'done') else 0
+                done_harvests = self.search([
+                    ('breeder_flock_id', '=', record.breeder_flock_id.id),
+                    ('state', '=', 'done'),
+                ])
+                total_harvested = sum(done_harvests.mapped('birds_received'))
+                if record.state != 'done':
+                    total_harvested += (record.birds_received or 0)
+                remaining = placed - total_dead - total_harvested
+                record.unrecorded_birds = abs(remaining) if (remaining < 0 or record.breeder_flock_id.state == 'closed') else 0
             elif record.flock_id:
                 placed = record.flock_id.quantity_placed or 0
                 total_dead = sum(record.flock_id.log_ids.mapped('mortality'))
@@ -320,14 +327,30 @@ class FarmHarvest(models.Model):
 
         if self.flock_type == 'breeder':
             self.state = 'done'
-            self.breeder_flock_id.write({'state': 'closed'})
-            self._check_and_alert_md_harvest()
+            flock = self.breeder_flock_id
+            total_harvested = sum(self.search([
+                ('breeder_flock_id', '=', flock.id),
+                ('state', '=', 'done'),
+            ]).mapped('birds_received'))
+            remaining = (flock.current_females or 0) + (flock.current_males or 0) - total_harvested
+            if remaining <= 0:
+                flock.write({'state': 'closed'})
+                if flock.batch_id and flock.batch_id.state in ('mating', 'laying'):
+                    open_flocks = flock.batch_id.flock_ids.filtered(lambda f: f.state not in ('closed', 'cancelled'))
+                    if not open_flocks:
+                        flock.batch_id.write({'state': 'harvested'})
+                self._check_and_alert_md_harvest()
+                msg = f'{self.birds_received} spent breeders transferred to Abattoir. Flock {flock.name} closed.'
+            else:
+                if remaining < 0:
+                    self._check_and_alert_md_harvest()
+                msg = f'{self.birds_received} spent breeders transferred to Abattoir. {remaining} bird(s) remaining in {flock.name}.'
             return {
                 'type': 'ir.actions.client',
                 'tag': 'display_notification',
                 'params': {
                     'title': _('Breeder Depopulation Confirmed'),
-                    'message': f'{self.birds_received} spent breeders transferred to Abattoir. Flock {self.breeder_flock_id.name} closed.',
+                    'message': msg,
                     'type': 'success',
                     'sticky': False,
                 }
@@ -389,7 +412,10 @@ class FarmHarvest(models.Model):
             placed = (flock.initial_females or 0) + (flock.initial_males or 0)
             logs = flock.pen_log_ids
             total_dead = sum(logs.mapped('female_mortality')) + sum(logs.mapped('male_mortality')) + sum(logs.mapped('female_culls')) + sum(logs.mapped('male_culls'))
-            total_harvested = self.birds_received or 0
+            total_harvested = sum(self.search([
+                ('breeder_flock_id', '=', flock.id),
+                ('state', '=', 'done'),
+            ]).mapped('birds_received'))
             farm = flock.farm_id
         else:
             flock = self.flock_id

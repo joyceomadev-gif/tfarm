@@ -57,7 +57,8 @@
                             <field name="harvest_id" options="{'no_create': True}" readonly="state != 'draft'"/>
                             <field name="abattoir_id" readonly="1"/>
                             <field name="pen_id" options="{'no_create': True}" readonly="True"/>
-                            <field name="batch_id" options="{'no_create': True}" readonly="True"/>
+                            <field name="batch_id" options="{'no_create': True}" readonly="True" invisible="not batch_id"/>
+                            <field name="breeder_batch_id" options="{'no_create': True}" readonly="True" invisible="not breeder_batch_id"/>
                             <field name="manager_id" widget="many2one_avatar_user"/>
                         </group> 
                         <group>

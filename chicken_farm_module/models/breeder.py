@@ -292,24 +292,129 @@ class BreederBatch(models.Model):
                 vals['name'] = self.env['ir.sequence'].next_by_code('taghini.breeder.batch') or 'New'
         return super().create(vals_list)
 
+    def _check_auto_sorted(self):
+        """Auto-advance received batches to 'sorted' when 100% of DOCs are allocated."""
+        for rec in self:
+            if (
+                rec.state == 'received'
+                and rec.stocked_total_qty > 0
+                and rec.remaining_female_qty == 0
+                and rec.remaining_male_qty == 0
+                and rec.flock_ids
+            ):
+                rec.state = 'sorted'
+                rec.message_post(body=_(
+                    "All %(total)d DOCs (%(f)d females, %(m)d males) have been allocated to pens. "
+                    "Batch automatically moved to <b>Sorted &amp; Pen Allocated</b>."
+                ) % {
+                    'total': rec.stocked_total_qty,
+                    'f': rec.stocked_female_qty,
+                    'm': rec.stocked_male_qty,
+                })
+
+    def _check_auto_laying(self):
+        """Auto-advance mating batches to 'laying' when all non-cancelled pens reach lay."""
+        for rec in self:
+            non_cancelled = rec.flock_ids.filtered(lambda f: f.state != 'cancelled')
+            if (
+                rec.state == 'mating'
+                and non_cancelled
+                and all(f.lifecycle_phase == 'lay' or f.laying_started for f in non_cancelled)
+            ):
+                rec.state = 'laying'
+                rec.message_post(body=_(
+                    "All active pen series have reached the Laying phase. "
+                    "Batch automatically moved to <b>Laying</b>."
+                ))
+
     def action_mark_received(self):
+        for rec in self:
+            if not rec.farm_id:
+                raise UserError(_("Please assign a Destination Farm before marking batch '%s' as Received.") % rec.name)
+            if (rec.stocked_total_qty or 0) <= 0:
+                raise UserError(_(
+                    "Cannot mark batch '%s' as Received with 0 stocked birds. "
+                    "Please enter the received/stocked female or male quantities first."
+                ) % rec.name)
         self.write({'state': 'received'})
 
     def action_mark_sorted(self):
+        for rec in self:
+            if not rec.flock_ids:
+                raise UserError(_("Please allocate at least one Pen Series before marking batch '%s' as Sorted.") % rec.name)
+            if rec.remaining_female_qty != 0 or rec.remaining_male_qty != 0:
+                raise UserError(_(
+                    "Full allocation is required before marking batch '%(name)s' as Sorted.\n"
+                    "Unallocated Females: %(f)d | Unallocated Males: %(m)d"
+                ) % {
+                    'name': rec.name,
+                    'f': rec.remaining_female_qty,
+                    'm': rec.remaining_male_qty,
+                })
         self.write({'state': 'sorted'})
 
     def action_mark_mating(self):
+        for rec in self:
+            active_pens = rec.flock_ids.filtered(lambda f: f.state == 'active')
+            if not active_pens:
+                raise UserError(_(
+                    "At least one Pen Series must be Activated before moving batch '%s' to Mating."
+                ) % rec.name)
+            mating_ready = active_pens.filtered(lambda f: (f.current_females or 0) > 0 and (f.current_males or 0) > 0)
+            if not mating_ready:
+                raise UserError(_(
+                    "At least one active Pen Series in batch '%s' must have both females and males for Mating."
+                ) % rec.name)
         self.write({'state': 'mating'})
 
     def action_mark_laying(self):
+        for rec in self:
+            non_cancelled = rec.flock_ids.filtered(lambda f: f.state != 'cancelled')
+            if not non_cancelled:
+                raise UserError(_("Batch '%s' has no active Pen Series to move to Laying.") % rec.name)
+            not_ready = non_cancelled.filtered(lambda f: f.lifecycle_phase != 'lay' and not f.laying_started)
+            if not_ready:
+                names = ", ".join(not_ready.mapped(lambda f: f"{f.name} ({f.lifecycle_phase})"))
+                raise UserError(_(
+                    "All non-cancelled Pen Series must reach the Laying phase (or have Laying Phase Active enabled) first.\n"
+                    "Not ready: %s"
+                ) % names)
         self.write({'state': 'laying'})
 
     def action_mark_harvested(self):
+        for rec in self:
+            non_cancelled = rec.flock_ids.filtered(lambda f: f.state != 'cancelled')
+            if not non_cancelled:
+                raise UserError(_("Batch '%s' has no Pen Series to mark as Harvested.") % rec.name)
+            unclosed = non_cancelled.filtered(lambda f: f.state != 'closed')
+            if unclosed:
+                names = ", ".join(unclosed.mapped('name'))
+                raise UserError(_(
+                    "All non-cancelled Pen Series must be harvested/closed before marking batch '%(batch)s' as Harvested.\n"
+                    "Still open: %(pens)s"
+                ) % {'batch': rec.name, 'pens': names})
         self.write({'state': 'harvested'})
 
     def action_close_batch(self):
+        for rec in self:
+            open_pens = rec.flock_ids.filtered(lambda f: f.state in ('draft', 'active'))
+            if open_pens:
+                names = ", ".join(open_pens.mapped('name'))
+                raise UserError(_(
+                    "Cannot close batch '%(batch)s' while Pen Series are still Draft or Active: %(pens)s"
+                ) % {'batch': rec.name, 'pens': names})
         self.write({'state': 'closed'})
 
     def action_cancel_batch(self):
+        for rec in self:
+            active_pens = rec.flock_ids.filtered(lambda f: f.state == 'active')
+            if active_pens:
+                raise UserError(_(
+                    "Cannot cancel batch '%s' while Pen Series are Active. Close/depopulate them instead."
+                ) % rec.name)
+            if rec.flock_ids.mapped('pen_log_ids') or rec.flock_ids.mapped('harvest_ids'):
+                raise UserError(_(
+                    "Cannot cancel batch '%s' because daily logs or harvests already exist. Close the batch instead."
+                ) % rec.name)
         self.write({'state': 'cancelled'})
 

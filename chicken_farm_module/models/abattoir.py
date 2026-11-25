@@ -31,7 +31,8 @@ class AbattoirBatch(models.Model):
     # --- INPUT (From Harvest) ---
     harvest_id = fields.Many2one('taghini.harvest', string='Source Harvest', domain=[('state', '=', 'done')])
     pen_id = fields.Many2one('taghini.pen', string='Pen',related='harvest_id.pen_id' )
-    batch_id = fields.Many2one('taghini.chicken.batch', string='Batch number',related='harvest_id.flock_id.batch_id' )
+    batch_id = fields.Many2one('taghini.chicken.batch', string='Batch number', related='harvest_id.flock_id.batch_id')
+    breeder_batch_id = fields.Many2one('taghini.breeder.batch', string='Breeder Batch', related='harvest_id.breeder_flock_id.batch_id')
     input_birds = fields.Integer(string='Birds Sent', related='harvest_id.birds_received', store=True)
     input_weight_kg = fields.Float(string='Weight (Kg)', related='harvest_id.total_live_weight', store=True)
 
@@ -341,6 +342,7 @@ class AbattoirBatch(models.Model):
             (abattoir.abattoir_location_id if abattoir else False)
             or (farm.abattoir_location_id if farm else False)
             or self.harvest_id.flock_id.standard_id.abattoir_location_id
+            or self.harvest_id.breeder_flock_id.batch_id.standard_id.abattoir_location_id
         )
         if not source_location:
             raise UserError(_(
@@ -354,6 +356,7 @@ class AbattoirBatch(models.Model):
             or (farm.storage_location_id if farm else False)
             or (farm.freezer_location_id if farm else False)
             or self.harvest_id.flock_id.standard_id.storage_location_id
+            or self.harvest_id.breeder_flock_id.batch_id.standard_id.storage_location_id
         )
         if not dest_location:
             raise UserError(_(
@@ -585,7 +588,7 @@ class AbattoirBatch(models.Model):
 
     def _get_md_users(self):
         """Return MD users from farm or fallback to system param."""
-        farm = self.harvest_id.flock_id.pen_model_id.farm_id
+        farm = self.harvest_id.farm_id or self.farm_id
         if farm and farm.md_user_id:
             return farm.md_user_id
         # Fallback: return all users in group_taghini_farm_manager
