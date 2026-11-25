@@ -5,7 +5,12 @@ from odoo.exceptions import ValidationError
 class PerformanceGoal(models.Model):
     _name = 'hr.performance.goal'
     _description = 'Performance Goal'
-    _inherit = ['mail.thread', 'mail.activity.mixin']
+    _inherit = ['portal.mixin', 'mail.thread', 'mail.activity.mixin']
+
+    def _compute_access_url(self):
+        super()._compute_access_url()
+        for goal in self:
+            goal.access_url = f'/my/performance/goals/{goal.id}'
 
     cycle_id = fields.Many2one(
         'hr.performance.cycle',

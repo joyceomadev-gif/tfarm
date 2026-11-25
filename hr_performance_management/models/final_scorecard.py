@@ -5,7 +5,12 @@ from odoo.exceptions import ValidationError
 class FinalScorecard(models.Model):
     _name = 'hr.final.scorecard'
     _description = 'Final Performance Scorecard'
-    _inherit = ['mail.thread', 'mail.activity.mixin']
+    _inherit = ['portal.mixin', 'mail.thread', 'mail.activity.mixin']
+
+    def _compute_access_url(self):
+        super()._compute_access_url()
+        for scorecard in self:
+            scorecard.access_url = f'/my/performance/scorecards/{scorecard.id}'
 
     cycle_id = fields.Many2one(
         'hr.performance.cycle',

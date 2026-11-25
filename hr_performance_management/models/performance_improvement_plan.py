@@ -6,7 +6,12 @@ from datetime import timedelta
 class PerformanceImprovementPlan(models.Model):
     _name = 'hr.performance.improvement.plan'
     _description = 'Performance Improvement Plan (PIP)'
-    _inherit = ['mail.thread', 'mail.activity.mixin']
+    _inherit = ['portal.mixin', 'mail.thread', 'mail.activity.mixin']
+
+    def _compute_access_url(self):
+        super()._compute_access_url()
+        for pip in self:
+            pip.access_url = f'/my/performance/pips/{pip.id}'
 
     scorecard_id = fields.Many2one(
         'hr.final.scorecard',

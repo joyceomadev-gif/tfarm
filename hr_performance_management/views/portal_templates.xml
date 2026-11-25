@@ -1,0 +1,403 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Portal Home Cards -->
+    <template id="portal_my_home_performance" name="Portal My Home: HR Performance"
+              inherit_id="portal.portal_my_home" priority="40">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
+            <div class="o_portal_category row g-2 mt-3" id="portal_hr_performance_category">
+                <t t-call="portal.portal_docs_entry">
+                    <t t-set="title">My Performance Goals</t>
+                    <t t-set="text">Review your assigned goals and log progress updates</t>
+                    <t t-set="url" t-value="'/my/performance/goals'"/>
+                    <t t-set="placeholder_count" t-value="'goal_count'"/>
+                    <t t-set="config_card" t-value="True"/>
+                </t>
+                <t t-call="portal.portal_docs_entry">
+                    <t t-set="title">My Final Scorecards</t>
+                    <t t-set="text">Review your appraisal results, accept or appeal</t>
+                    <t t-set="url" t-value="'/my/performance/scorecards'"/>
+                    <t t-set="placeholder_count" t-value="'scorecard_count'"/>
+                    <t t-set="config_card" t-value="True"/>
+                </t>
+                <t t-call="portal.portal_docs_entry">
+                    <t t-set="title">Coaching Sessions</t>
+                    <t t-set="text">View scheduled and completed coaching meetings</t>
+                    <t t-set="url" t-value="'/my/performance/coaching'"/>
+                    <t t-set="placeholder_count" t-value="'coaching_count'"/>
+                    <t t-set="config_card" t-value="True"/>
+                </t>
+                <t t-call="portal.portal_docs_entry">
+                    <t t-set="title">Improvement Plans (PIP)</t>
+                    <t t-set="text">View any active Performance Improvement Plans</t>
+                    <t t-set="url" t-value="'/my/performance/pips'"/>
+                    <t t-set="placeholder_count" t-value="'pip_count'"/>
+                    <t t-set="config_card" t-value="True"/>
+                </t>
+                <t t-call="portal.portal_docs_entry">
+                    <t t-set="title">Assigned Evaluations</t>
+                    <t t-set="text">Evaluations assigned to you as an evaluator</t>
+                    <t t-set="url" t-value="'/my/performance/evaluations'"/>
+                    <t t-set="placeholder_count" t-value="'evaluation_count'"/>
+                    <t t-set="config_card" t-value="True"/>
+                </t>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- Breadcrumbs -->
+    <template id="portal_breadcrumbs_performance" inherit_id="portal.portal_breadcrumbs" priority="40">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name == 'performance_goals'" class="breadcrumb-item">My Performance Goals</li>
+            <li t-if="page_name == 'performance_goal_detail'" class="breadcrumb-item">
+                <a href="/my/performance/goals">My Performance Goals</a>
+            </li>
+            <li t-if="page_name == 'performance_goal_detail'" class="breadcrumb-item active">
+                <t t-esc="goal.goal_code"/>
+            </li>
+            <li t-if="page_name == 'performance_scorecards'" class="breadcrumb-item">My Final Scorecards</li>
+            <li t-if="page_name == 'performance_scorecard_detail'" class="breadcrumb-item">
+                <a href="/my/performance/scorecards">My Final Scorecards</a>
+            </li>
+            <li t-if="page_name == 'performance_scorecard_detail'" class="breadcrumb-item active">
+                <t t-esc="scorecard.cycle_id.name"/>
+            </li>
+            <li t-if="page_name == 'performance_coaching'" class="breadcrumb-item">Coaching Sessions</li>
+            <li t-if="page_name == 'performance_pips'" class="breadcrumb-item">Improvement Plans (PIP)</li>
+            <li t-if="page_name == 'performance_evaluations'" class="breadcrumb-item">Assigned Evaluations</li>
+        </xpath>
+    </template>
+
+    <!-- Goals List -->
+    <template id="portal_my_goals" name="My Performance Goals">
+        <t t-call="portal.portal_layout">
+            <h3 class="mb-3">My Performance Goals</h3>
+            <t t-if="not goals">
+                <div class="alert alert-info">You have no performance goals assigned yet.</div>
+            </t>
+            <t t-else="">
+                <div class="table-responsive">
+                    <table class="table table-hover o_portal_my_doc_table">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Cycle</th>
+                                <th>KPI</th>
+                                <th>Weight (%)</th>
+                                <th>Progress (%)</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="goals" t-as="goal">
+                                <td>
+                                    <a t-attf-href="/my/performance/goals/#{goal.id}">
+                                        <t t-esc="goal.goal_code"/>
+                                    </a>
+                                </td>
+                                <td><t t-esc="goal.cycle_id.name"/></td>
+                                <td><t t-esc="goal.kpi"/></td>
+                                <td><t t-esc="'%.1f' % goal.weight"/></td>
+                                <td><t t-esc="'%.1f' % goal.progress_percentage"/>%</td>
+                                <td>
+                                    <span class="badge bg-secondary" t-esc="dict(goal._fields['status'].selection).get(goal.status)"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div t-if="pager" class="o_portal_pager text-center">
+                    <t t-call="portal.pager"/>
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <!-- Goal Detail -->
+    <template id="portal_my_goal_detail" name="Performance Goal Detail">
+        <t t-call="portal.portal_layout">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">
+                        <t t-esc="goal.goal_code"/> — <t t-esc="goal.cycle_id.name"/>
+                    </h4>
+                    <span class="badge bg-primary" t-esc="dict(goal._fields['status'].selection).get(goal.status)"/>
+                </div>
+                <div class="card-body">
+                    <div t-if="error" class="alert alert-danger" t-esc="error"/>
+                    <div t-if="message == 'updated'" class="alert alert-success">Your response has been recorded.</div>
+                    <div t-if="message == 'progress_added'" class="alert alert-success">Progress update submitted.</div>
+
+                    <dl class="row">
+                        <dt class="col-sm-3">Manager</dt>
+                        <dd class="col-sm-9" t-esc="goal.manager_id.name or '-'"/>
+                        <dt class="col-sm-3">Description</dt>
+                        <dd class="col-sm-9" t-esc="goal.goal_description"/>
+                        <dt class="col-sm-3">Objective</dt>
+                        <dd class="col-sm-9" t-esc="goal.objective"/>
+                        <dt class="col-sm-3">KPI</dt>
+                        <dd class="col-sm-9" t-esc="goal.kpi"/>
+                        <dt class="col-sm-3">Measurement Criteria</dt>
+                        <dd class="col-sm-9" t-esc="goal.measurement_criteria"/>
+                        <dt class="col-sm-3">Period</dt>
+                        <dd class="col-sm-9"><t t-esc="goal.start_date"/> to <t t-esc="goal.end_date"/></dd>
+                        <dt class="col-sm-3">Weight / Progress</dt>
+                        <dd class="col-sm-9"><t t-esc="'%.1f' % goal.weight"/>% weight — <t t-esc="'%.1f' % goal.progress_percentage"/>% completed</dd>
+                    </dl>
+
+                    <!-- Employee Review Action -->
+                    <t t-if="goal.status == 'employee_review'">
+                        <hr/>
+                        <h5>Review &amp; Respond</h5>
+                        <form t-attf-action="/my/performance/goals/#{goal.id}/respond" method="post">
+                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                            <div class="mb-3">
+                                <label class="form-label">Your Comments</label>
+                                <textarea name="employee_comments" class="form-control" rows="3" t-esc="goal.employee_comments or ''"/>
+                            </div>
+                            <button type="submit" name="action_type" value="agree" class="btn btn-success me-2">Agree &amp; Approve</button>
+                            <button type="submit" name="action_type" value="modify" class="btn btn-warning">Request Modification</button>
+                        </form>
+                    </t>
+
+                    <!-- Log Progress Update -->
+                    <t t-if="goal.status in ('approved', 'locked')">
+                        <hr/>
+                        <h5>Log Progress Update</h5>
+                        <form t-attf-action="/my/performance/goals/#{goal.id}/progress" method="post">
+                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <label class="form-label">Progress % (0-100)</label>
+                                    <input type="number" name="progress_percentage" min="0" max="100" step="1"
+                                           class="form-control" t-att-value="goal.progress_percentage" required="required"/>
+                                </div>
+                                <div class="col-md-9">
+                                    <label class="form-label">Achievements</label>
+                                    <input type="text" name="achievements" class="form-control"/>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Challenges</label>
+                                    <input type="text" name="challenges" class="form-control"/>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Support Required</label>
+                                    <input type="text" name="support_required" class="form-control"/>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary mt-3">Submit Progress</button>
+                        </form>
+                    </t>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- Scorecards List -->
+    <template id="portal_my_scorecards" name="My Final Scorecards">
+        <t t-call="portal.portal_layout">
+            <h3 class="mb-3">My Final Scorecards</h3>
+            <t t-if="not scorecards">
+                <div class="alert alert-info">You have no final scorecards available yet.</div>
+            </t>
+            <t t-else="">
+                <div class="table-responsive">
+                    <table class="table table-hover o_portal_my_doc_table">
+                        <thead>
+                            <tr>
+                                <th>Cycle</th>
+                                <th>Final Score</th>
+                                <th>Rating</th>
+                                <th>Acknowledgement</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="scorecards" t-as="sc">
+                                <td>
+                                    <a t-attf-href="/my/performance/scorecards/#{sc.id}">
+                                        <t t-esc="sc.cycle_id.name"/>
+                                    </a>
+                                </td>
+                                <td><t t-esc="'%.2f' % sc.final_score"/>%</td>
+                                <td t-esc="dict(sc._fields['performance_rating'].selection).get(sc.performance_rating)"/>
+                                <td t-esc="dict(sc._fields['employee_acknowledgement'].selection).get(sc.employee_acknowledgement)"/>
+                                <td>
+                                    <span class="badge bg-secondary" t-esc="dict(sc._fields['status'].selection).get(sc.status)"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <!-- Scorecard Detail -->
+    <template id="portal_my_scorecard_detail" name="Final Scorecard Detail">
+        <t t-call="portal.portal_layout">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">Scorecard — <t t-esc="scorecard.cycle_id.name"/></h4>
+                    <span class="badge bg-primary" t-esc="dict(scorecard._fields['status'].selection).get(scorecard.status)"/>
+                </div>
+                <div class="card-body">
+                    <div t-if="error" class="alert alert-danger" t-esc="error"/>
+                    <div t-if="message == 'updated'" class="alert alert-success">Your acknowledgement has been recorded.</div>
+
+                    <dl class="row">
+                        <dt class="col-sm-4">Goal Achievement Score (60%)</dt>
+                        <dd class="col-sm-8"><t t-esc="'%.2f' % scorecard.goal_achievement_score"/>%</dd>
+                        <dt class="col-sm-4">Average Technical Score (25%)</dt>
+                        <dd class="col-sm-8"><t t-esc="'%.2f' % scorecard.average_technical_score"/>%</dd>
+                        <dt class="col-sm-4">Average Behavioral Score (15%)</dt>
+                        <dd class="col-sm-8"><t t-esc="'%.2f' % scorecard.average_behavioral_score"/></dd>
+                        <dt class="col-sm-4">Final Score</dt>
+                        <dd class="col-sm-8 fw-bold"><t t-esc="'%.2f' % scorecard.final_score"/>%</dd>
+                        <dt class="col-sm-4">Performance Rating</dt>
+                        <dd class="col-sm-8" t-esc="dict(scorecard._fields['performance_rating'].selection).get(scorecard.performance_rating)"/>
+                        <dt class="col-sm-4">Acknowledgement</dt>
+                        <dd class="col-sm-8" t-esc="dict(scorecard._fields['employee_acknowledgement'].selection).get(scorecard.employee_acknowledgement)"/>
+                    </dl>
+
+                    <t t-if="scorecard.status == 'employee_review'">
+                        <hr/>
+                        <h5>Acknowledge Appraisal</h5>
+                        <form t-attf-action="/my/performance/scorecards/#{scorecard.id}/acknowledge" method="post">
+                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                            <div class="mb-3">
+                                <label class="form-label">Comments / Appeal Reason</label>
+                                <textarea name="employee_comments" class="form-control" rows="3" t-esc="scorecard.employee_comments or ''"/>
+                            </div>
+                            <button type="submit" name="action_type" value="accept" class="btn btn-success me-2">Accept Appraisal</button>
+                            <button type="submit" name="action_type" value="appeal" class="btn btn-danger">Submit Appeal</button>
+                        </form>
+                    </t>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- Coaching Sessions -->
+    <template id="portal_my_coaching" name="My Coaching Sessions">
+        <t t-call="portal.portal_layout">
+            <h3 class="mb-3">My Coaching Sessions</h3>
+            <t t-if="not sessions">
+                <div class="alert alert-info">No coaching sessions recorded.</div>
+            </t>
+            <t t-else="">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Supervisor</th>
+                                <th>Objectives</th>
+                                <th>Action Items</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="sessions" t-as="s">
+                                <td t-esc="s.meeting_date"/>
+                                <td t-esc="s.supervisor_id.name"/>
+                                <td t-esc="s.objectives_discussed"/>
+                                <td t-esc="s.action_items or '-'"/>
+                                <td t-esc="dict(s._fields['status'].selection).get(s.status)"/>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <!-- Performance Improvement Plans -->
+    <template id="portal_my_pips" name="My Performance Improvement Plans">
+        <t t-call="portal.portal_layout">
+            <h3 class="mb-3">My Performance Improvement Plans (PIP)</h3>
+            <t t-if="not pips">
+                <div class="alert alert-info">You have no Performance Improvement Plans.</div>
+            </t>
+            <t t-else="">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Cycle</th>
+                                <th>Manager</th>
+                                <th>Period</th>
+                                <th>Objectives</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="pips" t-as="p">
+                                <td t-esc="p.cycle_id.name"/>
+                                <td t-esc="p.manager_id.name"/>
+                                <td><t t-esc="p.start_date"/> to <t t-esc="p.end_date"/></td>
+                                <td t-esc="p.objectives"/>
+                                <td t-esc="dict(p._fields['status'].selection).get(p.status)"/>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <!-- Assigned Evaluations -->
+    <template id="portal_my_evaluations" name="Assigned Evaluations">
+        <t t-call="portal.portal_layout">
+            <h3 class="mb-3">Assigned Evaluations</h3>
+            <t t-if="not tech_evals and not behav_evals">
+                <div class="alert alert-info">You have no evaluations assigned to complete.</div>
+            </t>
+            <t t-if="tech_evals">
+                <h5 class="mt-3">Technical Evaluations</h5>
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Cycle</th>
+                            <th>Employee</th>
+                            <th>Goal</th>
+                            <th>Technical Score</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="tech_evals" t-as="te">
+                            <td t-esc="te.cycle_id.name"/>
+                            <td t-esc="te.employee_id.name"/>
+                            <td t-esc="te.goal_id.goal_code"/>
+                            <td><t t-esc="'%.2f' % te.technical_score"/></td>
+                            <td t-esc="dict(te._fields['status'].selection).get(te.status)"/>
+                        </tr>
+                    </tbody>
+                </table>
+            </t>
+            <t t-if="behav_evals">
+                <h5 class="mt-3">Behavioral Evaluations</h5>
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Cycle</th>
+                            <th>Employee</th>
+                            <th>Role</th>
+                            <th>Average Score</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="behav_evals" t-as="be">
+                            <td t-esc="be.cycle_id.name"/>
+                            <td t-esc="be.employee_id.name"/>
+                            <td t-esc="dict(be._fields['evaluator_type'].selection).get(be.evaluator_type)"/>
+                            <td><t t-esc="'%.2f' % be.behavioral_average_score"/></td>
+                            <td t-esc="dict(be._fields['status'].selection).get(be.status)"/>
+                        </tr>
+                    </tbody>
+                </table>
+            </t>
+        </t>
+    </template>
+</odoo>

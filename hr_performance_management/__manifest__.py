@@ -20,6 +20,7 @@
         'base',
         'hr',
         'mail',
+        'portal',
         'web',
     ],
     'data': [
@@ -62,6 +63,9 @@
         
         # Menus
         'views/menu_views.xml',
+
+        # Portal Templates
+        'views/portal_templates.xml',
     ],
     'installable': True,
     'application': True,

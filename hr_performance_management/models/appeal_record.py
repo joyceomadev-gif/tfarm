@@ -5,7 +5,12 @@ from odoo.exceptions import ValidationError
 class AppealRecord(models.Model):
     _name = 'hr.appeal.record'
     _description = 'Employee Appeal / Grievance'
-    _inherit = ['mail.thread', 'mail.activity.mixin']
+    _inherit = ['portal.mixin', 'mail.thread', 'mail.activity.mixin']
+
+    def _compute_access_url(self):
+        super()._compute_access_url()
+        for appeal in self:
+            appeal.access_url = f'/my/performance/appeals/{appeal.id}'
 
     scorecard_id = fields.Many2one(
         'hr.final.scorecard',

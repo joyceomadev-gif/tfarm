@@ -2,8 +2,14 @@
 <odoo>
     <data>
         
+        <!-- Allow Line Managers to see the Employees menu (restricted by ir.rule to supervised employees) -->
+        <record id="hr.menu_hr_employee_payroll" model="ir.ui.menu">
+            <field name="group_ids" eval="[(4, ref('hr_performance_management.group_hr_line_manager'))]"/>
+        </record>
+
         <!-- Main Menu -->
-        <menuitem id="menu_hr_performance_root" name="HR Performance" parent="hr.menu_hr_root" sequence="10"/>
+        <menuitem id="menu_hr_performance_root" name="HR Performance" parent="hr.menu_hr_root" sequence="10"
+                  groups="base.group_user,hr_performance_management.group_hr_line_manager,hr.group_hr_user,hr.group_hr_manager"/>
 
         <!-- Submenu: Cycles Management -->
         <menuitem id="menu_hr_performance_cycles" name="Cycles" parent="menu_hr_performance_root" sequence="1"/>

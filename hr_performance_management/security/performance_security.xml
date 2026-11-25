@@ -1,12 +1,107 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data noupdate="1">
+    <!-- Line Manager / Supervisor Group (sees only supervised employees) -->
+    <record id="group_hr_line_manager" model="res.groups">
+        <field name="name">Line Manager: Supervised Employees Only</field>
+        <field name="sequence">5</field>
+        <field name="privilege_id" ref="hr.res_groups_privilege_employees"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        <field name="comment">Managers can view employees under their supervision and manage their performance.</field>
+    </record>
 
-        <!-- Performance Cycle Rules -->
-        <record id="rule_performance_cycle_user" model="ir.rule">
-            <field name="name">Performance Cycle - User</field>
+    <data noupdate="0">
+
+        <!-- ============================================================ -->
+        <!-- HR Employee & Directory Visibility Rules                     -->
+        <!-- ============================================================ -->
+
+        <!-- 1. hr.employee: Line Managers see only supervised employees + self -->
+        <record id="rule_hr_employee_line_manager" model="ir.rule">
+            <field name="name">HR Employee - Line Manager (Supervised Only)</field>
+            <field name="model_id" ref="hr.model_hr_employee"/>
+            <field name="domain_force">['|', ('id', 'child_of', user.employee_ids.ids), ('user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('hr_performance_management.group_hr_line_manager'))]"/>
+            <field name="perm_read">1</field>
+            <field name="perm_write">0</field>
+            <field name="perm_create">0</field>
+            <field name="perm_unlink">0</field>
+        </record>
+
+        <!-- Ensure HR Officers still see all hr.employee records -->
+        <record id="rule_hr_employee_hr_user_all" model="ir.rule">
+            <field name="name">HR Employee - HR Officer (All)</field>
+            <field name="model_id" ref="hr.model_hr_employee"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('hr.group_hr_user'))]"/>
+            <field name="perm_read">1</field>
+            <field name="perm_write">1</field>
+            <field name="perm_create">1</field>
+            <field name="perm_unlink">1</field>
+        </record>
+
+        <!-- 2. hr.employee.public: Normal staff (base.group_user) see only own record -->
+        <record id="rule_hr_employee_public_own" model="ir.rule">
+            <field name="name">HR Employee Public - Own Record Only</field>
+            <field name="model_id" ref="hr.model_hr_employee_public"/>
+            <field name="domain_force">[('user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+            <field name="perm_read">1</field>
+            <field name="perm_write">0</field>
+            <field name="perm_create">0</field>
+            <field name="perm_unlink">0</field>
+        </record>
+
+        <record id="rule_hr_employee_public_line_manager" model="ir.rule">
+            <field name="name">HR Employee Public - Line Manager (Supervised Only)</field>
+            <field name="model_id" ref="hr.model_hr_employee_public"/>
+            <field name="domain_force">['|', ('id', 'child_of', user.employee_ids.ids), ('user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('hr_performance_management.group_hr_line_manager'))]"/>
+            <field name="perm_read">1</field>
+            <field name="perm_write">0</field>
+            <field name="perm_create">0</field>
+            <field name="perm_unlink">0</field>
+        </record>
+
+        <record id="rule_hr_employee_public_hr_user_all" model="ir.rule">
+            <field name="name">HR Employee Public - HR Officer (All)</field>
+            <field name="model_id" ref="hr.model_hr_employee_public"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('hr.group_hr_user'))]"/>
+            <field name="perm_read">1</field>
+            <field name="perm_write">0</field>
+            <field name="perm_create">0</field>
+            <field name="perm_unlink">0</field>
+        </record>
+
+        <!-- ============================================================ -->
+        <!-- Performance Cycle Rules                                      -->
+        <!-- ============================================================ -->
+        <record id="rule_performance_cycle_base_user" model="ir.rule">
+            <field name="name">Performance Cycle - Internal User</field>
             <field name="model_id" ref="hr_performance_management.model_hr_performance_cycle"/>
-            <field name="domain_force">[('id', '!=', False)]</field>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+            <field name="perm_read">1</field>
+            <field name="perm_write">0</field>
+            <field name="perm_create">0</field>
+            <field name="perm_unlink">0</field>
+        </record>
+
+        <record id="rule_performance_cycle_portal" model="ir.rule">
+            <field name="name">Performance Cycle - Portal</field>
+            <field name="model_id" ref="hr_performance_management.model_hr_performance_cycle"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+            <field name="perm_read">1</field>
+            <field name="perm_write">0</field>
+            <field name="perm_create">0</field>
+            <field name="perm_unlink">0</field>
+        </record>
+
+        <record id="rule_performance_cycle_user" model="ir.rule">
+            <field name="name">Performance Cycle - HR Officer</field>
+            <field name="model_id" ref="hr_performance_management.model_hr_performance_cycle"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
             <field name="groups" eval="[(4, ref('hr.group_hr_user'))]"/>
             <field name="perm_read">1</field>
             <field name="perm_write">0</field>
@@ -15,9 +110,9 @@
         </record>
 
         <record id="rule_performance_cycle_manager" model="ir.rule">
-            <field name="name">Performance Cycle - Manager</field>
+            <field name="name">Performance Cycle - HR Manager</field>
             <field name="model_id" ref="hr_performance_management.model_hr_performance_cycle"/>
-            <field name="domain_force">[('id', '!=', False)]</field>
+            <field name="domain_force">[(1, '=', 1)]</field>
             <field name="groups" eval="[(4, ref('hr.group_hr_manager'))]"/>
             <field name="perm_read">1</field>
             <field name="perm_write">1</field>
@@ -25,11 +120,24 @@
             <field name="perm_unlink">1</field>
         </record>
 
-        <!-- Evaluator Assignment Rules -->
-        <record id="rule_evaluator_assignment_user" model="ir.rule">
-            <field name="name">Evaluator Assignment - User</field>
+        <!-- ============================================================ -->
+        <!-- Evaluator Assignment Rules                                   -->
+        <!-- ============================================================ -->
+        <record id="rule_evaluator_assignment_line_manager" model="ir.rule">
+            <field name="name">Evaluator Assignment - Line Manager</field>
             <field name="model_id" ref="hr_performance_management.model_hr_evaluator_assignment"/>
-            <field name="domain_force">[('id', '!=', False)]</field>
+            <field name="domain_force">['|', ('employee_id', 'child_of', user.employee_ids.ids), ('line_manager_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('hr_performance_management.group_hr_line_manager'))]"/>
+            <field name="perm_read">1</field>
+            <field name="perm_write">1</field>
+            <field name="perm_create">1</field>
+            <field name="perm_unlink">0</field>
+        </record>
+
+        <record id="rule_evaluator_assignment_user" model="ir.rule">
+            <field name="name">Evaluator Assignment - HR Officer</field>
+            <field name="model_id" ref="hr_performance_management.model_hr_evaluator_assignment"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
             <field name="groups" eval="[(4, ref('hr.group_hr_user'))]"/>
             <field name="perm_read">1</field>
             <field name="perm_write">0</field>
@@ -38,9 +146,9 @@
         </record>
 
         <record id="rule_evaluator_assignment_manager" model="ir.rule">
-            <field name="name">Evaluator Assignment - Manager</field>
+            <field name="name">Evaluator Assignment - HR Manager</field>
             <field name="model_id" ref="hr_performance_management.model_hr_evaluator_assignment"/>
-            <field name="domain_force">[('id', '!=', False)]</field>
+            <field name="domain_force">[(1, '=', 1)]</field>
             <field name="groups" eval="[(4, ref('hr.group_hr_manager'))]"/>
             <field name="perm_read">1</field>
             <field name="perm_write">1</field>
@@ -48,22 +156,57 @@
             <field name="perm_unlink">0</field>
         </record>
 
-        <!-- Performance Goal Rules -->
+        <!-- ============================================================ -->
+        <!-- Performance Goal Rules                                       -->
+        <!-- ============================================================ -->
         <record id="rule_performance_goal_user_own" model="ir.rule">
-            <field name="name">Performance Goal - User Own</field>
+            <field name="name">Performance Goal - Own Record</field>
             <field name="model_id" ref="hr_performance_management.model_hr_performance_goal"/>
             <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
-            <field name="groups" eval="[(4, ref('hr.group_hr_user'))]"/>
+            <field name="groups" eval="[(4, ref('base.group_user'))]"/>
             <field name="perm_read">1</field>
             <field name="perm_write">1</field>
             <field name="perm_create">0</field>
             <field name="perm_unlink">0</field>
         </record>
 
-        <record id="rule_performance_goal_manager" model="ir.rule">
-            <field name="name">Performance Goal - Manager</field>
+        <record id="rule_performance_goal_portal" model="ir.rule">
+            <field name="name">Performance Goal - Portal Own</field>
             <field name="model_id" ref="hr_performance_management.model_hr_performance_goal"/>
-            <field name="domain_force">[('id', '!=', False)]</field>
+            <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+            <field name="perm_read">1</field>
+            <field name="perm_write">1</field>
+            <field name="perm_create">0</field>
+            <field name="perm_unlink">0</field>
+        </record>
+
+        <record id="rule_performance_goal_line_manager" model="ir.rule">
+            <field name="name">Performance Goal - Line Manager</field>
+            <field name="model_id" ref="hr_performance_management.model_hr_performance_goal"/>
+            <field name="domain_force">['|', ('employee_id', 'child_of', user.employee_ids.ids), ('employee_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('hr_performance_management.group_hr_line_manager'))]"/>
+            <field name="perm_read">1</field>
+            <field name="perm_write">1</field>
+            <field name="perm_create">1</field>
+            <field name="perm_unlink">0</field>
+        </record>
+
+        <record id="rule_performance_goal_hr_user" model="ir.rule">
+            <field name="name">Performance Goal - HR Officer</field>
+            <field name="model_id" ref="hr_performance_management.model_hr_performance_goal"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('hr.group_hr_user'))]"/>
+            <field name="perm_read">1</field>
+            <field name="perm_write">1</field>
+            <field name="perm_create">1</field>
+            <field name="perm_unlink">0</field>
+        </record>
+
+        <record id="rule_performance_goal_manager" model="ir.rule">
+            <field name="name">Performance Goal - HR Manager</field>
+            <field name="model_id" ref="hr_performance_management.model_hr_performance_goal"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
             <field name="groups" eval="[(4, ref('hr.group_hr_manager'))]"/>
             <field name="perm_read">1</field>
             <field name="perm_write">1</field>
@@ -71,11 +214,46 @@
             <field name="perm_unlink">0</field>
         </record>
 
-        <!-- Goal Progress Update Rules -->
+        <!-- ============================================================ -->
+        <!-- Goal Progress Update Rules                                   -->
+        <!-- ============================================================ -->
         <record id="rule_goal_progress_user_own" model="ir.rule">
-            <field name="name">Goal Progress Update - User Own</field>
+            <field name="name">Goal Progress Update - Own Record</field>
             <field name="model_id" ref="hr_performance_management.model_hr_goal_progress_update"/>
             <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+            <field name="perm_read">1</field>
+            <field name="perm_write">1</field>
+            <field name="perm_create">1</field>
+            <field name="perm_unlink">0</field>
+        </record>
+
+        <record id="rule_goal_progress_portal" model="ir.rule">
+            <field name="name">Goal Progress Update - Portal Own</field>
+            <field name="model_id" ref="hr_performance_management.model_hr_goal_progress_update"/>
+            <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+            <field name="perm_read">1</field>
+            <field name="perm_write">1</field>
+            <field name="perm_create">1</field>
+            <field name="perm_unlink">0</field>
+        </record>
+
+        <record id="rule_goal_progress_line_manager" model="ir.rule">
+            <field name="name">Goal Progress Update - Line Manager</field>
+            <field name="model_id" ref="hr_performance_management.model_hr_goal_progress_update"/>
+            <field name="domain_force">['|', ('employee_id', 'child_of', user.employee_ids.ids), ('employee_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('hr_performance_management.group_hr_line_manager'))]"/>
+            <field name="perm_read">1</field>
+            <field name="perm_write">1</field>
+            <field name="perm_create">1</field>
+            <field name="perm_unlink">0</field>
+        </record>
+
+        <record id="rule_goal_progress_hr_user" model="ir.rule">
+            <field name="name">Goal Progress Update - HR Officer</field>
+            <field name="model_id" ref="hr_performance_management.model_hr_goal_progress_update"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
             <field name="groups" eval="[(4, ref('hr.group_hr_user'))]"/>
             <field name="perm_read">1</field>
             <field name="perm_write">1</field>
@@ -84,9 +262,9 @@
         </record>
 
         <record id="rule_goal_progress_manager" model="ir.rule">
-            <field name="name">Goal Progress Update - Manager</field>
+            <field name="name">Goal Progress Update - HR Manager</field>
             <field name="model_id" ref="hr_performance_management.model_hr_goal_progress_update"/>
-            <field name="domain_force">[('id', '!=', False)]</field>
+            <field name="domain_force">[(1, '=', 1)]</field>
             <field name="groups" eval="[(4, ref('hr.group_hr_manager'))]"/>
             <field name="perm_read">1</field>
             <field name="perm_write">1</field>
@@ -94,11 +272,46 @@
             <field name="perm_unlink">0</field>
         </record>
 
-        <!-- Coaching Session Rules -->
+        <!-- ============================================================ -->
+        <!-- Coaching Session Rules                                       -->
+        <!-- ============================================================ -->
         <record id="rule_coaching_session_user" model="ir.rule">
-            <field name="name">Coaching Session - User</field>
+            <field name="name">Coaching Session - Own Record</field>
             <field name="model_id" ref="hr_performance_management.model_hr_coaching_session"/>
             <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+            <field name="perm_read">1</field>
+            <field name="perm_write">1</field>
+            <field name="perm_create">0</field>
+            <field name="perm_unlink">0</field>
+        </record>
+
+        <record id="rule_coaching_session_portal" model="ir.rule">
+            <field name="name">Coaching Session - Portal Own</field>
+            <field name="model_id" ref="hr_performance_management.model_hr_coaching_session"/>
+            <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+            <field name="perm_read">1</field>
+            <field name="perm_write">0</field>
+            <field name="perm_create">0</field>
+            <field name="perm_unlink">0</field>
+        </record>
+
+        <record id="rule_coaching_session_line_manager" model="ir.rule">
+            <field name="name">Coaching Session - Line Manager</field>
+            <field name="model_id" ref="hr_performance_management.model_hr_coaching_session"/>
+            <field name="domain_force">['|', '|', ('employee_id', 'child_of', user.employee_ids.ids), ('supervisor_id.user_id', '=', user.id), ('employee_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('hr_performance_management.group_hr_line_manager'))]"/>
+            <field name="perm_read">1</field>
+            <field name="perm_write">1</field>
+            <field name="perm_create">1</field>
+            <field name="perm_unlink">0</field>
+        </record>
+
+        <record id="rule_coaching_session_hr_user" model="ir.rule">
+            <field name="name">Coaching Session - HR Officer</field>
+            <field name="model_id" ref="hr_performance_management.model_hr_coaching_session"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
             <field name="groups" eval="[(4, ref('hr.group_hr_user'))]"/>
             <field name="perm_read">1</field>
             <field name="perm_write">1</field>
@@ -107,9 +320,9 @@
         </record>
 
         <record id="rule_coaching_session_manager" model="ir.rule">
-            <field name="name">Coaching Session - Manager</field>
+            <field name="name">Coaching Session - HR Manager</field>
             <field name="model_id" ref="hr_performance_management.model_hr_coaching_session"/>
-            <field name="domain_force">[('id', '!=', False)]</field>
+            <field name="domain_force">[(1, '=', 1)]</field>
             <field name="groups" eval="[(4, ref('hr.group_hr_manager'))]"/>
             <field name="perm_read">1</field>
             <field name="perm_write">1</field>
@@ -117,11 +330,46 @@
             <field name="perm_unlink">1</field>
         </record>
 
-        <!-- Technical Evaluation Rules -->
-        <record id="rule_technical_evaluation_user" model="ir.rule">
-            <field name="name">Technical Evaluation - User</field>
+        <!-- ============================================================ -->
+        <!-- Technical Evaluation Rules                                   -->
+        <!-- ============================================================ -->
+        <record id="rule_technical_evaluation_evaluator" model="ir.rule">
+            <field name="name">Technical Evaluation - Assigned Evaluator</field>
             <field name="model_id" ref="hr_performance_management.model_hr_technical_evaluation"/>
-            <field name="domain_force">[('id', '!=', False)]</field>
+            <field name="domain_force">[('evaluator_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+            <field name="perm_read">1</field>
+            <field name="perm_write">1</field>
+            <field name="perm_create">1</field>
+            <field name="perm_unlink">0</field>
+        </record>
+
+        <record id="rule_technical_evaluation_portal" model="ir.rule">
+            <field name="name">Technical Evaluation - Portal Assigned Evaluator</field>
+            <field name="model_id" ref="hr_performance_management.model_hr_technical_evaluation"/>
+            <field name="domain_force">[('evaluator_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+            <field name="perm_read">1</field>
+            <field name="perm_write">1</field>
+            <field name="perm_create">0</field>
+            <field name="perm_unlink">0</field>
+        </record>
+
+        <record id="rule_technical_evaluation_line_manager" model="ir.rule">
+            <field name="name">Technical Evaluation - Line Manager</field>
+            <field name="model_id" ref="hr_performance_management.model_hr_technical_evaluation"/>
+            <field name="domain_force">['|', ('evaluator_id.user_id', '=', user.id), ('employee_id', 'child_of', user.employee_ids.ids)]</field>
+            <field name="groups" eval="[(4, ref('hr_performance_management.group_hr_line_manager'))]"/>
+            <field name="perm_read">1</field>
+            <field name="perm_write">1</field>
+            <field name="perm_create">1</field>
+            <field name="perm_unlink">0</field>
+        </record>
+
+        <record id="rule_technical_evaluation_user" model="ir.rule">
+            <field name="name">Technical Evaluation - HR Officer</field>
+            <field name="model_id" ref="hr_performance_management.model_hr_technical_evaluation"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
             <field name="groups" eval="[(4, ref('hr.group_hr_user'))]"/>
             <field name="perm_read">1</field>
             <field name="perm_write">1</field>
@@ -130,9 +378,9 @@
         </record>
 
         <record id="rule_technical_evaluation_manager" model="ir.rule">
-            <field name="name">Technical Evaluation - Manager</field>
+            <field name="name">Technical Evaluation - HR Manager</field>
             <field name="model_id" ref="hr_performance_management.model_hr_technical_evaluation"/>
-            <field name="domain_force">[('id', '!=', False)]</field>
+            <field name="domain_force">[(1, '=', 1)]</field>
             <field name="groups" eval="[(4, ref('hr.group_hr_manager'))]"/>
             <field name="perm_read">1</field>
             <field name="perm_write">1</field>
@@ -140,11 +388,46 @@
             <field name="perm_unlink">1</field>
         </record>
 
-        <!-- Behavioral Evaluation Rules -->
-        <record id="rule_behavioral_evaluation_user" model="ir.rule">
-            <field name="name">Behavioral Evaluation - User</field>
+        <!-- ============================================================ -->
+        <!-- Behavioral Evaluation Rules                                  -->
+        <!-- ============================================================ -->
+        <record id="rule_behavioral_evaluation_evaluator" model="ir.rule">
+            <field name="name">Behavioral Evaluation - Assigned Evaluator</field>
             <field name="model_id" ref="hr_performance_management.model_hr_behavioural_evaluation"/>
-            <field name="domain_force">[('id', '!=', False)]</field>
+            <field name="domain_force">[('evaluator_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+            <field name="perm_read">1</field>
+            <field name="perm_write">1</field>
+            <field name="perm_create">1</field>
+            <field name="perm_unlink">0</field>
+        </record>
+
+        <record id="rule_behavioral_evaluation_portal" model="ir.rule">
+            <field name="name">Behavioral Evaluation - Portal Assigned Evaluator</field>
+            <field name="model_id" ref="hr_performance_management.model_hr_behavioural_evaluation"/>
+            <field name="domain_force">[('evaluator_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+            <field name="perm_read">1</field>
+            <field name="perm_write">1</field>
+            <field name="perm_create">0</field>
+            <field name="perm_unlink">0</field>
+        </record>
+
+        <record id="rule_behavioral_evaluation_line_manager" model="ir.rule">
+            <field name="name">Behavioral Evaluation - Line Manager</field>
+            <field name="model_id" ref="hr_performance_management.model_hr_behavioural_evaluation"/>
+            <field name="domain_force">['|', ('evaluator_id.user_id', '=', user.id), ('employee_id', 'child_of', user.employee_ids.ids)]</field>
+            <field name="groups" eval="[(4, ref('hr_performance_management.group_hr_line_manager'))]"/>
+            <field name="perm_read">1</field>
+            <field name="perm_write">1</field>
+            <field name="perm_create">1</field>
+            <field name="perm_unlink">0</field>
+        </record>
+
+        <record id="rule_behavioral_evaluation_user" model="ir.rule">
+            <field name="name">Behavioral Evaluation - HR Officer</field>
+            <field name="model_id" ref="hr_performance_management.model_hr_behavioural_evaluation"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
             <field name="groups" eval="[(4, ref('hr.group_hr_user'))]"/>
             <field name="perm_read">1</field>
             <field name="perm_write">1</field>
@@ -153,9 +436,9 @@
         </record>
 
         <record id="rule_behavioral_evaluation_manager" model="ir.rule">
-            <field name="name">Behavioral Evaluation - Manager</field>
+            <field name="name">Behavioral Evaluation - HR Manager</field>
             <field name="model_id" ref="hr_performance_management.model_hr_behavioural_evaluation"/>
-            <field name="domain_force">[('id', '!=', False)]</field>
+            <field name="domain_force">[(1, '=', 1)]</field>
             <field name="groups" eval="[(4, ref('hr.group_hr_manager'))]"/>
             <field name="perm_read">1</field>
             <field name="perm_write">1</field>
@@ -163,22 +446,57 @@
             <field name="perm_unlink">1</field>
         </record>
 
-        <!-- Final Scorecard Rules -->
+        <!-- ============================================================ -->
+        <!-- Final Scorecard Rules                                        -->
+        <!-- ============================================================ -->
         <record id="rule_final_scorecard_user_own" model="ir.rule">
-            <field name="name">Final Scorecard - User Own</field>
+            <field name="name">Final Scorecard - Own Record</field>
             <field name="model_id" ref="hr_performance_management.model_hr_final_scorecard"/>
             <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+            <field name="perm_read">1</field>
+            <field name="perm_write">1</field>
+            <field name="perm_create">0</field>
+            <field name="perm_unlink">0</field>
+        </record>
+
+        <record id="rule_final_scorecard_portal" model="ir.rule">
+            <field name="name">Final Scorecard - Portal Own</field>
+            <field name="model_id" ref="hr_performance_management.model_hr_final_scorecard"/>
+            <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+            <field name="perm_read">1</field>
+            <field name="perm_write">1</field>
+            <field name="perm_create">0</field>
+            <field name="perm_unlink">0</field>
+        </record>
+
+        <record id="rule_final_scorecard_line_manager" model="ir.rule">
+            <field name="name">Final Scorecard - Line Manager</field>
+            <field name="model_id" ref="hr_performance_management.model_hr_final_scorecard"/>
+            <field name="domain_force">['|', ('employee_id', 'child_of', user.employee_ids.ids), ('employee_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('hr_performance_management.group_hr_line_manager'))]"/>
+            <field name="perm_read">1</field>
+            <field name="perm_write">1</field>
+            <field name="perm_create">0</field>
+            <field name="perm_unlink">0</field>
+        </record>
+
+        <record id="rule_final_scorecard_hr_user" model="ir.rule">
+            <field name="name">Final Scorecard - HR Officer</field>
+            <field name="model_id" ref="hr_performance_management.model_hr_final_scorecard"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
             <field name="groups" eval="[(4, ref('hr.group_hr_user'))]"/>
             <field name="perm_read">1</field>
-            <field name="perm_write">0</field>
+            <field name="perm_write">1</field>
             <field name="perm_create">0</field>
             <field name="perm_unlink">0</field>
         </record>
 
         <record id="rule_final_scorecard_manager" model="ir.rule">
-            <field name="name">Final Scorecard - Manager</field>
+            <field name="name">Final Scorecard - HR Manager</field>
             <field name="model_id" ref="hr_performance_management.model_hr_final_scorecard"/>
-            <field name="domain_force">[('id', '!=', False)]</field>
+            <field name="domain_force">[(1, '=', 1)]</field>
             <field name="groups" eval="[(4, ref('hr.group_hr_manager'))]"/>
             <field name="perm_read">1</field>
             <field name="perm_write">1</field>
@@ -186,22 +504,46 @@
             <field name="perm_unlink">0</field>
         </record>
 
-        <!-- Appeal Record Rules -->
+        <!-- ============================================================ -->
+        <!-- Appeal Record Rules                                          -->
+        <!-- ============================================================ -->
         <record id="rule_appeal_record_user_own" model="ir.rule">
-            <field name="name">Appeal Record - User Own</field>
+            <field name="name">Appeal Record - Own Record</field>
             <field name="model_id" ref="hr_performance_management.model_hr_appeal_record"/>
             <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+            <field name="perm_read">1</field>
+            <field name="perm_write">1</field>
+            <field name="perm_create">1</field>
+            <field name="perm_unlink">0</field>
+        </record>
+
+        <record id="rule_appeal_record_portal" model="ir.rule">
+            <field name="name">Appeal Record - Portal Own</field>
+            <field name="model_id" ref="hr_performance_management.model_hr_appeal_record"/>
+            <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+            <field name="perm_read">1</field>
+            <field name="perm_write">1</field>
+            <field name="perm_create">1</field>
+            <field name="perm_unlink">0</field>
+        </record>
+
+        <record id="rule_appeal_record_hr_user" model="ir.rule">
+            <field name="name">Appeal Record - HR Officer</field>
+            <field name="model_id" ref="hr_performance_management.model_hr_appeal_record"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
             <field name="groups" eval="[(4, ref('hr.group_hr_user'))]"/>
             <field name="perm_read">1</field>
-            <field name="perm_write">0</field>
-            <field name="perm_create">0</field>
+            <field name="perm_write">1</field>
+            <field name="perm_create">1</field>
             <field name="perm_unlink">0</field>
         </record>
 
         <record id="rule_appeal_record_manager" model="ir.rule">
-            <field name="name">Appeal Record - Manager</field>
+            <field name="name">Appeal Record - HR Manager</field>
             <field name="model_id" ref="hr_performance_management.model_hr_appeal_record"/>
-            <field name="domain_force">[('id', '!=', False)]</field>
+            <field name="domain_force">[(1, '=', 1)]</field>
             <field name="groups" eval="[(4, ref('hr.group_hr_manager'))]"/>
             <field name="perm_read">1</field>
             <field name="perm_write">1</field>
@@ -209,22 +551,57 @@
             <field name="perm_unlink">1</field>
         </record>
 
-        <!-- Performance Improvement Plan Rules -->
+        <!-- ============================================================ -->
+        <!-- Performance Improvement Plan Rules                           -->
+        <!-- ============================================================ -->
         <record id="rule_pip_user_own" model="ir.rule">
-            <field name="name">Performance Improvement Plan - User Own</field>
+            <field name="name">Performance Improvement Plan - Own Record</field>
             <field name="model_id" ref="hr_performance_management.model_hr_performance_improvement_plan"/>
             <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
-            <field name="groups" eval="[(4, ref('hr.group_hr_user'))]"/>
+            <field name="groups" eval="[(4, ref('base.group_user'))]"/>
             <field name="perm_read">1</field>
             <field name="perm_write">0</field>
             <field name="perm_create">0</field>
             <field name="perm_unlink">0</field>
         </record>
 
-        <record id="rule_pip_manager" model="ir.rule">
-            <field name="name">Performance Improvement Plan - Manager</field>
+        <record id="rule_pip_portal" model="ir.rule">
+            <field name="name">Performance Improvement Plan - Portal Own</field>
             <field name="model_id" ref="hr_performance_management.model_hr_performance_improvement_plan"/>
-            <field name="domain_force">[('id', '!=', False)]</field>
+            <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('base.group_portal'))]"/>
+            <field name="perm_read">1</field>
+            <field name="perm_write">0</field>
+            <field name="perm_create">0</field>
+            <field name="perm_unlink">0</field>
+        </record>
+
+        <record id="rule_pip_line_manager" model="ir.rule">
+            <field name="name">Performance Improvement Plan - Line Manager</field>
+            <field name="model_id" ref="hr_performance_management.model_hr_performance_improvement_plan"/>
+            <field name="domain_force">['|', '|', ('employee_id', 'child_of', user.employee_ids.ids), ('manager_id.user_id', '=', user.id), ('employee_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('hr_performance_management.group_hr_line_manager'))]"/>
+            <field name="perm_read">1</field>
+            <field name="perm_write">1</field>
+            <field name="perm_create">1</field>
+            <field name="perm_unlink">0</field>
+        </record>
+
+        <record id="rule_pip_hr_user" model="ir.rule">
+            <field name="name">Performance Improvement Plan - HR Officer</field>
+            <field name="model_id" ref="hr_performance_management.model_hr_performance_improvement_plan"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('hr.group_hr_user'))]"/>
+            <field name="perm_read">1</field>
+            <field name="perm_write">1</field>
+            <field name="perm_create">1</field>
+            <field name="perm_unlink">0</field>
+        </record>
+
+        <record id="rule_pip_manager" model="ir.rule">
+            <field name="name">Performance Improvement Plan - HR Manager</field>
+            <field name="model_id" ref="hr_performance_management.model_hr_performance_improvement_plan"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
             <field name="groups" eval="[(4, ref('hr.group_hr_manager'))]"/>
             <field name="perm_read">1</field>
             <field name="perm_write">1</field>

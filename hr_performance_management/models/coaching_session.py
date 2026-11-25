@@ -4,8 +4,13 @@ from odoo import models, fields, api
 class CoachingSession(models.Model):
     _name = 'hr.coaching.session'
     _description = 'Coaching & Review Meeting'
-    _inherit = ['mail.thread', 'mail.activity.mixin']
+    _inherit = ['portal.mixin', 'mail.thread', 'mail.activity.mixin']
     _order = 'meeting_date DESC'
+
+    def _compute_access_url(self):
+        super()._compute_access_url()
+        for session in self:
+            session.access_url = f'/my/performance/coaching/{session.id}'
 
     cycle_id = fields.Many2one(
         'hr.performance.cycle',
