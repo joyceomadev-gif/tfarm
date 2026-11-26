@@ -247,16 +247,35 @@ class AbattoirBatch(models.Model):
 
     # --- BUTTON ACTIONS ---
     def action_start_reception(self):
+        self.ensure_one()
+        if self.state != 'draft':
+            raise UserError(_("Reception can only be started from Draft."))
         self.state = 'reception'
 
     def action_confirm_verification(self):
         """ Validates reception and moves to Slaughtering """
+        self.ensure_one()
+        if self.state != 'reception':
+            raise UserError(_("Verification can only be confirmed during Reception."))
         if self.birds_arrived <= 0:
             raise UserError(_("Please input the 'Number of Birds' arrived before proceeding."))
+        if self.mortality_arrived < 0 or self.defected_birds < 0:
+            raise UserError(_("Mortality and Defected bird counts cannot be negative."))
+        if (self.mortality_arrived + self.defected_birds) > self.birds_arrived:
+            raise UserError(_(
+                "Mortality (%(mort)d) + Defected (%(def)d) cannot exceed Birds Arrived (%(arr)d)."
+            ) % {
+                'mort': self.mortality_arrived,
+                'def': self.defected_birds,
+                'arr': self.birds_arrived,
+            })
         self.state = 'slaughtering'
 
     def action_confirm_slaughtering(self):
         """ Validates slaughter info and moves to Production """
+        self.ensure_one()
+        if self.state != 'slaughtering':
+            raise UserError(_("Slaughtering can only be finished from the Slaughtering stage."))
         self.state = 'production'
 
     @api.model_create_multi
@@ -471,23 +490,30 @@ class AbattoirBatch(models.Model):
                     is_weight = True
 
             if is_weight:
-                qty_to_produce = line.weight_kg 
+                qty_to_produce = line.weight_kg
             else:
                 qty_to_produce = line.quantity
+
+            if qty_to_produce <= 0:
+                continue
+
+            line_product = line.product_id.product_variant_id or line.product_id.product_variant_ids[:1]
+            if not line_product:
+                raise UserError(_("Product '%s' has no active variant to post to stock.") % line.product_id.display_name)
 
             # ==========================================================
             # START OF CHANGED BLOCK: INTER-COMPANY PRODUCTION
             # ==========================================================
             if prod_company.id == dest_company.id:
                 # Same Company
-                create_and_force_move(line.product_id, qty_to_produce, uom_line, production_location, dest_location, prod_company, self.name)
+                create_and_force_move(line_product, qty_to_produce, uom_line, production_location, dest_location, prod_company, self.name)
             else:
                 # Inter-Company
                 if not transit_loc: raise UserError(_("No Inter-Company Transit Location found."))
                 # Step 1: Production -> Transit
-                create_and_force_move(line.product_id, qty_to_produce, uom_line, production_location, transit_loc, prod_company, f"{self.name} (Prod Out)")
+                create_and_force_move(line_product, qty_to_produce, uom_line, production_location, transit_loc, prod_company, f"{self.name} (Prod Out)")
                 # Step 2: Transit -> Destination
-                create_and_force_move(line.product_id, qty_to_produce, uom_line, transit_loc, dest_location, dest_company, f"{self.name} (Prod In)")
+                create_and_force_move(line_product, qty_to_produce, uom_line, transit_loc, dest_location, dest_company, f"{self.name} (Prod In)")
 
         # Lock the Batch
         self.state = 'done'
@@ -506,10 +532,10 @@ class AbattoirBatch(models.Model):
             'tag': 'display_notification',
             'params': {
                 'title': _('Stock Updated — Bagging Ready'),
-                'message': (
-                    f'Inventory posted. Bagging record {bagging.name} is linked. '
-                    f'Live birds consumed from abattoir location.'
-                ),
+                'message': _(
+                    "Inventory posted. Bagging record %s is linked. "
+                    "Live birds consumed from abattoir location."
+                ) % bagging.name,
                 'type': 'success',
                 'sticky': False,
             }
@@ -585,7 +611,7 @@ class AbattoirBatch(models.Model):
 
     def _get_md_users(self):
         """Return MD users from farm or fallback to system param."""
-        farm = self.harvest_id.farm_id or self.farm_id
+        farm = self.farm_id
         if farm and farm.md_user_id:
             return farm.md_user_id
         # Fallback: return all users in group_taghini_farm_manager

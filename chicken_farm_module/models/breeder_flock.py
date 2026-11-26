@@ -282,9 +282,15 @@ class BreederFlock(models.Model):
         batches._check_auto_sorted()
         return res
 
-    @api.depends('initial_females', 'initial_males', 'pen_log_ids.closing_females', 'pen_log_ids.closing_males')
+    @api.depends('initial_females', 'initial_males', 'pen_log_ids.closing_females', 'pen_log_ids.closing_males', 'state')
     def _compute_counts(self):
         for rec in self:
+            if rec.state == 'closed':
+                rec.current_females = 0
+                rec.current_males = 0
+                rec.males_per_100_females = 0.0
+                continue
+
             latest_log = rec.pen_log_ids.sorted('date', reverse=True)
             if latest_log:
                 rec.current_females = latest_log[0].closing_females

@@ -96,7 +96,10 @@ class FarmHarvest(models.Model):
     @api.depends('flock_type', 'flock_id', 'flock_id.quantity_placed',
                  'flock_id.log_ids.mortality', 'flock_id.log_ids.harvested_qty',
                  'breeder_flock_id', 'breeder_flock_id.initial_females', 'breeder_flock_id.initial_males',
+                 'breeder_flock_id.state',
+                 'breeder_flock_id.harvest_ids.birds_received', 'breeder_flock_id.harvest_ids.state',
                  'breeder_flock_id.pen_log_ids.female_mortality', 'breeder_flock_id.pen_log_ids.male_mortality',
+                 'breeder_flock_id.pen_log_ids.female_culls', 'breeder_flock_id.pen_log_ids.male_culls',
                  'birds_received', 'state')
     def _compute_unrecorded(self):
         for record in self:
@@ -187,6 +190,12 @@ class FarmHarvest(models.Model):
                         vals['abattoir_id'] = flk.farm_id.default_abattoir_id.id
         return super(FarmHarvest, self).create(vals_list)
 
+    def unlink(self):
+        for record in self:
+            if record.state == 'done':
+                raise UserError(_("You cannot delete a Harvest record that has already been completed."))
+        return super().unlink()
+
     def action_confirm_harvest(self):
         """ 
         1. Creates Internal Transfer (Forced to Done).
@@ -194,6 +203,8 @@ class FarmHarvest(models.Model):
         3. Updates Flock Status.
         """
         self.ensure_one()
+        if self.state != 'draft':
+            raise UserError(_("Only a Draft harvest can be confirmed."))
 
         if self.flock_type == 'breeder':
             if not self.breeder_flock_id:
@@ -338,11 +349,13 @@ class FarmHarvest(models.Model):
                     if not open_flocks:
                         flock.batch_id.write({'state': 'harvested'})
                 self._check_and_alert_md_harvest()
-                msg = f'{self.birds_received} spent breeders transferred to Abattoir. Flock {flock.name} closed.'
+                msg = _(
+                    "%(qty)d spent breeders transferred to Abattoir. Flock %(flock)s closed."
+                ) % {'qty': self.birds_received, 'flock': flock.name}
             else:
-                if remaining < 0:
-                    self._check_and_alert_md_harvest()
-                msg = f'{self.birds_received} spent breeders transferred to Abattoir. {remaining} bird(s) remaining in {flock.name}.'
+                msg = _(
+                    "%(qty)d spent breeders transferred to Abattoir. %(rem)d bird(s) remaining in %(flock)s."
+                ) % {'qty': self.birds_received, 'rem': remaining, 'flock': flock.name}
             return {
                 'type': 'ir.actions.client',
                 'tag': 'display_notification',
@@ -391,7 +404,7 @@ class FarmHarvest(models.Model):
             'tag': 'display_notification',
             'params': {
                 'title': _('Harvest Confirmed'),
-                'message': f'{self.birds_received} birds transferred to Abattoir.',
+                'message': _("%d birds transferred to Abattoir.") % self.birds_received,
                 'type': 'success',
                 'sticky': False,
             }

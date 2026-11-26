@@ -178,7 +178,16 @@ class AbattoirBagging(models.Model):
             (abattoir.freezer_location_id if abattoir else False)
             or (abattoir.storage_location_id if abattoir else False)
             or (batch.harvest_id.flock_id.standard_id.storage_location_id if batch.harvest_id.flock_id else False)
+            or (batch.harvest_id.breeder_flock_id.batch_id.standard_id.storage_location_id if batch.harvest_id.breeder_flock_id else False)
         )
+
+    @api.constrains('batch_id')
+    def _check_unique_batch_id(self):
+        for rec in self:
+            if rec.batch_id:
+                dup = self.search_count([('id', '!=', rec.id), ('batch_id', '=', rec.batch_id.id)])
+                if dup:
+                    raise UserError(_("Production Batch '%s' already has a Bagging record.") % rec.batch_id.name)
 
     @api.onchange('batch_id')
     def _onchange_batch_id(self):
@@ -240,6 +249,8 @@ class AbattoirBagging(models.Model):
     def action_confirm_bagging(self):
         """Confirm bagging lines - bags are ready for freezer."""
         self.ensure_one()
+        if self.state != 'draft':
+            raise UserError(_("Only a Draft bagging record can be confirmed."))
         if not self.line_ids:
             raise UserError(_("Please add at least one bagging line before confirming."))
 
@@ -282,7 +293,10 @@ class AbattoirBagging(models.Model):
         farm = self.batch_id.farm_id
         abattoir = self.abattoir_id or (farm.default_abattoir_id if farm else False)
         source_storage = (
-            abattoir.storage_location_id if abattoir else False
+            (abattoir.storage_location_id if abattoir else False)
+            or (abattoir.freezer_location_id if abattoir else False)
+            or (self.harvest_id.flock_id.standard_id.storage_location_id if self.harvest_id.flock_id else False)
+            or (self.harvest_id.breeder_flock_id.batch_id.standard_id.storage_location_id if self.harvest_id.breeder_flock_id else False)
         )
         dest = self.destination_location_id or self._get_default_destination_location(self.batch_id)
         if not dest:
@@ -303,47 +317,80 @@ class AbattoirBagging(models.Model):
         stock_move_obj = self.env['stock.move']
         moved_count = 0
 
+        def _create_and_done_move(product_variant, qty, uom, loc_from, loc_to, company_rec, origin_label):
+            move = stock_move_obj.sudo().create({
+                'name': f"{self.name} → {loc_to.name}",
+                'product_id': product_variant.id,
+                'product_uom_qty': qty,
+                'product_uom': uom.id,
+                'location_id': loc_from.id,
+                'location_dest_id': loc_to.id,
+                'date': fields.Datetime.now(),
+                'company_id': company_rec.id,
+                'origin': origin_label,
+                'state': 'draft',
+            })
+            move._action_confirm()
+            move._action_assign()
+            if not move.move_line_ids:
+                self.env['stock.move.line'].sudo().create({
+                    'move_id': move.id,
+                    'product_id': move.product_id.id,
+                    'product_uom_id': move.product_uom.id,
+                    'location_id': move.location_id.id,
+                    'location_dest_id': move.location_dest_id.id,
+                    'quantity': qty,
+                })
+            else:
+                for ml in move.move_line_ids:
+                    ml.quantity = ml.quantity_product_uom
+            move.picked = True
+            move._action_done()
+            return move
+
         if source_loc.id != dest.id:
+            src_company = source_loc.company_id or self.company_id
+            dest_company = dest.company_id or self.company_id
+            transit_loc = False
+            if src_company.id != dest_company.id:
+                transit_loc = self.env.ref('stock.location_inter_company', raise_if_not_found=False)
+                if not transit_loc:
+                    transit_loc = self.env['stock.location'].sudo().search([
+                        ('usage', '=', 'transit'),
+                        ('company_id', '=', False)
+                    ], limit=1)
+                if not transit_loc:
+                    raise UserError(_("No Inter-Company Transit Location found."))
+
             for line in self.line_ids:
                 qty = line.weight_kg if self._is_weight_uom(line.product_id.uom_id) else line.quantity
                 if qty <= 0:
                     continue
 
-                move = stock_move_obj.sudo().create({
-                    'name': f"{self.name} → {dest.name}",
-                    'product_id': line.product_id.product_variant_id.id,
-                    'product_uom_qty': qty,
-                    'product_uom': line.product_id.uom_id.id,
-                    'location_id': source_loc.id,
-                    'location_dest_id': dest.id,
-                    'date': fields.Datetime.now(),
-                    'company_id': self.company_id.id,
-                    'origin': self.name,
-                    'state': 'draft',
-                })
-                move._action_confirm()
-                move._action_assign()
-                if not move.move_line_ids:
-                    self.env['stock.move.line'].sudo().create({
-                        'move_id': move.id,
-                        'product_id': move.product_id.id,
-                        'product_uom_id': move.product_uom.id,
-                        'location_id': move.location_id.id,
-                        'location_dest_id': move.location_dest_id.id,
-                        'quantity': qty,
-                    })
+                line_product = line.product_id.product_variant_id or line.product_id.product_variant_ids[:1]
+                if not line_product:
+                    raise UserError(_("Product '%s' has no active variant to move.") % line.product_id.display_name)
+
+                if src_company.id == dest_company.id:
+                    _create_and_done_move(line_product, qty, line.product_id.uom_id, source_loc, dest, src_company, self.name)
                 else:
-                    for ml in move.move_line_ids:
-                        ml.quantity = ml.quantity_product_uom
-                move.picked = True
-                move._action_done()
+                    _create_and_done_move(line_product, qty, line.product_id.uom_id, source_loc, transit_loc, src_company, f"{self.name} (Out)")
+                    _create_and_done_move(line_product, qty, line.product_id.uom_id, transit_loc, dest, dest_company, f"{self.name} (In)")
                 moved_count += 1
 
         self.state = 'moved'
         msg = (
-            f'{self.total_bags} bags ({self.total_weight_kg:.2f} Kg) transferred to {dest.name}.'
+            _("%(bags)d bags (%(wgt).2f Kg) transferred to %(dest)s.") % {
+                'bags': self.total_bags,
+                'wgt': self.total_weight_kg,
+                'dest': dest.name,
+            }
             if moved_count
-            else f'{self.total_bags} bags ({self.total_weight_kg:.2f} Kg) confirmed in {dest.name} (already in destination location).'
+            else _("%(bags)d bags (%(wgt).2f Kg) confirmed in %(dest)s (already in destination location).") % {
+                'bags': self.total_bags,
+                'wgt': self.total_weight_kg,
+                'dest': dest.name,
+            }
         )
         return {
             'type': 'ir.actions.client',
