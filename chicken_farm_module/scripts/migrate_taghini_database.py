@@ -322,6 +322,31 @@ def run_migration(dbname, dry_run=False, trigger_upgrade=False):
             else:
                 print("  -> Would recalculate Mother Batch allocations.")
 
+        # -------------------------------------------------------------
+        # STEP 8: Create Missing Farms & Associate Operational Transactions
+        # -------------------------------------------------------------
+        print("\n[Step 8] Creating missing farms & associating operational transactions...")
+        if not dry_run:
+            import importlib.util
+            import os
+            mig_path = os.path.abspath(
+                os.path.join(os.path.dirname(__file__), '..', 'migrations', '1.6.4', 'post-migrate.py')
+            )
+            spec = importlib.util.spec_from_file_location("post_migrate_1_6_4", mig_path)
+            mig_mod = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(mig_mod)
+            mig_mod.backfill_farms_and_transactions(cr)
+            print("  -> Farms created and operational transactions associated.")
+        else:
+            cr.execute("""
+                SELECT count(*) FROM stock_warehouse w
+                WHERE w.id NOT IN (SELECT warehouse_id FROM taghini_farm WHERE warehouse_id IS NOT NULL)
+                  AND UPPER(COALESCE(w.name, '')) NOT LIKE '%ABATTOIR%'
+                  AND UPPER(COALESCE(w.name, '')) LIKE '%FARM%';
+            """)
+            missing_farms = cr.fetchone()[0]
+            print(f"  -> WOULD FIX: Would create {missing_farms} missing farm(s) and associate pens, flocks, batches, logs, harvests, abattoir & breeder records.")
+
         # Commit or Rollback
         if dry_run:
             cr.rollback()
