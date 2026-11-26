@@ -335,33 +335,30 @@ class AbattoirBatch(models.Model):
             raise UserError(_("You cannot post an empty batch. Please add production lines."))
         
         # 1. Define Locations
-        # Prefer dedicated Abattoir site; fall back to farm-level locations or standard profile
+        # Prefer dedicated Abattoir site
         farm = self.harvest_id.flock_id.pen_model_id.farm_id or self.harvest_id.farm_id
         abattoir = self.abattoir_id or (farm.default_abattoir_id if farm else False)
         source_location = (
             (abattoir.abattoir_location_id if abattoir else False)
-            or (farm.abattoir_location_id if farm else False)
             or self.harvest_id.flock_id.standard_id.abattoir_location_id
             or self.harvest_id.breeder_flock_id.batch_id.standard_id.abattoir_location_id
         )
         if not source_location:
             raise UserError(_(
-                "No Abattoir Location defined. Set it on the Abattoir (Configuration > Abattoirs), "
-                "on the Farm, or on the Growth Standard."
+                "No Abattoir Location defined. Set it on the Abattoir (Configuration > Abattoirs) "
+                "or configure a Default Abattoir on the Farm."
             ))
 
         dest_location = (
             (abattoir.storage_location_id if abattoir else False)
             or (abattoir.freezer_location_id if abattoir else False)
-            or (farm.storage_location_id if farm else False)
-            or (farm.freezer_location_id if farm else False)
             or self.harvest_id.flock_id.standard_id.storage_location_id
             or self.harvest_id.breeder_flock_id.batch_id.standard_id.storage_location_id
         )
         if not dest_location:
             raise UserError(_(
-                "No Storage or Freezer Location defined. Set it on the Abattoir (Configuration > Abattoirs), "
-                "on the Farm, or on the Growth Standard."
+                "No Storage or Freezer Location defined. Set it on the Abattoir (Configuration > Abattoirs) "
+                "or configure a Default Abattoir on the Farm."
             ))
         
         # Search for Virtual Production Location

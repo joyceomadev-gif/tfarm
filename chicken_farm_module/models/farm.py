@@ -44,33 +44,6 @@ class TaghiniFarm(models.Model):
         help="Default abattoir this farm dispatches harvested birds to."
     )
 
-    # Farm-level destination locations (moved from taghini.farm.standard)
-    abattoir_location_id = fields.Many2one(
-        'stock.location', string='Abattoir Location',
-        domain="[('usage', '=', 'internal')]", check_company=False,
-        tracking=True,
-        help="Where live birds are transferred to on harvest."
-    )
-    storage_location_id = fields.Many2one(
-        'stock.location', string='Storage / Freezer Location',
-        domain="[('usage', '=', 'internal')]", check_company=False,
-        tracking=True,
-        help="Where finished meat products are posted after abattoir processing."
-    )
-    # === TASK B2: Cold Room / Freezer section locations ===
-    cold_room_location_id = fields.Many2one(
-        'stock.location', string='Cold Room Location',
-        domain="[('usage', '=', 'internal')]", check_company=False,
-        tracking=True,
-        help="Selling-point cold room location."
-    )
-    freezer_location_id = fields.Many2one(
-        'stock.location', string='Freezer Location',
-        domain="[('usage', '=', 'internal')]", check_company=False,
-        tracking=True,
-        help="Deep freezer location for long-term storage."
-    )
-
     # Staff
     manager_id = fields.Many2one(
         'res.users', string='Farm Manager', tracking=True,

@@ -39,26 +39,15 @@
                             <field name="stock_location_id" readonly="1"/>
                             <field name="default_abattoir_id" options="{'no_create': True}"/>
                         </group>
-                        <group string="Destination Locations">
-                            <field name="abattoir_location_id"
-                                   help="Where live birds are transferred on harvest."/>
-                            <field name="storage_location_id"
-                                   help="Where finished meat products go after abattoir processing."/>
-                            <!-- Task B2: Cold room / Freezer section locations -->
-                            <field name="cold_room_location_id"
-                                   help="Selling-point cold room location."/>
-                            <field name="freezer_location_id"
-                                   help="Deep freezer location for long-term storage."/>
-                        </group>
-                    </group>
-
-                    <group>
                         <group string="Staff &amp; Key Contacts">
                             <field name="manager_id" widget="many2one_avatar_user"/>
                             <field name="vet_id" widget="many2one_avatar_user"/>
                             <!-- Task C5: MD for unrecorded bird alerts -->
                             <field name="md_user_id" widget="many2one_avatar_user"/>
                         </group>
+                    </group>
+
+                    <group>
                         <group string="Access &amp; Permissions">
                             <!-- Requirement 5: Assign users/employees to farm -->
                             <field name="user_ids"

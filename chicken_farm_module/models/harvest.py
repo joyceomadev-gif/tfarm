@@ -206,13 +206,12 @@ class FarmHarvest(models.Model):
             abattoir = self.abattoir_id or self.breeder_flock_id.farm_id.default_abattoir_id
             dest_loc = (
                 (abattoir.abattoir_location_id if abattoir else False)
-                or self.breeder_flock_id.farm_id.abattoir_location_id
                 or self.breeder_flock_id.batch_id.standard_id.abattoir_location_id
             )
             if not dest_loc:
                 raise UserError(_(
                     "Destination Abattoir Location is missing. "
-                    "Select a Destination Abattoir or set it on the Farm / Breed Standard."
+                    "Select a Destination Abattoir on the Harvest or configure a Default Abattoir on the Farm."
                 ))
         else:
             if not self.flock_id:
@@ -225,13 +224,12 @@ class FarmHarvest(models.Model):
             abattoir = self.abattoir_id or farm.default_abattoir_id
             dest_loc = (
                 (abattoir.abattoir_location_id if abattoir else False)
-                or farm.abattoir_location_id
                 or self.flock_id.standard_id.abattoir_location_id
             )
             if not dest_loc:
                 raise UserError(_(
                     "Destination Abattoir Location is missing. "
-                    "Select a Destination Abattoir or set it on the Farm / Growth Standard."
+                    "Select a Destination Abattoir on the Harvest or configure a Default Abattoir on the Farm."
                 ))
 
         src_company = source_loc.company_id or self.company_id

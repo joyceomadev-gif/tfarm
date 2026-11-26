@@ -177,8 +177,6 @@ class AbattoirBagging(models.Model):
         return (
             (abattoir.freezer_location_id if abattoir else False)
             or (abattoir.storage_location_id if abattoir else False)
-            or (farm.freezer_location_id if farm else False)
-            or (farm.storage_location_id if farm else False)
             or (batch.harvest_id.flock_id.standard_id.storage_location_id if batch.harvest_id.flock_id else False)
         )
 
@@ -284,14 +282,13 @@ class AbattoirBagging(models.Model):
         farm = self.batch_id.farm_id
         abattoir = self.abattoir_id or (farm.default_abattoir_id if farm else False)
         source_storage = (
-            (abattoir.storage_location_id if abattoir else False)
-            or (farm.storage_location_id if farm else False)
+            abattoir.storage_location_id if abattoir else False
         )
         dest = self.destination_location_id or self._get_default_destination_location(self.batch_id)
         if not dest:
             raise UserError(_(
                 "No destination location set. Set 'Destination (Cold Room / Freezer)' on this bagging record "
-                "or configure Storage/Freezer locations on the Abattoir / Farm."
+                "or configure Storage/Freezer locations on the Abattoir."
             ))
 
         production_loc = self.env['stock.location'].search([

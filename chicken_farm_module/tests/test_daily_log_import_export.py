@@ -14,6 +14,7 @@ class TestDailyLogImportExport(TransactionCase):
         super().setUpClass()
         # Find or create warehouse & farm location
         cls.warehouse = cls.env['stock.warehouse'].search([], limit=1)
+        cls.location_stock = cls.warehouse.lot_stock_id if cls.warehouse else cls.env['stock.location'].search([('usage', '=', 'internal')], limit=1)
         cls.farm = cls.env['taghini.farm'].search([], limit=1)
         if not cls.farm:
             cls.farm = cls.env['taghini.farm'].create({
@@ -30,19 +31,50 @@ class TestDailyLogImportExport(TransactionCase):
                 'capacity': 5000,
             })
 
-        # Bird Product
+        # Bird Product & Template
         cls.bird_product = cls.env['product.product'].search([('name', 'ilike', 'Broiler')], limit=1)
         if not cls.bird_product:
             cls.bird_product = cls.env['product.product'].create({
                 'name': 'Test Broiler Bird',
                 'type': 'consu',
             })
+        cls.bird_template = cls.bird_product.product_tmpl_id
+
+        # Breeder Standard
+        cls.breeder_standard = cls.env['taghini.farm.standard'].search([('standard_type', '=', 'breeder')], limit=1)
+        if not cls.breeder_standard:
+            cls.breeder_standard = cls.env['taghini.farm.standard'].create({
+                'name': 'Test Breeder Std',
+                'standard_type': 'breeder',
+            })
+
+        # Supplier & Mother Batch
+        cls.supplier = cls.env['res.partner'].search([], limit=1)
+        if not cls.supplier:
+            cls.supplier = cls.env['res.partner'].create({'name': 'Test Supplier'})
+
+        cls.batch = cls.env['taghini.chicken.batch'].create({
+            'name': 'BATCH-TEST-001',
+            'supplier_id': cls.supplier.id,
+            'total_quantity': 5000,
+            'date': date.today() - timedelta(days=10),
+        })
+
+        # Standard
+        cls.standard = cls.env['taghini.farm.standard'].search([], limit=1)
+        if not cls.standard:
+            cls.standard = cls.env['taghini.farm.standard'].create({
+                'name': 'Ross 308 Standard Test',
+                'breed': 'Ross 308',
+            })
 
         # Test Flock
         cls.flock = cls.env['taghini.flock'].create({
             'name': 'FLOCK-TEST-IMPORT-EXPORT-001',
+            'batch_id': cls.batch.id,
+            'standard_id': cls.standard.id,
+            'quantity_placed': 2000,
             'pen_model_id': cls.pen.id,
-            'farm_id': cls.farm.id,
             'product_id': cls.bird_product.id,
             'initial_birds': 2000,
             'start_date': date.today() - timedelta(days=10),
@@ -261,8 +293,10 @@ class TestDailyLogImportExport(TransactionCase):
         """Verify unique sequence-generated IDs on Flocks, Daily Logs, Pens, Farms, and Breeder Logs."""
         # 1. Flock sequence
         new_flock = self.env['taghini.flock'].create({
+            'batch_id': self.batch.id,
+            'standard_id': self.standard.id,
             'pen_model_id': self.pen.id,
-            'farm_id': self.farm.id,
+            'quantity_placed': 1000,
             'product_id': self.bird_product.id,
             'initial_birds': 1000,
             'start_date': date.today(),
@@ -287,6 +321,7 @@ class TestDailyLogImportExport(TransactionCase):
         new_pen = self.env['taghini.pen'].create({
             'name': 'Pen Beta Test',
             'farm_id': self.farm.id,
+            'location_id': self.location_stock.id,
             'capacity': 3000,
         })
         self.assertTrue(new_pen.pen_code)
@@ -305,9 +340,10 @@ class TestDailyLogImportExport(TransactionCase):
         # 5. Breeder Pen Daily Log sequence
         breeder_batch = self.env['taghini.breeder.batch'].create({
             'name': 'BRD-TEST-001',
+            'source_partner_id': self.supplier.id,
             'female_order_qty': 100,
-            'bird_variant_id': self.bird_product.id,
-            'standard_id': self.env['taghini.farm.standard'].search([('standard_type', '=', 'breeder')], limit=1).id or False,
+            'bird_variant_id': self.bird_template.id,
+            'standard_id': self.breeder_standard.id,
         })
         pen = self.env['taghini.pen'].create({
             'name': 'Test Pen BRD',
@@ -344,9 +380,11 @@ class TestDailyLogImportExport(TransactionCase):
 
         batch = self.env['taghini.breeder.batch'].create({
             'name': 'BATCH-CAP-TEST',
+            'source_partner_id': self.supplier.id,
             'female_order_qty': 2000,
             'male_order_qty': 300,
-            'bird_variant_id': self.bird_product.id,
+            'bird_variant_id': self.bird_template.id,
+            'standard_id': self.breeder_standard.id,
         })
 
         # Allocating within capacity (800 females + 100 males = 900 <= 1000) succeeds
@@ -376,9 +414,11 @@ class TestDailyLogImportExport(TransactionCase):
         })
         batch = self.env['taghini.breeder.batch'].create({
             'name': 'BATCH-EGG-TEST',
+            'source_partner_id': self.supplier.id,
             'female_order_qty': 1000,
             'male_order_qty': 150,
-            'bird_variant_id': self.bird_product.id,
+            'bird_variant_id': self.bird_template.id,
+            'standard_id': self.breeder_standard.id,
         })
         # Young flock (e.g. brooding/rearing, placed today)
         flock = self.env['taghini.breeder.flock'].create({
